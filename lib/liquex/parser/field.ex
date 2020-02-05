@@ -1,7 +1,7 @@
-defmodule Liquex.Parsers.Fields do
+defmodule Liquex.Parser.Field do
   import NimbleParsec
 
-  alias Liquex.Parsers.Literals
+  alias Liquex.Parser.Literal
 
   @spec identifier(NimbleParsec.t()) :: NimbleParsec.t()
   def identifier(combinator \\ empty()) do
@@ -17,9 +17,9 @@ defmodule Liquex.Parsers.Fields do
   def accessor(combinator \\ empty()) do
     combinator
     |> ignore(string("["))
-    |> ignore(Literals.whitespace())
+    |> ignore(Literal.whitespace())
     |> integer(min: 1)
-    |> ignore(Literals.whitespace())
+    |> ignore(Literal.whitespace())
     |> ignore(string("]"))
     |> unwrap_and_tag(:accessor)
   end

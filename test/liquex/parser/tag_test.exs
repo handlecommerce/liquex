@@ -1,4 +1,4 @@
-defmodule Liquex.Parsers.TagsTest do
+defmodule Liquex.Parser.TagTest do
   use ExUnit.Case
 
   test "parses comment" do

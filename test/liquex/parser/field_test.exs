@@ -1,4 +1,4 @@
-defmodule Liquex.Parsers.FieldsTest do
+defmodule Liquex.Parser.FieldTest do
   use ExUnit.Case
 
   test "simple field" do

@@ -1,4 +1,4 @@
-defmodule Liquex.Parsers.Literals do
+defmodule Liquex.Parser.Literal do
   import NimbleParsec
 
   def boolean(combinator \\ empty()) do
@@ -36,10 +36,10 @@ defmodule Liquex.Parsers.Literals do
     |> choice([single_quote_string, double_quote_string])
   end
 
-  def whitespace(combinator \\ empty()) do
+  def whitespace(combinator \\ empty(), min \\ 0) do
     combinator
     |> ascii_char([?\s, ?\n, ?\r])
-    |> times(min: 0)
+    |> times(min: min)
   end
 
   def int(combinator \\ empty()) do

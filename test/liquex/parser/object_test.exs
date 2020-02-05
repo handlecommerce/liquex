@@ -1,4 +1,4 @@
-defmodule Liquex.Parsers.ObjectsTest do
+defmodule Liquex.Parser.ObjectTest do
   use ExUnit.Case
 
   test "handles simple filter" do

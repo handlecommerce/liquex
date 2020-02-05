@@ -5,8 +5,9 @@ defmodule Liquex.Parser do
 
   import NimbleParsec
 
-  alias Liquex.Parsers.Objects
-  alias Liquex.Parsers.Tags
+  alias Liquex.Parser.Object
+  alias Liquex.Parser.Tag
+  alias Liquex.Parser.ConditionalBlock
 
   text =
     lookahead_not(choice([string("{{"), string("{%")]))
@@ -17,8 +18,8 @@ defmodule Liquex.Parser do
 
   defcombinatorp(
     :document,
-    repeat(choice([Objects.object(), Tags.tag(), text]))
+    repeat(choice([Object.object(), Tag.tag(), ConditionalBlock.if_block(), text]))
   )
 
-  defparsec(:parse, parsec(:document) |> eos, debug: true)
+  defparsec(:parse, parsec(:document) |> eos(), debug: true)
 end

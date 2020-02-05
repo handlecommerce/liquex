@@ -1,4 +1,4 @@
-defmodule Liquex.Parsers.LiteralsTest do
+defmodule Liquex.Parser.LiteralTest do
   use ExUnit.Case
 
   test "boolean" do

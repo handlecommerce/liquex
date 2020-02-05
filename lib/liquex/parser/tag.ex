@@ -1,15 +1,15 @@
-defmodule Liquex.Parsers.Tags do
+defmodule Liquex.Parser.Tag do
   import NimbleParsec
 
-  alias Liquex.Parsers.Literals
+  alias Liquex.Parser.Literal
 
   @spec tag_directive(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def tag_directive(combinator \\ empty(), name) do
     combinator
     |> string("{%")
-    |> Literals.whitespace()
+    |> Literal.whitespace()
     |> string(name)
-    |> Literals.whitespace()
+    |> Literal.whitespace()
     |> string("%}")
   end
 
