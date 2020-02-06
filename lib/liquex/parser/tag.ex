@@ -2,7 +2,7 @@ defmodule Liquex.Parser.Tag do
   import NimbleParsec
 
   alias Liquex.Parser.Literal
-  alias Liquex.Parser.ConditionalBlock
+  alias Liquex.Parser.ConditionalExpression
 
   @spec tag_directive(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def tag_directive(combinator \\ empty(), name) do
@@ -42,10 +42,11 @@ defmodule Liquex.Parser.Tag do
   def tag(combinator \\ empty()) do
     tags =
       choice([
-        ConditionalBlock.if_tag(),
-        ConditionalBlock.unless_tag()
+        ConditionalExpression.if_expression(),
+        ConditionalExpression.unless_expression(),
+        ConditionalExpression.case_expression()
       ])
-      |> tag(:tag)
+      |> tag(:conditional)
 
     combinator
     |> choice([tags, raw_tag(), comment_tag()])

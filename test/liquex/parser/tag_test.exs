@@ -1,5 +1,6 @@
 defmodule Liquex.Parser.TagTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   test "parses comment" do
     assert_parse("Hello {% comment %}Ignored text{% endcomment %} World",
@@ -12,9 +13,5 @@ defmodule Liquex.Parser.TagTest do
     assert_parse("{% raw %} {{ test }} {% endraw %}",
       text: [" {{ test }} "]
     )
-  end
-
-  def assert_parse(doc, match) do
-    assert {:ok, ^match, "", _, _, _} = Liquex.Parser.parse(doc)
   end
 end

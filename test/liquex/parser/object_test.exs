@@ -1,5 +1,6 @@
 defmodule Liquex.Parser.ObjectTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   test "handles simple filter" do
     assert_parse(
@@ -35,9 +36,5 @@ defmodule Liquex.Parser.ObjectTest do
         ]
       ]
     )
-  end
-
-  def assert_parse(doc, match) do
-    assert {:ok, ^match, "", _, _, _} = Liquex.Parser.parse(doc)
   end
 end

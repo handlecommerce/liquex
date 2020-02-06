@@ -1,5 +1,6 @@
 defmodule Liquex.Parser.FieldTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   test "simple field" do
     assert_parse("{{ field }}", object: [field: [key: "field"], filters: []])
@@ -35,9 +36,5 @@ defmodule Liquex.Parser.FieldTest do
       "{{ field[1].child[0] }}",
       object: [field: [key: "field", accessor: 1, key: "child", accessor: 0], filters: []]
     )
-  end
-
-  def assert_parse(doc, match) do
-    assert {:ok, ^match, "", _, _, _} = Liquex.Parser.parse(doc)
   end
 end

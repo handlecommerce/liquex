@@ -1,5 +1,6 @@
 defmodule Liquex.Parser.LiteralTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   test "boolean" do
     assert_parse("{{ true }}", object: [literal: true, filters: []])
@@ -23,9 +24,5 @@ defmodule Liquex.Parser.LiteralTest do
   test "quoted_string" do
     assert_parse("{{ \"Hello World!\" }}", object: [literal: "Hello World!", filters: []])
     assert_parse("{{ 'Hello World!' }}", object: [literal: "Hello World!", filters: []])
-  end
-
-  def assert_parse(doc, match) do
-    assert {:ok, ^match, "", _, _, _} = Liquex.Parser.parse(doc)
   end
 end
