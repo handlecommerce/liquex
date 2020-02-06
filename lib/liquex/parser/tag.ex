@@ -40,7 +40,14 @@ defmodule Liquex.Parser.Tag do
 
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
+    tags =
+      choice([
+        ConditionalBlock.if_tag(),
+        ConditionalBlock.unless_tag()
+      ])
+      |> tag(:tag)
+
     combinator
-    |> choice([ConditionalBlock.if_tag() |> tag(:tag), raw_tag(), comment_tag()])
+    |> choice([tags, raw_tag(), comment_tag()])
   end
 end

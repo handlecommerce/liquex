@@ -58,6 +58,15 @@ defmodule Liquex.Parser.ConditionalBlock do
     |> ignore(Tag.tag_directive("endif"))
   end
 
+  @spec unless_tag(NimbleParsec.t()) :: NimbleParsec.t()
+  def unless_tag(combinator \\ empty()) do
+    combinator
+    |> unless_block()
+    |> repeat(elsif_block())
+    |> optional(else_block())
+    |> ignore(Tag.tag_directive("endunless"))
+  end
+
   defp if_block(combinator) do
     combinator
     |> expression_tag("if")
@@ -65,11 +74,18 @@ defmodule Liquex.Parser.ConditionalBlock do
     |> tag(:if)
   end
 
+  defp unless_block(combinator) do
+    combinator
+    |> expression_tag("unless")
+    |> tag(parsec(:document), :contents)
+    |> tag(:unless)
+  end
+
   defp elsif_block(combinator \\ empty()) do
     combinator
     |> expression_tag("elsif")
     |> tag(parsec(:document), :contents)
-    |> tag(:if)
+    |> tag(:elsif)
   end
 
   defp else_block(combinator \\ empty()) do
