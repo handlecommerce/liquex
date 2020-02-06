@@ -1,6 +1,7 @@
 defmodule Liquex.Parser.ConditionalBlock do
   import NimbleParsec
 
+  alias Liquex.Parser.Tag
   alias Liquex.Parser.Object
   alias Liquex.Parser.Literal
 
@@ -51,22 +52,41 @@ defmodule Liquex.Parser.ConditionalBlock do
   @spec if_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def if_tag(combinator \\ empty()) do
     combinator
-    |> ignore(string("{%"))
-    |> ignore(Literal.whitespace())
-    |> ignore(string("if"))
-    |> ignore(Literal.whitespace())
-    |> tag(boolean_expression(), :expression)
-    |> ignore(Literal.whitespace())
-    |> ignore(string("%}"))
-    |> tag(parsec(:document), :contents)
+    |> if_block()
+    |> repeat(elsif_block())
+    |> optional(else_block())
+    |> ignore(Tag.tag_directive("endif"))
   end
 
-  def if_block(combinator \\ empty()) do
+  defp if_block(combinator) do
     combinator
-    |> tag(if_tag(), :if)
+    |> expression_tag("if")
+    |> tag(parsec(:document), :contents)
+    |> tag(:if)
+  end
+
+  defp elsif_block(combinator \\ empty()) do
+    combinator
+    |> expression_tag("elsif")
+    |> tag(parsec(:document), :contents)
+    |> tag(:if)
+  end
+
+  defp else_block(combinator \\ empty()) do
+    combinator
+    |> ignore(Tag.tag_directive("else"))
+    |> tag(parsec(:document), :contents)
+    |> tag(:else)
+  end
+
+  @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
+  defp expression_tag(combinator, tag_name) do
+    combinator
     |> ignore(string("{%"))
     |> ignore(Literal.whitespace())
-    |> ignore(string("endif"))
+    |> ignore(string(tag_name))
+    |> ignore(Literal.whitespace())
+    |> tag(boolean_expression(), :expression)
     |> ignore(Literal.whitespace())
     |> ignore(string("%}"))
   end

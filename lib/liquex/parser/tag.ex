@@ -2,6 +2,7 @@ defmodule Liquex.Parser.Tag do
   import NimbleParsec
 
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.ConditionalBlock
 
   @spec tag_directive(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def tag_directive(combinator \\ empty(), name) do
@@ -40,9 +41,6 @@ defmodule Liquex.Parser.Tag do
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
     combinator
-    |> choice([
-      comment_tag(),
-      raw_tag()
-    ])
+    |> choice([ConditionalBlock.if_tag() |> tag(:tag), raw_tag(), comment_tag()])
   end
 end
