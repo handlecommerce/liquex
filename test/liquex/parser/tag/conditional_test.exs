@@ -1,13 +1,11 @@
-defmodule Liquex.Parser.ConditionalExpressionTest do
+defmodule Liquex.Parser.Tag.ConditionalTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
-  describe "if_tag" do
+  describe "if_expression" do
     test "parse if block with boolean" do
       "{% if true %}Hello{% endif %}"
-      |> assert_parse(
-        conditional: [if: [expression: [literal: true], contents: [text: ["Hello"]]]]
-      )
+      |> assert_parse(conditional: [if: [expression: [literal: true], contents: [text: "Hello"]]])
     end
 
     test "parse if block with conditional" do
@@ -16,7 +14,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [[left: [field: [key: "a"]], op: :==, right: [field: [key: "b"]]]],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -28,7 +26,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [{:literal, true}, :and, {:literal, false}],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -38,7 +36,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [{:literal, true}, :or, {:literal, false}],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -52,7 +50,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
               :and,
               [left: [field: [key: "b"]], op: :>, right: [field: [key: "c"]]]
             ],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -66,7 +64,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
               :and,
               [left: [field: [key: "b"]], op: :>, right: [field: [key: "c"]]]
             ],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -78,11 +76,11 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [literal: true],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ],
           elsif: [
             expression: [literal: false],
-            contents: [text: ["Goodbye"]]
+            contents: [text: "Goodbye"]
           ]
         ]
       )
@@ -92,15 +90,15 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [literal: true],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ],
           elsif: [
             expression: [literal: false],
-            contents: [text: ["Goodbye"]]
+            contents: [text: "Goodbye"]
           ],
           elsif: [
             expression: [literal: 1],
-            contents: [text: ["Other"]]
+            contents: [text: "Other"]
           ]
         ]
       )
@@ -112,10 +110,10 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [literal: true],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ],
           else: [
-            contents: [text: ["Goodbye"]]
+            contents: [text: "Goodbye"]
           ]
         ]
       )
@@ -127,14 +125,14 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           if: [
             expression: [literal: true],
-            contents: [text: ["one"]]
+            contents: [text: "one"]
           ],
           elsif: [
             expression: [literal: false],
-            contents: [text: ["two"]]
+            contents: [text: "two"]
           ],
           else: [
-            contents: [text: ["three"]]
+            contents: [text: "three"]
           ]
         ]
       )
@@ -151,14 +149,14 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         {% endif %}
       """
       |> assert_parse([
-        {:text, ["  "]},
+        {:text, "  "},
         {:conditional,
          [
            if: [
              expression: [
                [left: [field: [key: "customer", key: "name"]], op: :==, right: [literal: "kevin"]]
              ],
-             contents: [text: ["\n    Hey Kevin!\n  "]]
+             contents: [text: "\n    Hey Kevin!\n  "]
            ],
            elsif: [
              expression: [
@@ -168,20 +166,20 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
                  right: [literal: "anonymous"]
                ]
              ],
-             contents: [text: ["\n    Hey Anonymous!\n  "]]
+             contents: [text: "\n    Hey Anonymous!\n  "]
            ],
-           else: [contents: [text: ["\n    Hi Stranger!\n  "]]]
+           else: [contents: [text: "\n    Hi Stranger!\n  "]]
          ]},
-        {:text, ["\n"]}
+        {:text, "\n"}
       ])
     end
   end
 
-  describe "unless_tag" do
+  describe "unless_expression" do
     test "parse unless block with boolean" do
       "{% unless true %}Hello{% endunless %}"
       |> assert_parse(
-        conditional: [unless: [expression: [literal: true], contents: [text: ["Hello"]]]]
+        conditional: [unless: [expression: [literal: true], contents: [text: "Hello"]]]
       )
     end
 
@@ -191,7 +189,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [[left: [field: [key: "a"]], op: :==, right: [field: [key: "b"]]]],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -203,7 +201,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [{:literal, true}, :and, {:literal, false}],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -213,7 +211,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [{:literal, true}, :or, {:literal, false}],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -227,7 +225,7 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
               :and,
               [left: [field: [key: "b"]], op: :>, right: [field: [key: "c"]]]
             ],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -239,11 +237,11 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [literal: true],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ],
           elsif: [
             expression: [literal: false],
-            contents: [text: ["Goodbye"]]
+            contents: [text: "Goodbye"]
           ]
         ]
       )
@@ -253,15 +251,15 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [literal: true],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ],
           elsif: [
             expression: [literal: false],
-            contents: [text: ["Goodbye"]]
+            contents: [text: "Goodbye"]
           ],
           elsif: [
             expression: [literal: 1],
-            contents: [text: ["Other"]]
+            contents: [text: "Other"]
           ]
         ]
       )
@@ -273,10 +271,10 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [literal: true],
-            contents: [text: ["Hello"]]
+            contents: [text: "Hello"]
           ],
           else: [
-            contents: [text: ["Goodbye"]]
+            contents: [text: "Goodbye"]
           ]
         ]
       )
@@ -288,27 +286,27 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
         conditional: [
           unless: [
             expression: [literal: true],
-            contents: [text: ["one"]]
+            contents: [text: "one"]
           ],
           elsif: [
             expression: [literal: false],
-            contents: [text: ["two"]]
+            contents: [text: "two"]
           ],
           else: [
-            contents: [text: ["three"]]
+            contents: [text: "three"]
           ]
         ]
       )
     end
   end
 
-  describe "case_tag" do
+  describe "case_expression" do
     test "parse simple case statement" do
       "{% case a %} {% when 1 %}test{% endcase %}"
       |> assert_parse(
         conditional: [
           {:case, [field: [key: "a"]]},
-          {:when, [expression: [literal: 1], contents: [text: ["test"]]]}
+          {:when, [expression: [literal: 1], contents: [text: "test"]]}
         ]
       )
     end
@@ -318,8 +316,8 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
       |> assert_parse(
         conditional: [
           {:case, [field: [key: "a"]]},
-          {:when, [expression: [literal: 1], contents: [text: ["test"]]]},
-          {:when, [expression: [literal: 2], contents: [text: ["test2"]]]}
+          {:when, [expression: [literal: 1], contents: [text: "test"]]},
+          {:when, [expression: [literal: 2], contents: [text: "test2"]]}
         ]
       )
     end
@@ -329,8 +327,8 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
       |> assert_parse(
         conditional: [
           {:case, [field: [key: "a"]]},
-          {:when, [expression: [literal: 1], contents: [text: [" test "]]]},
-          {:else, contents: [text: [" test2 "]]}
+          {:when, [expression: [literal: 1], contents: [text: " test "]]},
+          {:else, contents: [text: " test2 "]}
         ]
       )
     end
@@ -352,15 +350,15 @@ defmodule Liquex.Parser.ConditionalExpressionTest do
            case: [field: [key: "handle"]],
            when: [
              expression: [literal: "cake"],
-             contents: [text: ["\n    This is a cake\n  "]]
+             contents: [text: "\n    This is a cake\n  "]
            ],
            when: [
              expression: [literal: "cookie"],
-             contents: [text: ["\n    This is a cookie\n  "]]
+             contents: [text: "\n    This is a cookie\n  "]
            ],
-           else: [contents: [text: ["\n    This is not a cake nor a cookie\n"]]]
+           else: [contents: [text: "\n    This is not a cake nor a cookie\n"]]
          ]},
-        {:text, ["\n"]}
+        {:text, "\n"}
       ])
     end
   end

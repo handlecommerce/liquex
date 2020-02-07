@@ -13,7 +13,7 @@ defmodule Liquex.Parser do
     |> utf8_char([])
     |> times(min: 1)
     |> reduce({Kernel, :to_string, []})
-    |> tag(:text)
+    |> unwrap_and_tag(:text)
 
   defcombinatorp(
     :document,

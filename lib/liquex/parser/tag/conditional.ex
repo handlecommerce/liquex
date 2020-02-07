@@ -1,8 +1,7 @@
-defmodule Liquex.Parser.ConditionalExpression do
+defmodule Liquex.Parser.Tag.Conditional do
   import NimbleParsec
 
   alias Liquex.Parser.Tag
-  alias Liquex.Parser.Object
   alias Liquex.Parser.Literal
 
   def operator(combinator \\ empty()) do
@@ -29,23 +28,23 @@ defmodule Liquex.Parser.ConditionalExpression do
 
   def boolean_operation(combinator \\ empty()) do
     combinator
-    |> tag(Object.argument(), :left)
+    |> tag(Literal.argument(), :left)
     |> ignore(Literal.whitespace())
     |> unwrap_and_tag(operator(), :op)
     |> ignore(Literal.whitespace())
-    |> tag(Object.argument(), :right)
+    |> tag(Literal.argument(), :right)
     |> wrap()
   end
 
   @spec boolean_expression(NimbleParsec.t()) :: NimbleParsec.t()
   def boolean_expression(combinator \\ empty()) do
     combinator
-    |> choice([boolean_operation(), Literal.literal(), Object.argument()])
+    |> choice([boolean_operation(), Literal.literal(), Literal.argument()])
     |> ignore(Literal.whitespace())
     |> repeat(
       boolean_operator()
       |> ignore(Literal.whitespace())
-      |> choice([boolean_operation(), Literal.literal(), Object.argument()])
+      |> choice([boolean_operation(), Literal.literal(), Literal.argument()])
     )
   end
 
@@ -77,6 +76,13 @@ defmodule Liquex.Parser.ConditionalExpression do
     |> ignore(Tag.tag_directive("endcase"))
   end
 
+  def else_tag(combinator \\ empty()) do
+    combinator
+    |> ignore(Tag.tag_directive("else"))
+    |> tag(parsec(:document), :contents)
+    |> tag(:else)
+  end
+
   defp if_tag(combinator) do
     combinator
     |> expression_tag("if")
@@ -98,20 +104,13 @@ defmodule Liquex.Parser.ConditionalExpression do
     |> tag(:elsif)
   end
 
-  defp else_tag(combinator \\ empty()) do
-    combinator
-    |> ignore(Tag.tag_directive("else"))
-    |> tag(parsec(:document), :contents)
-    |> tag(:else)
-  end
-
   def case_tag(combinator \\ empty()) do
     combinator
     |> ignore(string("{%"))
     |> ignore(Literal.whitespace())
     |> ignore(string("case"))
     |> ignore(Literal.whitespace(empty(), 1))
-    |> concat(Object.argument())
+    |> concat(Literal.argument())
     |> ignore(Literal.whitespace())
     |> ignore(string("%}"))
     |> tag(:case)

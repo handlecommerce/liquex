@@ -1,6 +1,8 @@
 defmodule Liquex.Parser.Literal do
   import NimbleParsec
 
+  alias Liquex.Parser.Field
+
   def boolean(combinator \\ empty()) do
     true_value = string("true") |> replace(true)
     false_value = string("false") |> replace(false)
@@ -64,6 +66,26 @@ defmodule Liquex.Parser.Literal do
     |> map({String, :to_float, []})
   end
 
+  @spec argument(NimbleParsec.t()) :: NimbleParsec.t()
+  def argument(combinator \\ empty()) do
+    combinator
+    |> choice([literal(), Field.field()])
+  end
+
+  @spec range(NimbleParsec.t()) :: NimbleParsec.t()
+  def range(combinator \\ empty()) do
+    combinator
+    |> ignore(string("("))
+    |> ignore(whitespace())
+    |> tag(argument(), :begin)
+    |> ignore(string(".."))
+    |> tag(argument(), :end)
+    |> ignore(whitespace())
+    |> ignore(string(")"))
+    |> tag(:inclusive_range)
+  end
+
+  @spec literal(NimbleParsec.t()) :: NimbleParsec.t()
   def literal(combinator \\ empty()) do
     combinator
     |> choice([

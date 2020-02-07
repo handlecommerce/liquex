@@ -3,6 +3,6 @@ defmodule Liquex.ParserTest do
   import Liquex.TestHelpers
 
   test "greets the world" do
-    assert_parse("Hello World", text: ["Hello World"])
+    assert_parse("Hello World", text: "Hello World")
   end
 end

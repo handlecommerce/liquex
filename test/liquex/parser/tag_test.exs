@@ -4,8 +4,8 @@ defmodule Liquex.Parser.TagTest do
 
   test "parses comment" do
     assert_parse("Hello {% comment %}Ignored text{% endcomment %} World",
-      text: ["Hello "],
-      text: [" World"]
+      text: "Hello ",
+      text: " World"
     )
   end
 
