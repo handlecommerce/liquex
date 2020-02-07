@@ -4,6 +4,7 @@ defmodule Liquex.Parser.Tag.Conditional do
   alias Liquex.Parser.Tag
   alias Liquex.Parser.Literal
 
+  @spec operator(NimbleParsec.t()) :: NimbleParsec.t()
   def operator(combinator \\ empty()) do
     combinator
     |> choice([
@@ -18,6 +19,7 @@ defmodule Liquex.Parser.Tag.Conditional do
     |> map({String, :to_existing_atom, []})
   end
 
+  @spec boolean_operator(NimbleParsec.t()) :: NimbleParsec.t()
   def boolean_operator(combinator \\ empty()) do
     combinator
     |> choice([
@@ -26,6 +28,7 @@ defmodule Liquex.Parser.Tag.Conditional do
     ])
   end
 
+  @spec boolean_operation(NimbleParsec.t()) :: NimbleParsec.t()
   def boolean_operation(combinator \\ empty()) do
     combinator
     |> tag(Literal.argument(), :left)

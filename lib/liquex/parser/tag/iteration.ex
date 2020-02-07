@@ -28,7 +28,14 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
+    |> optional(reversed())
     |> ignore(string("%}"))
+  end
+
+  defp reversed(combinator \\ empty()) do
+    combinator
+    |> replace(string("reversed"), :reversed)
+    |> ignore(Literal.whitespace())
   end
 
   defp collection(combinator \\ empty()) do

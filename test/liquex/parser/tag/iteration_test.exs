@@ -55,5 +55,19 @@ defmodule Liquex.Parser.Tag.IterationTest do
         ]
       )
     end
+
+    test "parse for block with reversed" do
+      "{% for i in x reversed %}Hello{% endfor %}"
+      |> assert_parse(
+        iteration: [
+          for: [
+            {:identifier, ["i"]},
+            {:collection, [field: [key: "x"]]},
+            :reversed,
+            {:contents, [text: "Hello"]}
+          ]
+        ]
+      )
+    end
   end
 end
