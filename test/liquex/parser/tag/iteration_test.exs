@@ -62,8 +62,46 @@ defmodule Liquex.Parser.Tag.IterationTest do
         iteration: [
           for: [
             {:identifier, ["i"]},
-            {:collection, [field: [key: "x"]]},
-            :reversed,
+            {:collection, [field: [key: "x"], order: :reversed]},
+            {:contents, [text: "Hello"]}
+          ]
+        ]
+      )
+    end
+
+    test "parse for block with limit" do
+      "{% for i in x limit:2 %}Hello{% endfor %}"
+      |> assert_parse(
+        iteration: [
+          for: [
+            {:identifier, ["i"]},
+            {:collection, [field: [key: "x"], limit: 2]},
+            {:contents, [text: "Hello"]}
+          ]
+        ]
+      )
+    end
+
+    test "parse for block with offset" do
+      "{% for i in x offset:1 %}Hello{% endfor %}"
+      |> assert_parse(
+        iteration: [
+          for: [
+            {:identifier, ["i"]},
+            {:collection, [field: [key: "x"], offset: 1]},
+            {:contents, [text: "Hello"]}
+          ]
+        ]
+      )
+    end
+
+    test "parse for block with reverse, limit, and offset" do
+      "{% for i in x reversed limit:2 offset:1 %}Hello{% endfor %}"
+      |> assert_parse(
+        iteration: [
+          for: [
+            {:identifier, ["i"]},
+            {:collection, [field: [key: "x"], order: :reversed, limit: 2, offset: 1]},
             {:contents, [text: "Hello"]}
           ]
         ]

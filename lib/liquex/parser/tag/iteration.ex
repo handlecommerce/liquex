@@ -28,18 +28,34 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
-    |> optional(reversed())
     |> ignore(string("%}"))
   end
 
   defp reversed(combinator \\ empty()) do
     combinator
-    |> replace(string("reversed"), :reversed)
     |> ignore(Literal.whitespace())
+    |> replace(string("reversed"), :reversed)
+    |> unwrap_and_tag(:order)
   end
 
   defp collection(combinator \\ empty()) do
     combinator
     |> choice([Literal.range(), Literal.argument()])
+    |> repeat(
+      ignore(Literal.whitespace(empty(), 1))
+      |> choice([reversed(), limit(), offset()])
+    )
+  end
+
+  defp limit(combinator \\ empty()) do
+    combinator
+    |> ignore(string("limit:"))
+    |> unwrap_and_tag(integer(min: 1), :limit)
+  end
+
+  defp offset(combinator \\ empty()) do
+    combinator
+    |> ignore(string("offset:"))
+    |> unwrap_and_tag(integer(min: 1), :offset)
   end
 end
