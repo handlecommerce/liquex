@@ -30,6 +30,18 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> tag(:cycle)
   end
 
+  def continue_tag(combinator \\ empty()) do
+    combinator
+    |> ignore(Tag.tag_directive("continue"))
+    |> replace(:continue)
+  end
+
+  def break_tag(combinator \\ empty()) do
+    combinator
+    |> ignore(Tag.tag_directive("break"))
+    |> replace(:break)
+  end
+
   defp argument_sequence(combinator \\ empty()) do
     combinator
     |> Literal.argument()
@@ -46,41 +58,47 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Literal.whitespace())
     |> ignore(string("for"))
     |> ignore(Literal.whitespace(empty(), 1))
-    |> tag(Field.identifier(), :identifier)
+    |> unwrap_and_tag(Field.identifier(), :identifier)
     |> ignore(Literal.whitespace(empty(), 1))
     |> ignore(string("in"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
-    |> ignore(string("%}"))
-  end
-
-  defp reversed(combinator \\ empty()) do
-    combinator
+    |> unwrap_and_tag(for_parameters(), :parameters)
     |> ignore(Literal.whitespace())
-    |> replace(string("reversed"), :reversed)
-    |> unwrap_and_tag(:order)
+    |> ignore(string("%}"))
   end
 
   defp collection(combinator \\ empty()) do
     combinator
     |> choice([Literal.range(), Literal.argument()])
-    |> repeat(
-      ignore(Literal.whitespace(empty(), 1))
-      |> choice([reversed(), limit(), offset()])
-    )
+  end
+
+  defp for_parameters(combinator \\ empty()) do
+    combinator
+    |> repeat(choice([reversed(), limit(), offset()]))
+    |> reduce({Enum, :into, [%{}]})
+  end
+
+  defp reversed(combinator \\ empty()) do
+    combinator
+    |> replace(string("reversed"), :reversed)
+    |> unwrap_and_tag(:order)
+    |> ignore(Literal.whitespace())
   end
 
   defp limit(combinator \\ empty()) do
     combinator
     |> ignore(string("limit:"))
     |> unwrap_and_tag(integer(min: 1), :limit)
+    |> ignore(Literal.whitespace())
   end
 
   defp offset(combinator \\ empty()) do
     combinator
     |> ignore(string("offset:"))
     |> unwrap_and_tag(integer(min: 1), :offset)
+    |> ignore(Literal.whitespace())
   end
 
   defp cycle_group(combinator \\ empty()) do

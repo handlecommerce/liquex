@@ -8,9 +8,10 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            {:identifier, ["i"]},
-            {:collection, [field: [key: "x"]]},
-            {:contents, [text: "Hello"]}
+            identifier: "i",
+            collection: [field: [key: "x"]],
+            parameters: %{},
+            contents: [text: "Hello"]
           ]
         ]
       )
@@ -21,9 +22,10 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            {:identifier, ["i"]},
-            {:collection, [field: [key: "x"]]},
-            {:contents, [text: "Hello"]}
+            identifier: "i",
+            collection: [field: [key: "x"]],
+            parameters: %{},
+            contents: [text: "Hello"]
           ],
           else: [contents: [text: "Goodbye"]]
         ]
@@ -35,8 +37,9 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            identifier: ["i"],
-            collection: [inclusive_range: [{:begin, [literal: 1]}, {:end, [literal: 5]}]],
+            identifier: "i",
+            collection: [inclusive_range: [begin: [literal: 1], end: [literal: 5]]],
+            parameters: %{},
             contents: [text: "Hello"]
           ]
         ]
@@ -48,8 +51,9 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            identifier: ["i"],
+            identifier: "i",
             collection: [inclusive_range: [{:begin, [literal: 1]}, {:end, [field: [key: "x"]]}]],
+            parameters: %{},
             contents: [text: "Hello"]
           ]
         ]
@@ -61,8 +65,9 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            {:identifier, ["i"]},
-            {:collection, [field: [key: "x"], order: :reversed]},
+            {:identifier, "i"},
+            {:collection, [field: [key: "x"]]},
+            {:parameters, %{order: :reversed}},
             {:contents, [text: "Hello"]}
           ]
         ]
@@ -74,8 +79,9 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            {:identifier, ["i"]},
-            {:collection, [field: [key: "x"], limit: 2]},
+            {:identifier, "i"},
+            {:collection, [field: [key: "x"]]},
+            {:parameters, %{limit: 2}},
             {:contents, [text: "Hello"]}
           ]
         ]
@@ -87,8 +93,9 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            {:identifier, ["i"]},
-            {:collection, [field: [key: "x"], offset: 1]},
+            {:identifier, "i"},
+            {:collection, [field: [key: "x"]]},
+            {:parameters, %{offset: 1}},
             {:contents, [text: "Hello"]}
           ]
         ]
@@ -100,9 +107,64 @@ defmodule Liquex.Parser.Tag.IterationTest do
       |> assert_parse(
         iteration: [
           for: [
-            {:identifier, ["i"]},
-            {:collection, [field: [key: "x"], order: :reversed, limit: 2, offset: 1]},
-            {:contents, [text: "Hello"]}
+            identifier: "i",
+            collection: [field: [key: "x"]],
+            parameters: %{order: :reversed, limit: 2, offset: 1},
+            contents: [text: "Hello"]
+          ]
+        ]
+      )
+    end
+  end
+
+  describe "continue_tag" do
+    test "basic continue" do
+      "{% for i in x %}{% if i == 2 %}{% continue %}{% endif %}Hello{% endfor %}"
+      |> assert_parse(
+        iteration: [
+          for: [
+            identifier: "i",
+            collection: [field: [key: "x"]],
+            parameters: %{},
+            contents: [
+              {
+                :conditional,
+                [
+                  if: [
+                    expression: [[left: [field: [key: "i"]], op: :==, right: [literal: 2]]],
+                    contents: [iteration: [:continue]]
+                  ]
+                ]
+              },
+              {:text, "Hello"}
+            ]
+          ]
+        ]
+      )
+    end
+  end
+
+  describe "break_tag" do
+    test "basic continue" do
+      "{% for i in x %}{% if i == 2 %}{% break %}{% endif %}Hello{% endfor %}"
+      |> assert_parse(
+        iteration: [
+          for: [
+            identifier: "i",
+            collection: [field: [key: "x"]],
+            parameters: %{},
+            contents: [
+              {
+                :conditional,
+                [
+                  if: [
+                    expression: [[left: [field: [key: "i"]], op: :==, right: [literal: 2]]],
+                    contents: [iteration: [:break]]
+                  ]
+                ]
+              },
+              {:text, "Hello"}
+            ]
           ]
         ]
       )
