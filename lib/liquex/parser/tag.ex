@@ -5,6 +5,7 @@ defmodule Liquex.Parser.Tag do
 
   alias Liquex.Parser.Tag.{
     Conditional,
+    Increment,
     Iteration
   }
 
@@ -62,6 +63,12 @@ defmodule Liquex.Parser.Tag do
       |> tag(:iteration)
 
     combinator
-    |> choice([conditional_tags, iteration_tags, raw_tag(), comment_tag()])
+    |> choice([
+      conditional_tags,
+      iteration_tags,
+      raw_tag(),
+      comment_tag(),
+      Increment.incrementer_tag()
+    ])
   end
 end

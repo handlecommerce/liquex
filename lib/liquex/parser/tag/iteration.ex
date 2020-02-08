@@ -30,12 +30,14 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> tag(:cycle)
   end
 
+  @spec continue_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def continue_tag(combinator \\ empty()) do
     combinator
     |> ignore(Tag.tag_directive("continue"))
     |> replace(:continue)
   end
 
+  @spec break_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def break_tag(combinator \\ empty()) do
     combinator
     |> ignore(Tag.tag_directive("break"))
