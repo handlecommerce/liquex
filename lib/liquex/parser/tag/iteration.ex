@@ -16,6 +16,30 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Tag.tag_directive("endfor"))
   end
 
+  @spec cycle_tag(NimbleParsec.t()) :: NimbleParsec.t()
+  def cycle_tag(combinator \\ empty()) do
+    combinator
+    |> ignore(string("{%"))
+    |> ignore(Literal.whitespace())
+    |> ignore(string("cycle"))
+    |> ignore(Literal.whitespace(empty(), 1))
+    |> optional(cycle_group() |> unwrap_and_tag(:group))
+    |> tag(argument_sequence(), :sequence)
+    |> ignore(Literal.whitespace())
+    |> ignore(string("%}"))
+    |> tag(:cycle)
+  end
+
+  defp argument_sequence(combinator \\ empty()) do
+    combinator
+    |> Literal.argument()
+    |> repeat(
+      ignore(string(","))
+      |> ignore(Literal.whitespace())
+      |> Literal.argument()
+    )
+  end
+
   defp for_in_tag(combinator) do
     combinator
     |> ignore(string("{%"))
@@ -57,5 +81,12 @@ defmodule Liquex.Parser.Tag.Iteration do
     combinator
     |> ignore(string("offset:"))
     |> unwrap_and_tag(integer(min: 1), :offset)
+  end
+
+  defp cycle_group(combinator \\ empty()) do
+    combinator
+    |> Literal.literal()
+    |> ignore(string(":"))
+    |> ignore(Literal.whitespace())
   end
 end

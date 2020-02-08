@@ -108,4 +108,32 @@ defmodule Liquex.Parser.Tag.IterationTest do
       )
     end
   end
+
+  describe "cycle_tag" do
+    test "parse cycle block with string sequence" do
+      "{% cycle 'a', 'b', 'c' %}"
+      |> assert_parse(
+        iteration: [cycle: [sequence: [{:literal, "a"}, {:literal, "b"}, {:literal, "c"}]]]
+      )
+    end
+
+    test "parse cycle block with arguments" do
+      "{% cycle a, b, c %}"
+      |> assert_parse(
+        iteration: [cycle: [sequence: [field: [key: "a"], field: [key: "b"], field: [key: "c"]]]]
+      )
+    end
+
+    test "parse cycle block with cycle group" do
+      "{% cycle 'group': 'a', 'b', 'c' %}"
+      |> assert_parse(
+        iteration: [
+          cycle: [
+            {:group, {:literal, "group"}},
+            {:sequence, [literal: "a", literal: "b", literal: "c"]}
+          ]
+        ]
+      )
+    end
+  end
 end

@@ -53,7 +53,7 @@ defmodule Liquex.Parser.Tag do
       |> tag(:conditional)
 
     iteration_tags =
-      Iteration.for_expression()
+      choice([Iteration.for_expression(), Iteration.cycle_tag()])
       |> tag(:iteration)
 
     combinator
