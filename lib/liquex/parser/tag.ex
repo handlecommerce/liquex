@@ -63,7 +63,12 @@ defmodule Liquex.Parser.Tag do
       ])
       |> tag(:iteration)
 
-    assignment_tags = Assignment.assign_tag()
+    assignment_tags =
+      choice([
+        Assignment.assign_tag(),
+        Assignment.capture_tag()
+      ])
+      |> tag(:assignment)
 
     combinator
     |> choice([
