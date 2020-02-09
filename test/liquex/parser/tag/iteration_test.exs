@@ -128,7 +128,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
             parameters: %{},
             contents: [
               {
-                :conditional,
+                :control_flow,
                 [
                   if: [
                     expression: [[left: [field: [key: "i"]], op: :==, right: [literal: 2]]],
@@ -155,7 +155,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
             parameters: %{},
             contents: [
               {
-                :conditional,
+                :control_flow,
                 [
                   if: [
                     expression: [[left: [field: [key: "i"]], op: :==, right: [literal: 2]]],

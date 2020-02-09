@@ -4,10 +4,9 @@ defmodule Liquex.Parser.Tag do
   alias Liquex.Parser.Literal
 
   alias Liquex.Parser.Tag.{
-    Assignment,
-    Conditional,
-    Increment,
-    Iteration
+    ControlFlow,
+    Iteration,
+    Variable
   }
 
   @spec tag_directive(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
@@ -46,13 +45,13 @@ defmodule Liquex.Parser.Tag do
 
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
-    conditional_tags =
+    control_flow_tags =
       choice([
-        Conditional.if_expression(),
-        Conditional.unless_expression(),
-        Conditional.case_expression()
+        ControlFlow.if_expression(),
+        ControlFlow.unless_expression(),
+        ControlFlow.case_expression()
       ])
-      |> tag(:conditional)
+      |> tag(:control_flow)
 
     iteration_tags =
       choice([
@@ -63,21 +62,21 @@ defmodule Liquex.Parser.Tag do
       ])
       |> tag(:iteration)
 
-    assignment_tags =
+    variable_tags =
       choice([
-        Assignment.assign_tag(),
-        Assignment.capture_tag()
+        Variable.assign_tag(),
+        Variable.capture_tag(),
+        Variable.incrementer_tag()
       ])
-      |> tag(:assignment)
+      |> tag(:variable)
 
     combinator
     |> choice([
-      conditional_tags,
+      control_flow_tags,
       iteration_tags,
+      variable_tags,
       raw_tag(),
-      comment_tag(),
-      assignment_tags,
-      Increment.incrementer_tag()
+      comment_tag()
     ])
   end
 end

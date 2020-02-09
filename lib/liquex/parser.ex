@@ -20,5 +20,5 @@ defmodule Liquex.Parser do
     repeat(choice([Object.object(), Tag.tag(), text]))
   )
 
-  defparsec(:parse, parsec(:document))
+  defparsec(:parse, parsec(:document) |> eos())
 end

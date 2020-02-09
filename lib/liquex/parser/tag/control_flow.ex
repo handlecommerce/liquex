@@ -1,4 +1,4 @@
-defmodule Liquex.Parser.Tag.Conditional do
+defmodule Liquex.Parser.Tag.ControlFlow do
   import NimbleParsec
 
   alias Liquex.Parser.Tag

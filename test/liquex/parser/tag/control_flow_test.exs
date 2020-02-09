@@ -1,17 +1,19 @@
-defmodule Liquex.Parser.Tag.ConditionalTest do
+defmodule Liquex.Parser.Tag.ControlFlowTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
   describe "if_expression" do
     test "parse if block with boolean" do
       "{% if true %}Hello{% endif %}"
-      |> assert_parse(conditional: [if: [expression: [literal: true], contents: [text: "Hello"]]])
+      |> assert_parse(
+        control_flow: [if: [expression: [literal: true], contents: [text: "Hello"]]]
+      )
     end
 
     test "parse if block with conditional" do
       "{% if a == b %}Hello{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [[left: [field: [key: "a"]], op: :==, right: [field: [key: "b"]]]],
             contents: [text: "Hello"]
@@ -23,7 +25,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse if block with and" do
       "{% if true and false %}Hello{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [{:literal, true}, :and, {:literal, false}],
             contents: [text: "Hello"]
@@ -33,7 +35,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% if true or false %}Hello{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [{:literal, true}, :or, {:literal, false}],
             contents: [text: "Hello"]
@@ -43,7 +45,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% if a > b and b > c %}Hello{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [
               [left: [field: [key: "a"]], op: :>, right: [field: [key: "b"]]],
@@ -57,7 +59,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% if a and b > c %}Hello{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [
               {:field, [key: "a"]},
@@ -73,7 +75,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse if block with elsif" do
       "{% if true %}Hello{% elsif false %}Goodbye{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [literal: true],
             contents: [text: "Hello"]
@@ -87,7 +89,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% if true %}Hello{% elsif false %}Goodbye{% elsif 1 %}Other{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [literal: true],
             contents: [text: "Hello"]
@@ -107,7 +109,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse if block with else" do
       "{% if true %}Hello{% else %}Goodbye{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [literal: true],
             contents: [text: "Hello"]
@@ -122,7 +124,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse if block with ifelse and else" do
       "{% if true %}one{% elsif false %}two{% else %}three{% endif %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           if: [
             expression: [literal: true],
             contents: [text: "one"]
@@ -150,7 +152,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
       """
       |> assert_parse([
         {:text, "  "},
-        {:conditional,
+        {:control_flow,
          [
            if: [
              expression: [
@@ -179,14 +181,14 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse unless block with boolean" do
       "{% unless true %}Hello{% endunless %}"
       |> assert_parse(
-        conditional: [unless: [expression: [literal: true], contents: [text: "Hello"]]]
+        control_flow: [unless: [expression: [literal: true], contents: [text: "Hello"]]]
       )
     end
 
     test "parse unless block with conditional" do
       "{% unless a == b %}Hello{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [[left: [field: [key: "a"]], op: :==, right: [field: [key: "b"]]]],
             contents: [text: "Hello"]
@@ -198,7 +200,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse unless block with and" do
       "{% unless true and false %}Hello{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [{:literal, true}, :and, {:literal, false}],
             contents: [text: "Hello"]
@@ -208,7 +210,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% unless true or false %}Hello{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [{:literal, true}, :or, {:literal, false}],
             contents: [text: "Hello"]
@@ -218,7 +220,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% unless a > b and b > c %}Hello{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [
               [left: [field: [key: "a"]], op: :>, right: [field: [key: "b"]]],
@@ -234,7 +236,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse unless block with elsif" do
       "{% unless true %}Hello{% elsif false %}Goodbye{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [literal: true],
             contents: [text: "Hello"]
@@ -248,7 +250,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
 
       "{% unless true %}Hello{% elsif false %}Goodbye{% elsif 1 %}Other{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [literal: true],
             contents: [text: "Hello"]
@@ -268,7 +270,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse unless block with else" do
       "{% unless true %}Hello{% else %}Goodbye{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [literal: true],
             contents: [text: "Hello"]
@@ -283,7 +285,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse unless block with ifelse and else" do
       "{% unless true %}one{% elsif false %}two{% else %}three{% endunless %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           unless: [
             expression: [literal: true],
             contents: [text: "one"]
@@ -304,7 +306,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse simple case statement" do
       "{% case a %} {% when 1 %}test{% endcase %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           {:case, [field: [key: "a"]]},
           {:when, [expression: [literal: 1], contents: [text: "test"]]}
         ]
@@ -314,7 +316,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse multiple case statement" do
       "{% case a %} {% when 1 %}test{% when 2 %}test2{% endcase %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           {:case, [field: [key: "a"]]},
           {:when, [expression: [literal: 1], contents: [text: "test"]]},
           {:when, [expression: [literal: 2], contents: [text: "test2"]]}
@@ -325,7 +327,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
     test "parse case with else statement" do
       "{% case a %} {% when 1 %} test {% else %} test2 {% endcase %}"
       |> assert_parse(
-        conditional: [
+        control_flow: [
           {:case, [field: [key: "a"]]},
           {:when, [expression: [literal: 1], contents: [text: " test "]]},
           {:else, contents: [text: " test2 "]}
@@ -345,7 +347,7 @@ defmodule Liquex.Parser.Tag.ConditionalTest do
       {% endcase %}
       """
       |> assert_parse([
-        {:conditional,
+        {:control_flow,
          [
            case: [field: [key: "handle"]],
            when: [
