@@ -21,7 +21,8 @@ defmodule Liquex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nimble_parsec, "~> 0.5.3"}
+      {:nimble_parsec, "~> 0.5.3"},
+      {:timex, "~> 3.6.1"}
     ]
   end
 end
