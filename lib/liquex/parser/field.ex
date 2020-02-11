@@ -3,6 +3,8 @@ defmodule Liquex.Parser.Field do
 
   alias Liquex.Parser.Literal
 
+  # TODO: Add support for my_array.first
+
   @spec identifier(NimbleParsec.t()) :: NimbleParsec.t()
   def identifier(combinator \\ empty()) do
     # Identifiers can start with any letter or underscore.

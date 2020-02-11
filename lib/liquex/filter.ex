@@ -212,4 +212,61 @@ defmodule Liquex.Filter do
   """
   def downcase(nil, _), do: nil
   def downcase(value, _), do: String.downcase(value)
+
+  @doc """
+  Escapes a string by replacing characters with escape sequences (so that the string can
+  be used in a URL, for example). It doesn’t change strings that don’t have anything to
+  escape.
+
+  iex> Liquex.Filter.escape("Have you read 'James & the Giant Peach'?", %{})
+  "Have you read &apos;James &amp; the Giant Peach&apos;?"
+
+  iex> Liquex.Filter.escape("Tetsuro Takara", %{})
+  "Tetsuro Takara"
+  """
+  def escape(value, _),
+    do: HtmlEntities.encode(value)
+
+  @doc """
+  Escapes a string by replacing characters with escape sequences (so that the string can
+  be used in a URL, for example). It doesn’t change strings that don’t have anything to
+  escape.
+
+  iex> Liquex.Filter.escape_once("1 &lt; 2 &amp; 3", %{})
+  "1 &lt; 2 &amp; 3"
+  """
+  def escape_once(value, _),
+    do: value |> HtmlEntities.decode() |> HtmlEntities.encode()
+
+  @doc """
+  Returns the first item of an array.
+
+  iex> Liquex.Filter.first([1, 2, 3], %{})
+  1
+
+  iex> Liquex.Filter.first([], %{})
+  nil
+  """
+  def first([], _), do: nil
+  def first([f | _], _), do: f
+
+  @doc """
+  Rounds the input down to the nearest whole number. Liquid tries to convert the input to a
+  number before the filter is applied.
+
+  iex> Liquex.Filter.floor(1.2, %{})
+  1
+
+  iex> Liquex.Filter.floor(2.0, %{})
+  2
+  """
+  def floor(value, _), do: Kernel.trunc(value)
+
+  @doc """
+  Combines the items in an array into a single string using the argument as a separator.
+
+  iex> Liquex.Filter.join(~w(John Paul George Ringo), " and ", %{})
+  "John and Paul and George and Ringo"
+  """
+  def join(values, joiner, _), do: Enum.join(values, joiner)
 end

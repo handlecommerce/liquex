@@ -22,7 +22,8 @@ defmodule Liquex.MixProject do
   defp deps do
     [
       {:nimble_parsec, "~> 0.5.3"},
-      {:timex, "~> 3.6.1"}
+      {:timex, "~> 3.6.1"},
+      {:html_entities, "~> 0.5.1"}
     ]
   end
 end
