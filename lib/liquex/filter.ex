@@ -170,4 +170,46 @@ defmodule Liquex.Filter do
         nil
     end
   end
+
+  @doc """
+  Allows you to specify a fallback in case a value doesn’t exist. default will show its value
+  if the left side is nil, false, or empty.
+
+  iex> Liquex.Filter.default("1.99", "2.99", %{})
+  "1.99"
+
+  iex> Liquex.Filter.default("", "2.99", %{})
+  "2.99"
+  """
+  def default(value, def_value, _) when value in [nil, "", false, []], do: def_value
+  def default(value, _, _), do: value
+
+  @doc """
+  Divides a number by another number.
+
+  The result is rounded down to the nearest integer (that is, the floor) if the divisor is an integer.
+
+  iex> Liquex.Filter.divided_by(16, 4, %{})
+  4
+
+  iex> Liquex.Filter.divided_by(5, 3, %{})
+  1
+
+  iex> Liquex.Filter.divided_by(20, 7.0, %{})
+  2.857142857142857
+  """
+  def divided_by(value, divisor, _) when is_integer(divisor), do: trunc(value / divisor)
+  def divided_by(value, divisor, _), do: value / divisor
+
+  @doc """
+  Makes each character in a string lowercase. It has no effect on strings which are already all lowercase.
+
+  iex> Liquex.Filter.downcase("Parker Moore", %{})
+  "parker moore"
+
+  iex> Liquex.Filter.downcase("apple", %{})
+  "apple"
+  """
+  def downcase(nil, _), do: nil
+  def downcase(value, _), do: String.downcase(value)
 end
