@@ -202,7 +202,8 @@ defmodule Liquex.Filter do
   def divided_by(value, divisor, _), do: value / divisor
 
   @doc """
-  Makes each character in a string lowercase. It has no effect on strings which are already all lowercase.
+  Makes each character in a string lowercase. It has no effect on strings
+  which are already all lowercase.
 
   iex> Liquex.Filter.downcase("Parker Moore", %{})
   "parker moore"
@@ -582,5 +583,56 @@ defmodule Liquex.Filter do
 
       sentence <> ellipsis
     end
+  end
+
+  @doc """
+  Removes any duplicate elements in an array.
+
+  iex> Liquex.Filter.uniq(~w(ants bugs bees bugs ants), %{})
+  ["ants", "bugs", "bees"]
+  """
+  def uniq(list, _), do: Enum.uniq(list)
+
+  @doc """
+  Makes each character in a string uppercase. It has no effect on strings
+  which are already all uppercase.
+
+  iex> Liquex.Filter.upcase("Parker Moore", %{})
+  "PARKER MOORE"
+
+  iex> Liquex.Filter.upcase("APPLE", %{})
+  "APPLE"
+  """
+  def upcase(value, _), do: String.upcase(value)
+
+  @doc """
+  Decodes a string that has been encoded as a URL or by url_encode/2.
+
+  iex> Liquex.Filter.url_decode("%27Stop%21%27+said+Fred", %{})
+  "'Stop!' said Fred"
+  """
+  def url_decode(value, _), do: URI.decode_www_form(value)
+
+  @doc """
+  Decodes a string that has been encoded as a URL or by url_encode/2.
+
+  iex> Liquex.Filter.url_encode("john@liquid.com", %{})
+  "john%40liquid.com"
+
+  iex> Liquex.Filter.url_encode("Tetsuro Takara", %{})
+  "Tetsuro+Takara"
+  """
+  def url_encode(value, _), do: URI.encode_www_form(value)
+
+  @doc """
+  Creates an array including only the objects with a given property value, or
+  any truthy value by default.
+
+  iex> Liquex.Filter.where([%{"b" => 2}, %{"b" => 1}], "b", 1, %{})
+  [%{"b" => 1}]
+  """
+  def where(map, key, value, _) do
+    map
+    |> Enum.filter(&(Map.get(&1, key) == value))
   end
 end
