@@ -4,6 +4,7 @@ defmodule Liquex.Parser.Field do
   alias Liquex.Parser.Literal
 
   # TODO: Add support for my_array.first
+  # TODO: Add support for my_array.size
 
   @spec identifier(NimbleParsec.t()) :: NimbleParsec.t()
   def identifier(combinator \\ empty()) do

@@ -269,4 +269,170 @@ defmodule Liquex.Filter do
   "John and Paul and George and Ringo"
   """
   def join(values, joiner, _), do: Enum.join(values, joiner)
+
+  @doc """
+  Returns the last item of an array.
+
+  iex> Liquex.Filter.last([1, 2, 3], %{})
+  3
+
+  iex> Liquex.Filter.first([], %{})
+  nil
+  """
+  def last(arr, context), do: arr |> Enum.reverse() |> first(context)
+
+  @doc """
+  Removes all whitespace (tabs, spaces, and newlines) from the left side of a string.
+  It does not affect spaces between words.
+
+  iex> Liquex.Filter.lstrip("          So much room for activities!          ", %{})
+  "So much room for activities!          "
+  """
+  def lstrip(value, _), do: value |> String.trim_leading()
+
+  @doc """
+  Creates an array of values by extracting the values of a named property from another object.
+
+  iex> Liquex.Filter.map([%{"a" => 1}, %{"a" => 2, "b" => 1}], "a", %{})
+  [1, 2]
+  """
+  def map(arr, key, _), do: Enum.map(arr, &Map.get(&1, key, nil))
+
+  @doc """
+  Subtracts a number from another number.
+
+  iex> Liquex.Filter.minus(4, 2, %{})
+  2
+
+  iex> Liquex.Filter.minus(183.357, 12, %{})
+  171.357
+  """
+  def minus(left, right, _), do: left - right
+
+  @doc """
+  Subtracts a number from another number.
+
+  iex> Liquex.Filter.modulo(3, 2, %{})
+  1
+
+  iex> Liquex.Filter.modulo(183.357, 12, %{})
+  3.357
+  """
+  def modulo(left, right, _) when is_float(left) or is_float(right),
+    do: :math.fmod(left, right) |> Float.round(5)
+
+  def modulo(left, right, _), do: rem(left, right)
+
+  @doc """
+  Replaces every newline (\n) in a string with an HTML line break (<br />).
+
+  iex> Liquex.Filter.newline_to_br("\\nHello\\nthere\\n", %{})
+  "<br />\\nHello<br />\\nthere<br />\\n"
+  """
+  def newline_to_br(value, _), do: String.replace(value, "\n", "<br />\n")
+
+  @doc """
+  Adds a number to another number.
+
+  iex> Liquex.Filter.plus(4, 2, %{})
+  6
+
+  iex> Liquex.Filter.plus(183.357, 12, %{})
+  195.357
+  """
+  def plus(left, right, _), do: left + right
+
+  @doc """
+  Adds the specified string to the beginning of another string.
+
+  iex> Liquex.Filter.prepend("apples, oranges, and bananas", "Some fruit: ", %{})
+  "Some fruit: apples, oranges, and bananas"
+
+  iex> Liquex.Filter.prepend("/index.html", "example.com", %{})
+  "example.com/index.html"
+  """
+  def prepend(value, prepender, _), do: prepender <> value
+
+  @doc """
+  Removes every occurrence of the specified substring from a string.
+
+  iex> Liquex.Filter.remove("I strained to see the train through the rain", "rain", %{})
+  "I sted to see the t through the "
+  """
+  def remove(value, original, context), do: replace(value, original, "", context)
+
+  @doc """
+  Removes every occurrence of the specified substring from a string.
+
+  iex> Liquex.Filter.remove_first("I strained to see the train through the rain", "rain", %{})
+  "I sted to see the train through the rain"
+  """
+  def remove_first(value, original, context), do: replace_first(value, original, "", context)
+
+  @doc """
+  Replaces every occurrence of the first argument in a string with the second argument.
+
+  iex> Liquex.Filter.replace("Take my protein pills and put my helmet on", "my", "your", %{})
+  "Take your protein pills and put your helmet on"
+  """
+  def replace(value, original, replacement, _),
+    do: String.replace(value, original, replacement)
+
+  @doc """
+  Replaces only the first occurrence of the first argument in a string with the second argument.
+
+  iex> Liquex.Filter.replace_first("Take my protein pills and put my helmet on", "my", "your", %{})
+  "Take your protein pills and put my helmet on"
+  """
+  def replace_first(value, original, replacement, _),
+    do: String.replace(value, original, replacement, global: false)
+
+  @doc """
+  Reverses the order of the items in an array. reverse cannot reverse a string.
+
+  iex> Liquex.Filter.reverse(~w(apples oranges peaches plums), %{})
+  ["plums", "peaches", "oranges", "apples"]
+  """
+  def reverse(arr, _) when is_list(arr), do: Enum.reverse(arr)
+
+  @doc """
+  Rounds a number to the nearest integer or, if a number is passed as an argument, to that number of decimal places.
+
+  iex> Liquex.Filter.round(1, %{})
+  1
+
+  iex> Liquex.Filter.round(1.2, %{})
+  1
+
+  iex> Liquex.Filter.round(2.7, %{})
+  3
+
+  iex> Liquex.Filter.round(183.357, 2, %{})
+  183.36
+  """
+  def round(value, precision \\ 0, context)
+  def round(value, _, _) when is_integer(value), do: value
+  def round(value, 0, _), do: value |> Float.round() |> trunc()
+  def round(value, precision, _), do: Float.round(value, precision)
+
+  @doc """
+  Removes all whitespace (tabs, spaces, and newlines) from the right side of a string.
+  It does not affect spaces between words.
+
+  iex> Liquex.Filter.rstrip("          So much room for activities!          ", %{})
+  "          So much room for activities!"
+  """
+  def rstrip(value, _), do: value |> String.trim_trailing()
+
+  @doc """
+  Returns the number of characters in a string or the number of items in an array.
+
+  iex> Liquex.Filter.size("Ground control to Major Tom.", %{})
+  28
+
+  iex> Liquex.Filter.size(~w(apples oranges peaches plums), %{})
+  4
+  """
+  def size(value, _) when is_list(value), do: length(value)
+  def size(value, _) when is_binary(value), do: String.length(value)
 end
