@@ -23,7 +23,8 @@ defmodule Liquex.MixProject do
     [
       {:nimble_parsec, "~> 0.5.3"},
       {:timex, "~> 3.6.1"},
-      {:html_entities, "~> 0.5.1"}
+      {:html_entities, "~> 0.5.1"},
+      {:html_sanitize_ex, "~> 1.3.0-rc3"}
     ]
   end
 end

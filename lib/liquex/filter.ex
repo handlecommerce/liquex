@@ -435,4 +435,152 @@ defmodule Liquex.Filter do
   """
   def size(value, _) when is_list(value), do: length(value)
   def size(value, _) when is_binary(value), do: String.length(value)
+
+  @doc """
+  Returns a substring of 1 character beginning at the index specified by the
+  first argument. An optional second argument specifies the length of the
+  substring to be returned.
+
+  iex> Liquex.Filter.slice("Liquid", 0, %{})
+  "L"
+
+  iex> Liquex.Filter.slice("Liquid", 2, %{})
+  "q"
+
+  iex> Liquex.Filter.slice("Liquid", 2, 5, %{})
+  "quid"
+
+  If the first argument is a negative number, the indices are counted from
+  the end of the string:
+
+  iex> Liquex.Filter.slice("Liquid", -3, 2, %{})
+  "ui"
+  """
+  def slice(value, start, length \\ 1, _),
+    do: String.slice(value, start, length)
+
+  @doc """
+  Sorts items in an array in case-sensitive order.
+
+  iex> Liquex.Filter.sort(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
+  ["Sally Snake", "giraffe", "octopus", "zebra"]
+  """
+  def sort(list, _), do: Enum.sort(list)
+
+  @doc """
+  Sorts items in an array in case-insensitive order.
+
+  iex> Liquex.Filter.sort_natural(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
+  ["giraffe", "octopus", "Sally Snake", "zebra"]
+  """
+  def sort_natural(list, _), do: Enum.sort_by(list, &String.downcase/1)
+
+  @doc """
+  Divides a string into an array using the argument as a separator. split is
+  commonly used to convert comma-separated items from a string to an array.
+
+  iex> Liquex.Filter.split("John, Paul, George, Ringo", ", ", %{})
+  ["John", "Paul", "George", "Ringo"]
+  """
+  def split(value, separator, _), do: String.split(value, separator)
+
+  @doc """
+  Removes all whitespace (tabs, spaces, and newlines) from both the left and
+  right side of a string. It does not affect spaces between words.
+
+  iex> Liquex.Filter.strip("          So much room for activities!          ", %{})
+  "So much room for activities!"
+  """
+  def strip(value, _), do: String.trim(value)
+
+  @doc """
+  Removes any HTML tags from a string.
+
+  iex> Liquex.Filter.strip_html("Have <em>you</em> read <strong>Ulysses</strong>?", %{})
+  "Have you read Ulysses?"
+  """
+  def strip_html(value, _), do: HtmlSanitizeEx.strip_tags(value)
+
+  @doc """
+  Removes any newline characters (line breaks) from a string.
+
+  iex> Liquex.Filter.strip_newlines("Hello\\nthere", %{})
+  "Hellothere"
+  """
+  def strip_newlines(value, _) do
+    value
+    |> String.replace("\r", "")
+    |> String.replace("\n", "")
+  end
+
+  @doc """
+  Multiplies a number by another number.
+
+  iex> Liquex.Filter.times(3, 4, %{})
+  12
+
+  iex> Liquex.Filter.times(24, 7, %{})
+  168
+
+  iex> Liquex.Filter.times(183.357, 12, %{})
+  2200.284
+  """
+  def times(value, divisor, _), do: value * divisor
+
+  @doc """
+  Shortens a string down to the number of characters passed as an argument. If
+  the specified number of characters is less than the length of the string, an
+  ellipsis (…) is appended to the string and is included in the character
+  count.
+
+  iex> Liquex.Filter.truncate("Ground control to Major Tom.", 20, %{})
+  "Ground control to..."
+
+  iex> Liquex.Filter.truncate("Ground control to Major Tom.", 25, ", and so on", %{})
+  "Ground control, and so on"
+
+  iex> Liquex.Filter.truncate("Ground control to Major Tom.", 20, "", %{})
+  "Ground control to Ma"
+  """
+  def truncate(value, length, ellipsis \\ "...", _) do
+    if String.length(value) <= length do
+      value
+    else
+      String.slice(
+        value,
+        0,
+        length - String.length(ellipsis)
+      ) <> ellipsis
+    end
+  end
+
+  @doc """
+  Shortens a string down to the number of characters passed as an argument. If
+  the specified number of characters is less than the length of the string, an
+  ellipsis (…) is appended to the string and is included in the character
+  count.
+
+  iex> Liquex.Filter.truncatewords("Ground control to Major Tom.", 3, %{})
+  "Ground control to..."
+
+  iex> Liquex.Filter.truncatewords("Ground control to Major Tom.", 3, "--", %{})
+  "Ground control to--"
+
+  iex> Liquex.Filter.truncatewords("Ground control to Major Tom.", 3, "", %{})
+  "Ground control to"
+  """
+  def truncatewords(value, length, ellipsis \\ "...", _) do
+    words = value |> String.split()
+
+    if length(words) <= length do
+      value
+    else
+      sentence =
+        words
+        |> Enum.take(length)
+        |> Enum.join(" ")
+
+      sentence <> ellipsis
+    end
+  end
 end
