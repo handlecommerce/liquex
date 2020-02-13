@@ -1,7 +1,7 @@
 defmodule Liquex.Expression do
   alias Liquex.Argument
 
-  def eval({left, op, right}, context) do
+  def eval([left: left, op: op, right: right], context) do
     do_eval({
       left |> Argument.eval(context),
       op,
@@ -10,7 +10,7 @@ defmodule Liquex.Expression do
   end
 
   def eval({type, _} = argument, context) when type in [:field, :literal],
-    do: argument |> Argument.eval(context) |> do_eval()
+    do: [argument] |> Argument.eval(context) |> do_eval()
 
   def eval(expressions, context) when is_list(expressions) do
     expressions

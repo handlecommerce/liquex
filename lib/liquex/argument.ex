@@ -1,7 +1,7 @@
 defmodule Liquex.Argument do
-  def eval({:literal, literal}, _context), do: literal
+  def eval([literal: literal], _context), do: literal
 
-  def eval({:field, accesses}, context) do
+  def eval([field: accesses], context) do
     do_eval(context, accesses)
   end
 

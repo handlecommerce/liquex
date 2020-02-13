@@ -3,7 +3,7 @@ defmodule Liquex.Object do
   alias Liquex.Filter
 
   def render([argument, filters: filters], context) do
-    argument
+    [argument]
     |> Argument.eval(context)
     |> process_filters(filters, context)
     |> to_string()
