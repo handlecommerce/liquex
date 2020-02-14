@@ -14,8 +14,8 @@ defmodule Liquex.Parser.TagTest do
       text: [" {{ test }} "]
     )
 
-    assert_parse("{% raw %} {{ test }} {% stuff %}{% endraw %}",
-      text: [" {{ test }} "]
+    assert_parse("{% raw %} {{ test }} {% tag %} {% endraw %}",
+      text: [" {{ test }} {% tag %} "]
     )
   end
 end

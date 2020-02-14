@@ -30,16 +30,17 @@ defmodule Liquex.Parser.Tag do
   def raw_tag(combinator \\ empty()) do
     endraw = tag_directive("endraw") |> wrap()
 
+    text =
+      lookahead_not(endraw)
+      |> utf8_char([])
+      |> times(min: 1)
+      |> reduce({Kernel, :to_string, []})
+      |> tag(:text)
+      |> label("raw content followed by {% endraw %}")
+
     combinator
     |> ignore(tag_directive("raw"))
-    |> optional(
-      repeat(
-        lookahead_not(endraw)
-        |> utf8_string([], 1)
-      )
-      |> reduce({Enum, :join, []})
-      |> tag(:text)
-    )
+    |> optional(text)
     |> ignore(endraw)
   end
 

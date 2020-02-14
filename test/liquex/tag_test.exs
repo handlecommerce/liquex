@@ -14,7 +14,8 @@ defmodule Liquex.TagTest do
       assert Liquex.render(template, %{})
              |> elem(0)
              |> IO.chardata_to_string()
-             |> String.trim() == "This is a {{test}}"
+             |> String.trim() ==
+               "In Handlebars, {{ this }} will be HTML-escaped, but {{{ that }}} will not."
     end
   end
 end

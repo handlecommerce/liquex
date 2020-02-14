@@ -40,8 +40,7 @@ defmodule Liquex.Parser.Literal do
 
   def whitespace(combinator \\ empty(), min \\ 0) do
     combinator
-    |> ascii_char([?\s, ?\n, ?\r])
-    |> times(min: min)
+    |> utf8_string([?\s, ?\n, ?\r], min: min)
   end
 
   def int(combinator \\ empty()) do
