@@ -66,7 +66,7 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
-    |> unwrap_and_tag(for_parameters(), :parameters)
+    |> tag(for_parameters(), :parameters)
     |> ignore(Literal.whitespace())
     |> ignore(string("%}"))
   end
@@ -79,7 +79,6 @@ defmodule Liquex.Parser.Tag.Iteration do
   defp for_parameters(combinator \\ empty()) do
     combinator
     |> repeat(choice([reversed(), limit(), offset()]))
-    |> reduce({Enum, :into, [%{}]})
   end
 
   defp reversed(combinator \\ empty()) do

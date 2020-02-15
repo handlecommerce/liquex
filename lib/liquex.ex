@@ -4,6 +4,7 @@ defmodule Liquex do
   """
 
   alias Liquex.ControlFlow
+  alias Liquex.Iteration
   alias Liquex.Object
   alias Liquex.Variable
 
@@ -42,6 +43,13 @@ defmodule Liquex do
 
   defp do_render(content, [{:variable, tag} | tail], context) do
     {result, context} = Variable.render(tag, context)
+
+    [result | content]
+    |> do_render(tail, context)
+  end
+
+  defp do_render(content, [{:iteration, tag} | tail], context) do
+    {result, context} = Iteration.render(tag, context)
 
     [result | content]
     |> do_render(tail, context)

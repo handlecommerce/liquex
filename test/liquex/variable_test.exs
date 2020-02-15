@@ -57,7 +57,7 @@ defmodule Liquex.VariableTest do
   end
 
   describe "increment" do
-    test "increments unknown value" do
+    test "increments value" do
       {:ok, template} =
         """
         {% assign a = 10 %}
@@ -75,6 +75,26 @@ defmodule Liquex.VariableTest do
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "13-2"
+    end
+
+    test "decrements value" do
+      {:ok, template} =
+        """
+        {% assign a = 10 %}
+        {% decrement a %}
+        {% decrement a %}
+        {% decrement a %}
+        {% decrement b %}
+        {% decrement b %}
+        {{ a }}-{{ b }}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %{})
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim() == "7--2"
     end
   end
 end

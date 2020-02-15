@@ -10,7 +10,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [field: [key: "x"]],
-            parameters: %{},
+            parameters: [],
             contents: [text: "Hello"]
           ]
         ]
@@ -24,7 +24,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [field: [key: "x"]],
-            parameters: %{},
+            parameters: [],
             contents: [text: "Hello"]
           ],
           else: [contents: [text: "Goodbye"]]
@@ -39,7 +39,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [inclusive_range: [begin: [literal: 1], end: [literal: 5]]],
-            parameters: %{},
+            parameters: [],
             contents: [text: "Hello"]
           ]
         ]
@@ -53,7 +53,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [inclusive_range: [{:begin, [literal: 1]}, {:end, [field: [key: "x"]]}]],
-            parameters: %{},
+            parameters: [],
             contents: [text: "Hello"]
           ]
         ]
@@ -67,7 +67,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             {:identifier, "i"},
             {:collection, [field: [key: "x"]]},
-            {:parameters, %{order: :reversed}},
+            {:parameters, [order: :reversed]},
             {:contents, [text: "Hello"]}
           ]
         ]
@@ -81,7 +81,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             {:identifier, "i"},
             {:collection, [field: [key: "x"]]},
-            {:parameters, %{limit: 2}},
+            {:parameters, [limit: 2]},
             {:contents, [text: "Hello"]}
           ]
         ]
@@ -95,7 +95,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             {:identifier, "i"},
             {:collection, [field: [key: "x"]]},
-            {:parameters, %{offset: 1}},
+            {:parameters, [offset: 1]},
             {:contents, [text: "Hello"]}
           ]
         ]
@@ -109,7 +109,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [field: [key: "x"]],
-            parameters: %{order: :reversed, limit: 2, offset: 1},
+            parameters: [order: :reversed, limit: 2, offset: 1],
             contents: [text: "Hello"]
           ]
         ]
@@ -125,7 +125,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [field: [key: "x"]],
-            parameters: %{},
+            parameters: [],
             contents: [
               {
                 :control_flow,
@@ -152,7 +152,7 @@ defmodule Liquex.Parser.Tag.IterationTest do
           for: [
             identifier: "i",
             collection: [field: [key: "x"]],
-            parameters: %{},
+            parameters: [],
             contents: [
               {
                 :control_flow,
