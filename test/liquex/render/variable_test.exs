@@ -1,9 +1,11 @@
-defmodule Liquex.VariableTest do
+defmodule Liquex.Render.VariableTest do
   use ExUnit.Case, async: true
+
+  alias Liquex.Context
 
   describe "assign" do
     test "assign simple value" do
-      context = %{}
+      context = %Context{}
 
       {:ok, template} =
         """
@@ -20,7 +22,7 @@ defmodule Liquex.VariableTest do
     end
 
     test "assign another field" do
-      context = %{"a" => %{"b" => "Hello World!"}}
+      context = Context.new(%{"a" => %{"b" => "Hello World!"}})
 
       {:ok, template} =
         """
@@ -49,7 +51,7 @@ defmodule Liquex.VariableTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{})
+      assert Liquex.render(template, %Context{})
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "Hello World!"
@@ -71,7 +73,7 @@ defmodule Liquex.VariableTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{})
+      assert Liquex.render(template, %Context{})
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "13-2"
@@ -91,7 +93,7 @@ defmodule Liquex.VariableTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{})
+      assert Liquex.render(template, %Context{})
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "7--2"

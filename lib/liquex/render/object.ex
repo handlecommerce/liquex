@@ -1,4 +1,4 @@
-defmodule Liquex.Object do
+defmodule Liquex.Render.Object do
   alias Liquex.Argument
   alias Liquex.Filter
 

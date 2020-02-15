@@ -1,7 +1,8 @@
-defmodule Liquex.ObjectTest do
+defmodule Liquex.Render.ObjectTest do
   use ExUnit.Case, async: true
 
-  alias Liquex.Object
+  alias Liquex.Render.Object
+  alias Liquex.Context
   alias Liquex.Parser
 
   describe "render" do
@@ -13,10 +14,11 @@ defmodule Liquex.ObjectTest do
     end
 
     test "simple fields" do
-      context = %{
-        "a" => "hello",
-        "b" => %{"c" => 1}
-      }
+      context =
+        Context.new(%{
+          "a" => "hello",
+          "b" => %{"c" => 1}
+        })
 
       assert "hello" == render("{{ a }}", context)
       assert "1" == render("{{ b.c }}", context)
@@ -30,7 +32,7 @@ defmodule Liquex.ObjectTest do
     end
   end
 
-  def render(doc, context \\ %{}) do
+  def render(doc, context \\ %Context{}) do
     with {:ok, parsed_doc, _, _, _, _} <- Parser.parse(doc),
          [object: object] <- parsed_doc do
       Object.render(object, context)

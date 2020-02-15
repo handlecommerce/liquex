@@ -3,10 +3,14 @@ defmodule Liquex do
   Documentation for `Liquex`.
   """
 
-  alias Liquex.ControlFlow
-  alias Liquex.Iteration
-  alias Liquex.Object
-  alias Liquex.Variable
+  alias Liquex.Context
+
+  alias Liquex.Render.{
+    ControlFlow,
+    Iteration,
+    Object,
+    Variable
+  }
 
   def parse(template) do
     case Liquex.Parser.parse(template) do
@@ -15,9 +19,18 @@ defmodule Liquex do
     end
   end
 
-  def render(document, context \\ %{}) do
-    do_render([], document, context)
-  end
+  @spec render(
+          [
+            {:control_flow, nonempty_maybe_improper_list}
+            | {:iteration, [...]}
+            | {:object, [...]}
+            | {:text, any}
+            | {:variable, [...]}
+          ],
+          Context.t()
+        ) :: {iolist(), Context.t()}
+  def render(document, context \\ %Context{}),
+    do: do_render([], document, context)
 
   defp do_render(content, [], context),
     do: {content |> Enum.reverse(), context}

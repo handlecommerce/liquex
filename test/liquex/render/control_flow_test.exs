@@ -1,9 +1,11 @@
-defmodule Liquex.ControlFlowTest do
+defmodule Liquex.Render.ControlFlowTest do
   use ExUnit.Case, async: true
+
+  alias Liquex.Context
 
   describe "if statements" do
     test "failing if statement" do
-      context = %{"product" => %{"title" => "Not Awesome Shoes"}}
+      context = Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
 
       {:ok, template} =
         """
@@ -20,7 +22,7 @@ defmodule Liquex.ControlFlowTest do
     end
 
     test "else statement" do
-      context = %{"product" => %{"title" => "Not Awesome Shoes"}}
+      context = Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
 
       {:ok, template} =
         """
@@ -39,7 +41,7 @@ defmodule Liquex.ControlFlowTest do
     end
 
     test "elsif statement" do
-      context = %{"product" => %{"id" => 2, "title" => "Not Awesome Shoes"}}
+      context = Context.new(%{"product" => %{"id" => 2, "title" => "Not Awesome Shoes"}})
 
       {:ok, template} =
         """
@@ -73,7 +75,7 @@ defmodule Liquex.ControlFlowTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{"customer" => customer})
+      assert Liquex.render(template, Context.new(%{"customer" => customer}))
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() ==
@@ -94,12 +96,15 @@ defmodule Liquex.ControlFlowTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{"product" => %{"title" => "Awesome Shoes"}})
+      assert Liquex.render(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "These shoes ARE awesome."
 
-      assert Liquex.render(template, %{"product" => %{"title" => "Not Awesome Shoes"}})
+      assert Liquex.render(
+               template,
+               Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
+             )
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "These shoes are not awesome."
@@ -122,17 +127,17 @@ defmodule Liquex.ControlFlowTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{"name" => "James"})
+      assert Liquex.render(template, Context.new(%{"name" => "James"}))
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "Hello, James!"
 
-      assert Liquex.render(template, %{"name" => "John"})
+      assert Liquex.render(template, Context.new(%{"name" => "John"}))
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "Hello, John!"
 
-      assert Liquex.render(template, %{"name" => "Jim"})
+      assert Liquex.render(template, Context.new(%{"name" => "Jim"}))
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "Hello! Who are you?"

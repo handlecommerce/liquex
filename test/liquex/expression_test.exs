@@ -1,19 +1,20 @@
 defmodule Liquex.ExpressionTest do
   use ExUnit.Case, async: true
 
+  alias Liquex.Context
   alias Liquex.Expression
 
   describe "eval truthy" do
     test "literal" do
-      assert Expression.eval([literal: 123], %{})
-      assert Expression.eval([literal: true], %{})
-      refute Expression.eval([literal: false], %{})
-      refute Expression.eval([literal: nil], %{})
+      assert Expression.eval([literal: 123], %Context{})
+      assert Expression.eval([literal: true], %Context{})
+      refute Expression.eval([literal: false], %Context{})
+      refute Expression.eval([literal: nil], %Context{})
     end
 
     test "field" do
-      assert Expression.eval([field: [key: "field"]], %{"field" => 1})
-      refute Expression.eval([field: [key: "field"]], %{"field" => nil})
+      assert Expression.eval([field: [key: "field"]], Context.new(%{"field" => 1}))
+      refute Expression.eval([field: [key: "field"]], Context.new(%{"field" => nil}))
     end
 
     test "standard expression operators" do
@@ -46,20 +47,20 @@ defmodule Liquex.ExpressionTest do
 
   describe "eval boolean logic" do
     test "and" do
-      assert Expression.eval([{:literal, true}, :and, {:literal, true}], %{})
-      refute Expression.eval([{:literal, true}, :and, {:literal, false}], %{})
+      assert Expression.eval([{:literal, true}, :and, {:literal, true}], %Context{})
+      refute Expression.eval([{:literal, true}, :and, {:literal, false}], %Context{})
     end
 
     test "or" do
-      assert Expression.eval([{:literal, true}, :or, {:literal, true}], %{})
-      assert Expression.eval([{:literal, true}, :or, {:literal, false}], %{})
-      refute Expression.eval([{:literal, false}, :or, {:literal, false}], %{})
+      assert Expression.eval([{:literal, true}, :or, {:literal, true}], %Context{})
+      assert Expression.eval([{:literal, true}, :or, {:literal, false}], %Context{})
+      refute Expression.eval([{:literal, false}, :or, {:literal, false}], %Context{})
     end
 
     test "eval boolean logic in reverse" do
       assert Expression.eval(
                [[literal: true], :or, [literal: true], :and, [literal: false]],
-               %{}
+               %Context{}
              )
     end
 
@@ -70,11 +71,11 @@ defmodule Liquex.ExpressionTest do
                  :or,
                  [field: [key: "field2"]]
                ],
-               %{"field1" => true, "field2" => nil}
+               Context.new(%{"field1" => true, "field2" => nil})
              )
     end
   end
 
   def eval(left, op, right),
-    do: Expression.eval([left: [literal: left], op: op, right: [literal: right]], %{})
+    do: Expression.eval([left: [literal: left], op: op, right: [literal: right]], %Context{})
 end

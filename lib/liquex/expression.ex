@@ -1,7 +1,9 @@
 defmodule Liquex.Expression do
   alias Liquex.Argument
+  alias Liquex.Context
 
-  def eval([left: left, op: op, right: right], context) do
+  @spec eval(maybe_improper_list | {:field, any} | {:literal, any}, Context.t()) :: any
+  def eval([left: left, op: op, right: right], %Context{} = context) do
     do_eval({
       left |> Argument.eval(context),
       op,

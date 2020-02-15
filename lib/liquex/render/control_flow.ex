@@ -1,4 +1,4 @@
-defmodule Liquex.ControlFlow do
+defmodule Liquex.Render.ControlFlow do
   alias Liquex.Argument
   alias Liquex.Expression
 
