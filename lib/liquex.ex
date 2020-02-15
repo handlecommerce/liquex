@@ -5,6 +5,7 @@ defmodule Liquex do
 
   alias Liquex.ControlFlow
   alias Liquex.Object
+  alias Liquex.Variable
 
   def parse(template) do
     case Liquex.Parser.parse(template) do
@@ -34,6 +35,13 @@ defmodule Liquex do
 
   defp do_render(content, [{:control_flow, tag} | tail], context) do
     {result, context} = ControlFlow.render(tag, context)
+
+    [result | content]
+    |> do_render(tail, context)
+  end
+
+  defp do_render(content, [{:variable, tag} | tail], context) do
+    {result, context} = Variable.render(tag, context)
 
     [result | content]
     |> do_render(tail, context)
