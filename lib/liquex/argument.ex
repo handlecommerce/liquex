@@ -19,6 +19,20 @@ defmodule Liquex.Argument do
   defp do_eval(value, []), do: value
   defp do_eval(nil, _), do: nil
 
+  # Special case ".first"
+  defp do_eval(value, [{:key, "first"} | tail]) when is_list(value) do
+    value
+    |> Enum.at(0)
+    |> do_eval(tail)
+  end
+
+  # Special case ".size"
+  defp do_eval(value, [{:key, "size"} | tail]) when is_list(value) do
+    value
+    |> length()
+    |> do_eval(tail)
+  end
+
   defp do_eval(value, [{:key, key} | tail]) do
     value
     |> Map.get(key)
