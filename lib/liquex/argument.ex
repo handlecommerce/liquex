@@ -6,13 +6,14 @@ defmodule Liquex.Argument do
           Context.t()
         ) ::
           any
-  def eval([literal: literal], _context), do: literal
+  def eval([argument], context), do: eval(argument, context)
 
-  def eval([field: accesses], %Context{variables: variables}) do
-    do_eval(variables, accesses)
-  end
+  def eval({:field, accesses}, %Context{variables: variables}),
+    do: do_eval(variables, accesses)
 
-  def eval([inclusive_range: [begin: begin_value, end: end_value]], context),
+  def eval({:literal, literal}, _context), do: literal
+
+  def eval({:inclusive_range, [begin: begin_value, end: end_value]}, context),
     do: eval(begin_value, context)..eval(end_value, context)
 
   defp do_eval(value, []), do: value

@@ -1,4 +1,4 @@
-defmodule Liquex.Render.IterationTestt do
+defmodule Liquex.Render.IterationTest do
   use ExUnit.Case, async: true
 
   alias Liquex.Context
@@ -148,28 +148,163 @@ defmodule Liquex.Render.IterationTestt do
              |> String.split("\n")
              |> trim_list() == ~w(1 2 3 4)
     end
+
+    test "render for loop with forloop variable" do
+      {:ok, template} =
+        """
+        {% for i in (1..3) %}
+          {{ forloop.first }}
+          {{ forloop.index }}
+          {{ forloop.index0 }}
+          {{ forloop.last }}
+          {{ forloop.length }}
+          {{ forloop.rindex }}
+          {{ forloop.rindex0 }}
+        {% endfor %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %Context{})
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(true 1 0 false 3 3 2 false 2 1 false 3 2 1 false 3 2 true 3 1 0)
+    end
   end
 
-  # describe "cycle" do
-  #   test "simple cycle" do
-  #     {:ok, template} =
-  #       """
-  #       {% cycle "one", "two", "three" %}
-  #       {% cycle "one", "two", "three" %}
-  #       {% cycle "one", "two", "three" %}
-  #       {% cycle "one", "two", "three" %}
-  #       """
-  #       |> String.trim()
-  #       |> Liquex.parse()
+  describe "break" do
+    test "break out of for loop" do
+      {:ok, template} =
+        """
+        {% for i in (1..5) %}
+        {% if i == 4 %}
+          {% break %}
+        {% else %}
+          {{ i }}
+        {% endif %}
+        {% endfor %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
 
-  #     assert Liquex.render(template, %Context{})
-  #            |> elem(0)
-  #            |> IO.chardata_to_string()
-  #            |> String.trim()
-  #            |> String.split("\n")
-  #            |> trim_list() == ~w(one two three one)
-  #   end
-  # end
+      assert Liquex.render(template, %Context{})
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(1 2 3)
+    end
+
+    test "continue out of for loop" do
+      {:ok, template} =
+        """
+        {% for i in (1..5) %}
+        {% if i == 4 %}
+          {% continue %}
+        {% else %}
+          {{ i }}
+        {% endif %}
+        {% endfor %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %Context{})
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(1 2 3 5)
+    end
+  end
+
+  describe "cycle" do
+    test "simple cycle" do
+      {:ok, template} =
+        """
+        {% cycle "one", "two", "three" %}
+        {% cycle "one", "two", "three" %}
+        {% cycle "one", "two", "three" %}
+        {% cycle "one", "two", "three" %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %Context{})
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(one two three one)
+    end
+
+    test "named cycle" do
+      {:ok, template} =
+        """
+        {% cycle "first": "one", "two", "three" %}
+        {% cycle "second": "one", "two", "three" %}
+        {% cycle "second": "one", "two", "three" %}
+        {% cycle "first": "one", "two", "three" %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %Context{})
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(one one two two)
+    end
+  end
+
+  describe "tablerow" do
+    test "simple tablerow" do
+      {:ok, template} =
+        """
+        <table>
+        {% tablerow product in collection %}
+          {{ product }}
+        {% endtablerow %}
+        </table>
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list()
+             |> Enum.join() ==
+               "<table><tr><td>1</td></tr><tr><td>2</td></tr><tr><td>3</td></tr></table>"
+    end
+
+    test "tablerow with cols" do
+      {:ok, template} =
+        """
+        <table>
+        {% tablerow product in collection cols:2 %}
+          {{ product }}
+        {% endtablerow %}
+        </table>
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list()
+             |> Enum.join() ==
+               "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
+    end
+  end
 
   defp trim_list(list) do
     list

@@ -59,7 +59,8 @@ defmodule Liquex.Parser.Tag do
         Iteration.for_expression(),
         Iteration.cycle_tag(),
         Iteration.break_tag(),
-        Iteration.continue_tag()
+        Iteration.continue_tag(),
+        Iteration.tablerow_tag()
       ])
       |> tag(:iteration)
 
