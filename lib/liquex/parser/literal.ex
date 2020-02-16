@@ -1,4 +1,8 @@
 defmodule Liquex.Parser.Literal do
+  @moduledoc """
+  Parses literal fields such as whitespace, boolean, strings, etc.
+  """
+
   import NimbleParsec
 
   alias Liquex.Parser.Field

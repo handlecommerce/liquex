@@ -1,4 +1,8 @@
 defmodule Liquex.Parser.Object do
+  @moduledoc """
+  Parses liquid object tags
+  """
+
   import NimbleParsec
 
   alias Liquex.Parser.Literal

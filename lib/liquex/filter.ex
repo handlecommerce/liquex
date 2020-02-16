@@ -1,4 +1,8 @@
 defmodule Liquex.Filter do
+  @moduledoc """
+  Contains all the basic filters for Liquid
+  """
+
   alias Liquex.Argument
 
   @spec apply(any, {:filter, [...]}, map) :: any

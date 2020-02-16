@@ -1,4 +1,8 @@
 defmodule Liquex.Parser.Tag.Iteration do
+  @moduledoc """
+  Parses iteration tags such as cycle and for
+  """
+
   import NimbleParsec
 
   alias Liquex.Parser.Field

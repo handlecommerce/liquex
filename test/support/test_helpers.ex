@@ -1,4 +1,6 @@
 defmodule Liquex.TestHelpers do
+  @moduledoc false
+
   import ExUnit.Assertions
 
   def assert_parse(doc, match) do

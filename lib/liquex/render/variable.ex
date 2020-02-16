@@ -1,4 +1,8 @@
 defmodule Liquex.Render.Variable do
+  @moduledoc """
+  Renders out a variable tag
+  """
+
   alias Liquex.Argument
   alias Liquex.Context
 

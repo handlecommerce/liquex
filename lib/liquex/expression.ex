@@ -1,4 +1,10 @@
 defmodule Liquex.Expression do
+  @moduledoc """
+  Parses an expression
+
+  e.g. variable == "1234" or other == "1235"
+  """
+
   alias Liquex.Argument
   alias Liquex.Context
 

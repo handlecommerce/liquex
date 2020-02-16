@@ -1,4 +1,8 @@
 defmodule Liquex.Context do
+  @moduledoc """
+  Stores contextual information for the parser
+  """
+
   defstruct variables: %{}, cycles: %{}
 
   @type t :: %__MODULE__{
