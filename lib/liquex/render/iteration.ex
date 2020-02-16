@@ -1,4 +1,8 @@
 defmodule Liquex.Render.Iteration do
+  @moduledoc """
+  Renders out iterations such as for loops, cycles, and tablerows
+  """
+
   alias Liquex.Argument
   alias Liquex.Context
 
@@ -113,6 +117,7 @@ defmodule Liquex.Render.Iteration do
     {Enum.reverse(result), context}
   catch
     {:result, result, context} ->
+      # credo:disable-for-next-line
       {Enum.reverse(result), context}
   end
 

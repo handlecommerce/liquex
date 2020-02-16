@@ -1,4 +1,6 @@
 defmodule Liquex.FilterTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
   alias Liquex.Filter

@@ -1,4 +1,8 @@
 defmodule Liquex.Render.Object do
+  @moduledoc """
+  Renders out Liquid objects
+  """
+
   alias Liquex.Argument
   alias Liquex.Filter
 

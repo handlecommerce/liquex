@@ -1,4 +1,6 @@
 defmodule Liquex.Parser.LiteralTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -18,7 +20,7 @@ defmodule Liquex.Parser.LiteralTest do
   end
 
   test "float with exponent" do
-    assert_parse("{{ 123.45e2 }}", object: [literal: 12345.0, filters: []])
+    assert_parse("{{ 123.45e2 }}", object: [literal: 12_345.0, filters: []])
   end
 
   test "quoted_string" do

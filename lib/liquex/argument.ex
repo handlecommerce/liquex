@@ -1,4 +1,7 @@
 defmodule Liquex.Argument do
+  @moduledoc """
+  Argument handler for Liquid
+  """
   alias Liquex.Context
 
   @spec eval(
@@ -20,18 +23,12 @@ defmodule Liquex.Argument do
   defp do_eval(nil, _), do: nil
 
   # Special case ".first"
-  defp do_eval(value, [{:key, "first"} | tail]) when is_list(value) do
-    value
-    |> Enum.at(0)
-    |> do_eval(tail)
-  end
+  defp do_eval(value, [{:key, "first"} | tail]) when is_list(value),
+    do: do_eval(Enum.at(value, 0), tail)
 
   # Special case ".size"
-  defp do_eval(value, [{:key, "size"} | tail]) when is_list(value) do
-    value
-    |> length()
-    |> do_eval(tail)
-  end
+  defp do_eval(value, [{:key, "size"} | tail]) when is_list(value),
+    do: do_eval(length(value), tail)
 
   defp do_eval(value, [{:key, key} | tail]) do
     value

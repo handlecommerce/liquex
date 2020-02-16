@@ -1,4 +1,6 @@
 defmodule Liquex.Render.ControlFlowTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
   alias Liquex.Context

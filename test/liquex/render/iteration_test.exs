@@ -1,4 +1,6 @@
 defmodule Liquex.Render.IterationTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
   alias Liquex.Context

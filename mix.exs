@@ -1,4 +1,6 @@
 defmodule Liquex.MixProject do
+  @moduledoc false
+
   use Mix.Project
 
   def project do
@@ -24,7 +26,9 @@ defmodule Liquex.MixProject do
       {:nimble_parsec, "~> 0.5.3"},
       {:timex, "~> 3.6.1"},
       {:html_entities, "~> 0.5.1"},
-      {:html_sanitize_ex, "~> 1.3.0-rc3"}
+      {:html_sanitize_ex, "~> 1.3.0-rc3"},
+      {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
     ]
   end
 end

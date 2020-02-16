@@ -1,4 +1,8 @@
 defmodule Liquex.Render.ControlFlow do
+  @moduledoc """
+  Renders out control blocks such as if, unless, and case
+  """
+
   alias Liquex.Argument
   alias Liquex.Expression
 
@@ -17,10 +21,10 @@ defmodule Liquex.Render.ControlFlow do
   end
 
   defp do_render([{:unless, [expression: expression, contents: contents]} | tail], context, _) do
-    unless Expression.eval(expression, context) do
-      Liquex.render(contents, context)
-    else
+    if Expression.eval(expression, context) do
       do_render(tail, context)
+    else
+      Liquex.render(contents, context)
     end
   end
 

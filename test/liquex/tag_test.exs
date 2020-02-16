@@ -1,4 +1,6 @@
 defmodule Liquex.TagTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
 
   describe "raw" do
