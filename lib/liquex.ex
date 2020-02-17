@@ -12,23 +12,23 @@ defmodule Liquex do
     Variable
   }
 
-  def parse(template) do
-    case Liquex.Parser.parse(template) do
+  @type document_t :: [
+          {:control_flow, nonempty_maybe_improper_list}
+          | {:iteration, [...]}
+          | {:object, [...]}
+          | {:text, any}
+          | {:variable, [...]}
+        ]
+
+  @spec parse(String.t(), module) :: {:ok, document_t} | {:error, String.t(), pos_integer()}
+  def parse(template, parser \\ Liquex.Parser) do
+    case parser.parse(template) do
       {:ok, content, _, _, _, _} -> {:ok, content}
       {:error, reason, _, _, line, _} -> {:error, reason, line}
     end
   end
 
-  @spec render(
-          [
-            {:control_flow, nonempty_maybe_improper_list}
-            | {:iteration, [...]}
-            | {:object, [...]}
-            | {:text, any}
-            | {:variable, [...]}
-          ],
-          Context.t()
-        ) :: {iolist(), Context.t()}
+  @spec render(document_t, Context.t()) :: {iolist(), Context.t()}
   def render(document, context \\ %Context{}),
     do: do_render([], document, context)
 

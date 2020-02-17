@@ -1,24 +1,12 @@
 defmodule Liquex.Parser do
   @moduledoc """
-  Liquid base parser
+  Liquid parser
   """
 
   import NimbleParsec
 
-  alias Liquex.Parser.Object
-  alias Liquex.Parser.Tag
+  alias Liquex.Parser.Base
 
-  text =
-    lookahead_not(choice([string("{{"), string("{%")]))
-    |> utf8_char([])
-    |> times(min: 1)
-    |> reduce({Kernel, :to_string, []})
-    |> unwrap_and_tag(:text)
-
-  defcombinatorp(
-    :document,
-    repeat(choice([Object.object(), Tag.tag(), text]))
-  )
-
+  defcombinatorp(:document, repeat(Base.base_element()))
   defparsec(:parse, parsec(:document) |> eos())
 end
