@@ -5,6 +5,7 @@ defmodule Liquex.Render.Object do
 
   alias Liquex.Argument
 
+  @spec render(any, Liquex.Context.t()) :: String.t()
   def render([argument, filters: filters], context) do
     [argument]
     |> Argument.eval(context)

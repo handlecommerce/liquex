@@ -5,8 +5,8 @@ defmodule Liquex.Parser.Tag.ControlFlow do
 
   import NimbleParsec
 
-  alias Liquex.Parser.Tag
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.Tag
 
   @spec boolean_expression(NimbleParsec.t()) :: NimbleParsec.t()
   def boolean_expression(combinator \\ empty()) do

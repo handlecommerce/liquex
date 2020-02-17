@@ -28,7 +28,7 @@ defmodule Liquex do
     end
   end
 
-  @spec render(document_t, Context.t()) :: {iolist(), Context.t()}
+  @spec render(any, Context.t()) :: {iolist(), Context.t()}
   def render(document, context \\ %Context{}),
     do: do_render([], document, context)
 
