@@ -4,21 +4,8 @@ defmodule Liquex.Parser do
   """
 
   import NimbleParsec
+  alias Liquex.Parser.Base
 
-  alias Liquex.Parser.Object
-  alias Liquex.Parser.Tag
-
-  text =
-    lookahead_not(choice([string("{{"), string("{%")]))
-    |> utf8_char([])
-    |> times(min: 1)
-    |> reduce({Kernel, :to_string, []})
-    |> unwrap_and_tag(:text)
-
-  defcombinatorp(
-    :document,
-    repeat(choice([Object.object(), Tag.tag(), text]))
-  )
-
-  defparsec(:parse, parsec(:document) |> eos())
+  defcombinatorp(:document, repeat(Base.document()))
+  defparsec(:parse, parsec(:document))
 end

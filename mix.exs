@@ -9,7 +9,11 @@ defmodule Liquex.MixProject do
       version: "0.1.0",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      name: "Liquex",
+      source_url: "https://github.com/markglenn/liquex",
+      homepage_url: "https://github.com/markglenn/liquex",
+      docs: [main: "Liquex", extras: ["README.md"]]
     ]
   end
 
@@ -28,7 +32,8 @@ defmodule Liquex.MixProject do
       {:html_entities, "~> 0.5.1"},
       {:html_sanitize_ex, "~> 1.3.0-rc3"},
       {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
 end

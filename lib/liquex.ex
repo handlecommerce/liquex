@@ -12,8 +12,8 @@ defmodule Liquex do
     Variable
   }
 
-  def parse(template) do
-    case Liquex.Parser.parse(template) do
+  def parse(template, module \\ Liquex.Parser) do
+    case module.parse(template) do
       {:ok, content, _, _, _, _} -> {:ok, content}
       {:error, reason, _, _, line, _} -> {:error, reason, line}
     end
