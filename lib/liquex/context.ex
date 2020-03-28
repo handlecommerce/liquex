@@ -6,16 +6,17 @@ defmodule Liquex.Context do
   defstruct variables: %{}, cycles: %{}, filter_module: Liquex.Filter
 
   @type t :: %__MODULE__{
-          variables: %{String.t() => any},
-          cycles: %{any => pos_integer},
+          variables: map(),
+          cycles: map(),
           filter_module: module
         }
 
   @spec new(map()) :: t()
   def new(variables), do: %__MODULE__{variables: variables}
 
-  @spec assign(t(), any, any) :: t()
+  @spec assign(t(), String.t(), any) :: t()
   def assign(%__MODULE__{variables: variables} = context, key, value) do
-    %{context | variables: variables |> Map.put(key, value)}
+    updated_variables = Map.put(variables, key, value)
+    %{context | variables: updated_variables}
   end
 end

@@ -6,8 +6,13 @@ defmodule Liquex.Render.Variable do
   alias Liquex.Argument
   alias Liquex.Context
 
-  def render([assign: [left: left, right: right]], %Context{variables: variables} = context) do
-    {[], %{context | variables: Map.put(variables, left, Argument.eval(right, context))}}
+  @spec render(any, Context.t()) :: {iolist(), Context.t()}
+  def render([assign: [left: left, right: right]], %Context{} = context) when is_binary(left) do
+    right = Argument.eval(right, context)
+
+    context = Context.assign(context, left, right)
+
+    {[], context}
   end
 
   def render(

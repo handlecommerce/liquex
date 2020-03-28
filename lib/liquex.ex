@@ -28,10 +28,11 @@ defmodule Liquex do
     end
   end
 
-  @spec render(any, Context.t()) :: {iolist(), Context.t()}
+  @spec render(document_t(), Context.t()) :: {iolist(), Context.t()}
   def render(document, context \\ %Context{}),
     do: do_render([], document, context)
 
+  @spec do_render(iolist(), document_t(), Context.t()) :: {iolist(), Context.t()}
   defp do_render(content, [], context),
     do: {content |> Enum.reverse(), context}
 

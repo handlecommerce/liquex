@@ -6,6 +6,7 @@ defmodule Liquex.Render.Iteration do
   alias Liquex.Argument
   alias Liquex.Context
 
+  @spec render(any, Context.t()) :: {any, any}
   def render([for: for_statement], %Context{} = context),
     do: render([for: for_statement, else: [contents: []]], context)
 
