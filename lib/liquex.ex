@@ -1,6 +1,6 @@
 defmodule Liquex do
   @moduledoc """
-  Documentation for `Liquex`.
+  Liquid template renderer for Elixir.
   """
 
   alias Liquex.Context
@@ -21,6 +21,11 @@ defmodule Liquex do
         ]
 
   @spec parse(String.t(), module) :: {:ok, document_t} | {:error, String.t(), pos_integer()}
+  @doc """
+  Parses a liquid `template` string using the given `parser`.
+
+  Returns a liquid AST document or the parser error
+  """
   def parse(template, parser \\ Liquex.Parser) do
     case parser.parse(template) do
       {:ok, content, _, _, _, _} -> {:ok, content}
@@ -29,6 +34,12 @@ defmodule Liquex do
   end
 
   @spec render(document_t(), Context.t()) :: {iolist(), Context.t()}
+  @doc """
+  Renders a Liquid AST `document` into an `iolist`
+
+  A `context` is given to handle temporary contextual information for
+  this render.
+  """
   def render(document, context \\ %Context{}),
     do: do_render([], document, context)
 

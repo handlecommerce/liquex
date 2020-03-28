@@ -1,7 +1,5 @@
 defmodule Liquex.Parser.Tag.Variable do
-  @moduledoc """
-  Parses variable tags such as capture and assign
-  """
+  @moduledoc false
 
   import NimbleParsec
 

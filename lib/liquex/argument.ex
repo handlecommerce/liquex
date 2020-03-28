@@ -1,14 +1,15 @@
 defmodule Liquex.Argument do
-  @moduledoc """
-  Argument handler for Liquid
-  """
+  @moduledoc false
+
   alias Liquex.Context
 
-  @spec eval(
-          [{:field, any} | {:inclusive_range, [{any, any}, ...]} | {:literal, any}, ...],
-          Context.t()
-        ) ::
-          any
+  @type field_t :: any
+  @type argument_t ::
+          {:field, [field_t]}
+          | {:literal, field_t}
+          | {:inclusive_range, [begin: field_t, end: field_t]}
+
+  @spec eval(argument_t | [argument_t], Context.t()) :: field_t
   def eval([argument], context), do: eval(argument, context)
 
   def eval({:field, accesses}, %Context{variables: variables}),
@@ -23,12 +24,18 @@ defmodule Liquex.Argument do
   defp do_eval(nil, _), do: nil
 
   # Special case ".first"
-  defp do_eval(value, [{:key, "first"} | tail]) when is_list(value),
-    do: do_eval(Enum.at(value, 0), tail)
+  defp do_eval(value, [{:key, "first"} | tail]) when is_list(value) do
+    value
+    |> Enum.at(0)
+    |> do_eval(tail)
+  end
 
   # Special case ".size"
-  defp do_eval(value, [{:key, "size"} | tail]) when is_list(value),
-    do: do_eval(length(value), tail)
+  defp do_eval(value, [{:key, "size"} | tail]) when is_list(value) do
+    value
+    |> length()
+    |> do_eval(tail)
+  end
 
   defp do_eval(value, [{:key, key} | tail]) do
     value

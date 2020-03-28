@@ -1,7 +1,5 @@
 defmodule Liquex.Parser.Tag do
-  @moduledoc """
-  Parses generic tags
-  """
+  @moduledoc false
 
   import NimbleParsec
 

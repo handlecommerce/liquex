@@ -1,7 +1,5 @@
 defmodule Liquex.Parser.Object do
-  @moduledoc """
-  Parses liquid object tags
-  """
+  @moduledoc false
 
   import NimbleParsec
 

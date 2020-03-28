@@ -1,7 +1,5 @@
 defmodule Liquex.Parser.Field do
-  @moduledoc """
-  Parses fields, identifiers, and accessors in Liquid
-  """
+  @moduledoc false
 
   import NimbleParsec
 

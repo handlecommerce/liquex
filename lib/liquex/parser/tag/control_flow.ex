@@ -1,7 +1,5 @@
 defmodule Liquex.Parser.Tag.ControlFlow do
-  @moduledoc """
-  Parses Control flow tags such as if, unless, and case
-  """
+  @moduledoc false
 
   import NimbleParsec
 

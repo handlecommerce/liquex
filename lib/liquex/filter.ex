@@ -36,12 +36,16 @@ defmodule Liquex.Filter do
   end
 
   @doc """
-  Returns the absolute value of a number.
+  Returns the absolute value of `value`.
+
+  ## Examples
 
       iex> Liquex.Filter.abs(-1, %{})
       1
+
       iex> Liquex.Filter.abs(1, %{})
       1
+
       iex> Liquex.Filter.abs("-1.1", %{})
       1.1
   """
@@ -54,7 +58,9 @@ defmodule Liquex.Filter do
   def abs(value, _), do: abs(value)
 
   @doc """
-  Appends text to the end of the value
+  Appends `text` to the end of `value`
+
+  ## Examples
 
       iex> Liquex.Filter.append("myfile", ".html", %{})
       "myfile.html"
@@ -64,6 +70,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Sets a minimum value
+
+  ## Examples
 
       iex> Liquex.Filter.at_least(3, 5, %{})
       5
@@ -78,6 +86,8 @@ defmodule Liquex.Filter do
   @doc """
   Sets a maximum value
 
+  ## Examples
+
       iex> Liquex.Filter.at_most(4, 5, %{})
       4
 
@@ -91,6 +101,8 @@ defmodule Liquex.Filter do
   @doc """
   Capitalizes a string
 
+  ## Examples
+
       iex> Liquex.Filter.capitalize("title", %{})
       "Title"
 
@@ -101,7 +113,9 @@ defmodule Liquex.Filter do
   def capitalize(value, _), do: String.capitalize(value)
 
   @doc """
-  Rounds the input up to the nearest whole number. Liquid tries to convert the input to a number before the filter is applied.
+  Rounds `value` up to the nearest whole number. Liquid tries to convert the input to a number before the filter is applied.
+
+  ## Examples
 
       iex> Liquex.Filter.ceil(1.2, %{})
       2
@@ -126,6 +140,8 @@ defmodule Liquex.Filter do
   @doc """
   Removes any nil values from an array.
 
+  ## Examples
+
       iex> Liquex.Filter.compact([1, 2, nil, 3], %{})
       [1,2,3]
 
@@ -139,6 +155,8 @@ defmodule Liquex.Filter do
   @doc """
   Concatenates (joins together) multiple arrays. The resulting array contains all the items
 
+  ## Examples
+
       iex> Liquex.Filter.concat([1,2], [3,4], %{})
       [1,2,3,4]
   """
@@ -146,9 +164,11 @@ defmodule Liquex.Filter do
     do: value ++ other
 
   @doc """
-  Converts a timestamp into another date format.
+  Converts `value` timestamp into another date `format`.
 
   The format for this syntax is the same as strftime. The input uses the same format as Ruby’s Time.parse.
+
+  ## Examples
 
       iex> Liquex.Filter.date(~D[2000-01-01], "%m/%d/%Y", %{})
       "01/01/2000"
@@ -198,6 +218,8 @@ defmodule Liquex.Filter do
   Allows you to specify a fallback in case a value doesn’t exist. default will show its value
   if the left side is nil, false, or empty.
 
+  ## Examples
+
       iex> Liquex.Filter.default("1.99", "2.99", %{})
       "1.99"
 
@@ -209,6 +231,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Divides a number by another number.
+
+  ## Examples
 
   The result is rounded down to the nearest integer (that is, the floor) if the divisor is an integer.
 
@@ -228,6 +252,8 @@ defmodule Liquex.Filter do
   Makes each character in a string lowercase. It has no effect on strings
   which are already all lowercase.
 
+  ## Examples
+
       iex> Liquex.Filter.downcase("Parker Moore", %{})
       "parker moore"
 
@@ -241,6 +267,8 @@ defmodule Liquex.Filter do
   Escapes a string by replacing characters with escape sequences (so that the string can
   be used in a URL, for example). It doesn’t change strings that don’t have anything to
   escape.
+
+  ## Examples
 
       iex> Liquex.Filter.escape("Have you read 'James & the Giant Peach'?", %{})
       "Have you read &apos;James &amp; the Giant Peach&apos;?"
@@ -256,6 +284,8 @@ defmodule Liquex.Filter do
   be used in a URL, for example). It doesn’t change strings that don’t have anything to
   escape.
 
+  ## Examples
+
       iex> Liquex.Filter.escape_once("1 &lt; 2 &amp; 3", %{})
       "1 &lt; 2 &amp; 3"
   """
@@ -264,6 +294,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Returns the first item of an array.
+
+  ## Examples
 
       iex> Liquex.Filter.first([1, 2, 3], %{})
       1
@@ -278,6 +310,8 @@ defmodule Liquex.Filter do
   Rounds the input down to the nearest whole number. Liquid tries to convert the input to a
   number before the filter is applied.
 
+  ## Examples
+
       iex> Liquex.Filter.floor(1.2, %{})
       1
 
@@ -287,15 +321,20 @@ defmodule Liquex.Filter do
   def floor(value, _), do: Kernel.trunc(value)
 
   @doc """
-  Combines the items in an array into a single string using the argument as a separator.
+  Combines the items in `values` into a single string using `joiner` as a separator.
+
+  ## Examples
 
       iex> Liquex.Filter.join(~w(John Paul George Ringo), " and ", %{})
       "John and Paul and George and Ringo"
   """
   def join(values, joiner, _), do: Enum.join(values, joiner)
 
+  @spec last(list, Context.t()) :: any
   @doc """
-  Returns the last item of an array.
+  Returns the last item of `arr`.
+
+  ## Examples
 
       iex> Liquex.Filter.last([1, 2, 3], %{})
       3
@@ -309,13 +348,17 @@ defmodule Liquex.Filter do
   Removes all whitespace (tabs, spaces, and newlines) from the left side of a string.
   It does not affect spaces between words.
 
+  ## Examples
+
       iex> Liquex.Filter.lstrip("          So much room for activities!          ", %{})
       "So much room for activities!          "
   """
   def lstrip(value, _), do: value |> String.trim_leading()
 
   @doc """
-  Creates an array of values by extracting the values of a named property from another object.
+  Creates an array (`arr`) of values by extracting the values of a named property from another object (`key`).
+
+  ## Examples
 
       iex> Liquex.Filter.map([%{"a" => 1}, %{"a" => 2, "b" => 1}], "a", %{})
       [1, 2]
@@ -324,6 +367,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Subtracts a number from another number.
+
+  ## Examples
 
       iex> Liquex.Filter.minus(4, 2, %{})
       2
@@ -335,6 +380,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Subtracts a number from another number.
+
+  ## Examples
 
       iex> Liquex.Filter.modulo(3, 2, %{})
       1
@@ -350,6 +397,8 @@ defmodule Liquex.Filter do
   @doc """
   Replaces every newline (\n) in a string with an HTML line break (<br />).
 
+  ## Examples
+
       iex> Liquex.Filter.newline_to_br("\\nHello\\nthere\\n", %{})
       "<br />\\nHello<br />\\nthere<br />\\n"
   """
@@ -357,6 +406,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Adds a number to another number.
+
+  ## Examples
 
       iex> Liquex.Filter.plus(4, 2, %{})
       6
@@ -369,6 +420,8 @@ defmodule Liquex.Filter do
   @doc """
   Adds the specified string to the beginning of another string.
 
+  ## Examples
+
       iex> Liquex.Filter.prepend("apples, oranges, and bananas", "Some fruit: ", %{})
       "Some fruit: apples, oranges, and bananas"
 
@@ -380,6 +433,8 @@ defmodule Liquex.Filter do
   @doc """
   Removes every occurrence of the specified substring from a string.
 
+  ## Examples
+
       iex> Liquex.Filter.remove("I strained to see the train through the rain", "rain", %{})
       "I sted to see the t through the "
   """
@@ -388,6 +443,8 @@ defmodule Liquex.Filter do
   @doc """
   Removes every occurrence of the specified substring from a string.
 
+  ## Examples
+
       iex> Liquex.Filter.remove_first("I strained to see the train through the rain", "rain", %{})
       "I sted to see the train through the rain"
   """
@@ -395,6 +452,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Replaces every occurrence of the first argument in a string with the second argument.
+
+  ## Examples
 
       iex> Liquex.Filter.replace("Take my protein pills and put my helmet on", "my", "your", %{})
       "Take your protein pills and put your helmet on"
@@ -405,6 +464,8 @@ defmodule Liquex.Filter do
   @doc """
   Replaces only the first occurrence of the first argument in a string with the second argument.
 
+  ## Examples
+
       iex> Liquex.Filter.replace_first("Take my protein pills and put my helmet on", "my", "your", %{})
       "Take your protein pills and put my helmet on"
   """
@@ -414,6 +475,8 @@ defmodule Liquex.Filter do
   @doc """
   Reverses the order of the items in an array. reverse cannot reverse a string.
 
+  ## Examples
+
       iex> Liquex.Filter.reverse(~w(apples oranges peaches plums), %{})
       ["plums", "peaches", "oranges", "apples"]
   """
@@ -421,6 +484,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Rounds a number to the nearest integer or, if a number is passed as an argument, to that number of decimal places.
+
+  ## Examples
 
       iex> Liquex.Filter.round(1, %{})
       1
@@ -443,6 +508,8 @@ defmodule Liquex.Filter do
   Removes all whitespace (tabs, spaces, and newlines) from the right side of a string.
   It does not affect spaces between words.
 
+  ## Examples
+
       iex> Liquex.Filter.rstrip("          So much room for activities!          ", %{})
       "          So much room for activities!"
   """
@@ -450,6 +517,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Returns the number of characters in a string or the number of items in an array.
+
+  ## Examples
 
       iex> Liquex.Filter.size("Ground control to Major Tom.", %{})
       28
@@ -465,6 +534,8 @@ defmodule Liquex.Filter do
   first argument. An optional second argument specifies the length of the
   substring to be returned.
 
+  ## Examples
+
       iex> Liquex.Filter.slice("Liquid", 0, %{})
       "L"
 
@@ -477,6 +548,8 @@ defmodule Liquex.Filter do
   If the first argument is a negative number, the indices are counted from
   the end of the string:
 
+  ## Examples
+
       iex> Liquex.Filter.slice("Liquid", -3, 2, %{})
       "ui"
   """
@@ -486,6 +559,8 @@ defmodule Liquex.Filter do
   @doc """
   Sorts items in an array in case-sensitive order.
 
+  ## Examples
+
       iex> Liquex.Filter.sort(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
       ["Sally Snake", "giraffe", "octopus", "zebra"]
   """
@@ -493,6 +568,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Sorts items in an array in case-insensitive order.
+
+  ## Examples
 
       iex> Liquex.Filter.sort_natural(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
       ["giraffe", "octopus", "Sally Snake", "zebra"]
@@ -503,6 +580,8 @@ defmodule Liquex.Filter do
   Divides a string into an array using the argument as a separator. split is
   commonly used to convert comma-separated items from a string to an array.
 
+  ## Examples
+
       iex> Liquex.Filter.split("John, Paul, George, Ringo", ", ", %{})
       ["John", "Paul", "George", "Ringo"]
   """
@@ -512,6 +591,8 @@ defmodule Liquex.Filter do
   Removes all whitespace (tabs, spaces, and newlines) from both the left and
   right side of a string. It does not affect spaces between words.
 
+  ## Examples
+
       iex> Liquex.Filter.strip("          So much room for activities!          ", %{})
       "So much room for activities!"
   """
@@ -520,6 +601,8 @@ defmodule Liquex.Filter do
   @doc """
   Removes any HTML tags from a string.
 
+  ## Examples
+
       iex> Liquex.Filter.strip_html("Have <em>you</em> read <strong>Ulysses</strong>?", %{})
       "Have you read Ulysses?"
   """
@@ -527,6 +610,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Removes any newline characters (line breaks) from a string.
+
+  ## Examples
 
       iex> Liquex.Filter.strip_newlines("Hello\\nthere", %{})
       "Hellothere"
@@ -539,6 +624,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Multiplies a number by another number.
+
+  ## Examples
 
       iex> Liquex.Filter.times(3, 4, %{})
       12
@@ -556,6 +643,8 @@ defmodule Liquex.Filter do
   the specified number of characters is less than the length of the string, an
   ellipsis (…) is appended to the string and is included in the character
   count.
+
+  ## Examples
 
       iex> Liquex.Filter.truncate("Ground control to Major Tom.", 20, %{})
       "Ground control to..."
@@ -584,6 +673,8 @@ defmodule Liquex.Filter do
   ellipsis (…) is appended to the string and is included in the character
   count.
 
+  ## Examples
+
       iex> Liquex.Filter.truncatewords("Ground control to Major Tom.", 3, %{})
       "Ground control to..."
 
@@ -611,6 +702,8 @@ defmodule Liquex.Filter do
   @doc """
   Removes any duplicate elements in an array.
 
+  ## Examples
+
       iex> Liquex.Filter.uniq(~w(ants bugs bees bugs ants), %{})
       ["ants", "bugs", "bees"]
   """
@@ -619,6 +712,8 @@ defmodule Liquex.Filter do
   @doc """
   Makes each character in a string uppercase. It has no effect on strings
   which are already all uppercase.
+
+  ## Examples
 
       iex> Liquex.Filter.upcase("Parker Moore", %{})
       "PARKER MOORE"
@@ -631,6 +726,8 @@ defmodule Liquex.Filter do
   @doc """
   Decodes a string that has been encoded as a URL or by url_encode/2.
 
+  ## Examples
+
       iex> Liquex.Filter.url_decode("%27Stop%21%27+said+Fred", %{})
       "'Stop!' said Fred"
   """
@@ -638,6 +735,8 @@ defmodule Liquex.Filter do
 
   @doc """
   Decodes a string that has been encoded as a URL or by url_encode/2.
+
+  ## Examples
 
       iex> Liquex.Filter.url_encode("john@liquid.com", %{})
       "john%40liquid.com"
@@ -650,6 +749,8 @@ defmodule Liquex.Filter do
   @doc """
   Creates an array including only the objects with a given property value, or
   any truthy value by default.
+
+  ## Examples
 
       iex> Liquex.Filter.where([%{"b" => 2}, %{"b" => 1}], "b", 1, %{})
       [%{"b" => 1}]

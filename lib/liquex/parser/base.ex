@@ -1,7 +1,5 @@
 defmodule Liquex.Parser.Base do
-  @moduledoc """
-  Liquid base parser
-  """
+  @moduledoc false
 
   import NimbleParsec
 
