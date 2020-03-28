@@ -4,17 +4,23 @@ defmodule Liquex.Render.Object do
   """
 
   alias Liquex.Argument
+  alias Liquex.Context
 
-  @spec render(any, Liquex.Context.t()) :: String.t()
+  @spec render(any, Context.t()) :: String.t()
   def render([argument, filters: filters], context) do
-    [argument]
+    argument
+    |> List.wrap()
     |> Argument.eval(context)
     |> process_filters(filters, context)
     |> to_string()
   end
 
-  defp process_filters(value, filters, context) do
+  @spec process_filters(any, [any], Context.t()) :: any
+  defp process_filters(value, filters, %Context{filter_module: filter_module} = context) do
     filters
-    |> Enum.reduce(value, &context.filter.apply(&2, &1, context))
+    |> Enum.reduce(value, fn filter, memo ->
+      memo
+      |> filter_module.apply(filter, context)
+    end)
   end
 end

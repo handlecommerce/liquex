@@ -3,17 +3,36 @@ defmodule Liquex.Filter do
   Contains all the basic filters for Liquid
   """
 
-  alias Liquex.Argument
+  defmacro __using__(_) do
+    quote do
+      @spec apply(any, {:filter, [...]}, map) :: any
+      def apply(value, filter, context),
+        do: Liquex.Filter.apply(__MODULE__, value, filter, context)
+    end
+  end
 
-  @spec apply(any, {:filter, [...]}, map) :: any
-  def apply(value, {:filter, [function, {:arguments, arguments}]}, context) do
+  def apply(
+        mod \\ __MODULE__,
+        value,
+        {:filter, [function, {:arguments, arguments}]},
+        context
+      ) do
+    func = String.to_existing_atom(function)
+
     function_args =
       Enum.map(
         arguments,
-        &Argument.eval(&1, context)
+        &Liquex.Argument.eval(&1, context)
       ) ++ [context]
 
-    Kernel.apply(__MODULE__, String.to_existing_atom(function), [value | function_args])
+    mod =
+      if mod != __MODULE__ and Kernel.function_exported?(mod, func, 2) do
+        mod
+      else
+        __MODULE__
+      end
+
+    Kernel.apply(mod, func, [value | function_args])
   end
 
   @doc """

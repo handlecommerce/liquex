@@ -1,4 +1,6 @@
 defmodule Liquex.Parser.Tag.IterationTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
