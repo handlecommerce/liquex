@@ -4,8 +4,8 @@ defmodule Liquex.Render.Object do
   """
 
   alias Liquex.Argument
-  alias Liquex.Filter
 
+  @spec render(any, Liquex.Context.t()) :: String.t()
   def render([argument, filters: filters], context) do
     [argument]
     |> Argument.eval(context)
@@ -15,6 +15,6 @@ defmodule Liquex.Render.Object do
 
   defp process_filters(value, filters, context) do
     filters
-    |> Enum.reduce(value, &Filter.apply(&2, &1, context))
+    |> Enum.reduce(value, &context.filter.apply(&2, &1, context))
   end
 end

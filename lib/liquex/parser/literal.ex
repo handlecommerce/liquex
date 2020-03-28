@@ -100,4 +100,14 @@ defmodule Liquex.Parser.Literal do
     ])
     |> unwrap_and_tag(:literal)
   end
+
+  @spec text(NimbleParsec.t()) :: NimbleParsec.t()
+  def text(combinator \\ empty()) do
+    combinator
+    |> lookahead_not(choice([string("{{"), string("{%")]))
+    |> utf8_char([])
+    |> times(min: 1)
+    |> reduce({Kernel, :to_string, []})
+    |> unwrap_and_tag(:text)
+  end
 end

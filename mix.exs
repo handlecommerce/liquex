@@ -13,7 +13,8 @@ defmodule Liquex.MixProject do
       name: "Liquex",
       source_url: "https://github.com/markglenn/liquex",
       homepage_url: "https://github.com/markglenn/liquex",
-      docs: [main: "Liquex", extras: ["README.md"]]
+      docs: [main: "Liquex", extras: ["README.md"]],
+      aliases: aliases()
     ]
   end
 
@@ -33,7 +34,14 @@ defmodule Liquex.MixProject do
       {:html_sanitize_ex, "~> 1.3.0-rc3"},
       {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
+      {:inch_ex, github: "rrrene/inch_ex", only: [:dev, :test]}
+    ]
+  end
+
+  defp aliases do
+    [
+      lint: ["format --check-formatted", "credo --strict", "dialyzer --halt-exit-status"]
     ]
   end
 end

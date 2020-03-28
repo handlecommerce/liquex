@@ -3,9 +3,9 @@ defmodule Liquex.Render.ObjectTest do
 
   use ExUnit.Case, async: true
 
-  alias Liquex.Render.Object
   alias Liquex.Context
   alias Liquex.Parser
+  alias Liquex.Render.Object
 
   describe "render" do
     test "simple objects" do

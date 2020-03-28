@@ -5,8 +5,8 @@ defmodule Liquex.Parser.Object do
 
   import NimbleParsec
 
-  alias Liquex.Parser.Literal
   alias Liquex.Parser.Field
+  alias Liquex.Parser.Literal
 
   @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
   def arguments(combinator \\ empty()) do

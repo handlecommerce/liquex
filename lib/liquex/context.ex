@@ -3,12 +3,12 @@ defmodule Liquex.Context do
   Stores contextual information for the parser
   """
 
-  defstruct variables: %{}, cycles: %{}, filters: []
+  defstruct variables: %{}, cycles: %{}, filter: Liquex.Filter
 
   @type t :: %__MODULE__{
           variables: %{String.t() => any},
           cycles: %{any => pos_integer},
-          filters: [Module]
+          filter: module
         }
 
   @spec new(map()) :: t()
