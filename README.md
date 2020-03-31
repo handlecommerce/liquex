@@ -6,22 +6,25 @@ A goal for this project is to be 100% compatible with Shopify's Liquid templatin
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+The package is [available in Hex](https://hex.pm/docs/publish) and can be installed
 by adding `liquex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.1.0"}
+    {:liquex, "~> 0.1.1"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/liquex](https://hexdocs.pm/liquex).
+Documentation can be found at [https://hexdocs.pm/liquex](https://hexdocs.pm/liquex).
 
 ## Support
+
+Liquex's goal is 100% byte for byte compatibility with [Liquid](https://shopify.github.com/liquid/). The current
+state of the project can be seen here:
+
+**_Supported:_**
 
 - [x] All tags
 - [x] All filters
@@ -29,8 +32,8 @@ be found at [https://hexdocs.pm/liquex](https://hexdocs.pm/liquex).
 - [x] Custom filter
 - [x] Custom tags
 
-## TODO
+**_Partial support_**
 
-- [ ] Whitespace control
-- [ ] Full test suite using Liquid gem
-- [ ] Date processing parity with Ruby
+- [.] Whitespace control
+- [.] Full test suite using Liquid gem
+- [.] Date processing parity with Ruby

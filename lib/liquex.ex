@@ -108,7 +108,7 @@ defmodule Liquex do
   Add the package to your `mix.exs` file.
 
       def deps do
-        [{:liquex, "~> 0.1.0"}]
+        [{:liquex, "~> 0.1.1"}]
       end
 
   """
