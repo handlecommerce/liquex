@@ -1,7 +1,5 @@
 defmodule Liquex.Render.Object do
-  @moduledoc """
-  Renders out Liquid objects
-  """
+  @moduledoc false
 
   alias Liquex.Argument
   alias Liquex.Context

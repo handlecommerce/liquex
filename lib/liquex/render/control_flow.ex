@@ -1,7 +1,5 @@
 defmodule Liquex.Render.ControlFlow do
-  @moduledoc """
-  Renders out control blocks such as if, unless, and case
-  """
+  @moduledoc false
 
   alias Liquex.Argument
   alias Liquex.Expression

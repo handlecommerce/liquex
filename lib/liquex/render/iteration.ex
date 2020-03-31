@@ -1,7 +1,5 @@
 defmodule Liquex.Render.Iteration do
-  @moduledoc """
-  Renders out iterations such as for loops, cycles, and tablerows
-  """
+  @moduledoc false
 
   alias Liquex.Argument
   alias Liquex.Context
