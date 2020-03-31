@@ -21,14 +21,12 @@ defmodule Liquex.Parser.Tag.Iteration do
   @spec cycle_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def cycle_tag(combinator \\ empty()) do
     combinator
-    |> ignore(string("{%"))
-    |> ignore(Literal.whitespace())
+    |> ignore(Tag.open_tag())
     |> ignore(string("cycle"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> optional(cycle_group() |> unwrap_and_tag(:group))
     |> tag(argument_sequence(), :sequence)
-    |> ignore(Literal.whitespace())
-    |> ignore(string("%}"))
+    |> ignore(Tag.close_tag())
     |> tag(:cycle)
   end
 
@@ -48,8 +46,7 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   def tablerow_tag(combinator \\ empty()) do
     combinator
-    |> ignore(string("{%"))
-    |> ignore(Literal.whitespace())
+    |> ignore(Tag.open_tag())
     |> ignore(string("tablerow"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> unwrap_and_tag(Field.identifier(), :identifier)
@@ -59,8 +56,7 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
     |> tag(tablerow_parameters(), :parameters)
-    |> ignore(Literal.whitespace())
-    |> ignore(string("%}"))
+    |> ignore(Tag.close_tag())
     |> tag(parsec(:document), :contents)
     |> ignore(Tag.tag_directive("endtablerow"))
     |> tag(:tablerow)
@@ -78,8 +74,7 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   defp for_in_tag(combinator) do
     combinator
-    |> ignore(string("{%"))
-    |> ignore(Literal.whitespace())
+    |> ignore(Tag.open_tag())
     |> ignore(string("for"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> unwrap_and_tag(Field.identifier(), :identifier)
@@ -89,8 +84,7 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
     |> tag(for_parameters(), :parameters)
-    |> ignore(Literal.whitespace())
-    |> ignore(string("%}"))
+    |> ignore(Tag.close_tag())
   end
 
   defp collection(combinator \\ empty()) do

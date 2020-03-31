@@ -40,11 +40,18 @@ defmodule Liquex.Parser.Object do
   def object(combinator \\ empty()) do
     combinator
     |> ignore(string("{{"))
+    |> ignore(optional(string("-")))
     |> ignore(Literal.whitespace())
     |> Literal.argument()
     |> optional(tag(repeat(filter()), :filters))
     |> ignore(Literal.whitespace())
-    |> ignore(string("}}"))
+    |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
     |> tag(:object)
+  end
+
+  def close_object_remove_whitespace(combinator \\ empty()) do
+    combinator
+    |> string("-}}")
+    |> Literal.whitespace()
   end
 end

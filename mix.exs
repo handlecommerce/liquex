@@ -41,7 +41,8 @@ defmodule Liquex.MixProject do
       {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:inch_ex, "~> 0.1", only: [:dev], runtime: false}
+      {:inch_ex, "~> 0.1", only: [:dev], runtime: false},
+      {:jason, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 

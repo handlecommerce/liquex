@@ -70,23 +70,19 @@ defmodule Liquex.Parser.Tag.ControlFlow do
   @spec case_expression(NimbleParsec.t()) :: NimbleParsec.t()
   def case_expression(combinator \\ empty()) do
     when_tag =
-      ignore(string("{%"))
-      |> ignore(Literal.whitespace())
+      ignore(Tag.open_tag())
       |> ignore(string("when"))
       |> ignore(Literal.whitespace(empty(), 1))
       |> tag(Literal.literal(), :expression)
-      |> ignore(Literal.whitespace())
-      |> ignore(string("%}"))
+      |> ignore(Tag.close_tag())
       |> tag(parsec(:document), :contents)
 
     case_tag =
-      ignore(string("{%"))
-      |> ignore(Literal.whitespace())
+      ignore(Tag.open_tag())
       |> ignore(string("case"))
       |> ignore(Literal.whitespace(empty(), 1))
       |> concat(Literal.argument())
-      |> ignore(Literal.whitespace())
-      |> ignore(string("%}"))
+      |> ignore(Tag.close_tag())
 
     combinator
     |> tag(case_tag, :case)
@@ -120,12 +116,10 @@ defmodule Liquex.Parser.Tag.ControlFlow do
   @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   defp expression_tag(combinator, tag_name) do
     combinator
-    |> ignore(string("{%"))
-    |> ignore(Literal.whitespace())
+    |> ignore(Tag.open_tag())
     |> ignore(string(tag_name))
     |> ignore(Literal.whitespace())
     |> tag(boolean_expression(), :expression)
-    |> ignore(Literal.whitespace())
-    |> ignore(string("%}"))
+    |> ignore(Tag.close_tag())
   end
 end
