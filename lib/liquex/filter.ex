@@ -185,25 +185,17 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.date("March 14, 2016", "%b %d, %y", %{})
       "Mar 14, 16"
   """
-  def date(%Date{} = value, format, _), do: Timex.format!(value, format, :strftime)
-  def date(%DateTime{} = value, format, _), do: Timex.format!(value, format, :strftime)
-  def date(%NaiveDateTime{} = value, format, _), do: Timex.format!(value, format, :strftime)
+  def date(%Date{} = value, format, _), do: NimbleStrftime.format(value, format)
+  def date(%DateTime{} = value, format, _), do: NimbleStrftime.format(value, format)
+  def date(%NaiveDateTime{} = value, format, _), do: NimbleStrftime.format(value, format)
 
-  def date("now", format, context), do: date(Timex.now(), format, context)
-  def date("today", format, context), do: date(Timex.today(), format, context)
+  def date("now", format, context), do: date(DateTime.utc_now(), format, context)
+  def date("today", format, context), do: date(Date.utc_today(), format, context)
 
   def date(value, format, context) when is_binary(value) do
     # Thanks to the nonspecific definition of the format in the spec, we parse
     # some common date formats
-    results =
-      with {:error, _} <- Timex.parse(value, "%F %T"),
-           {:error, _} <- Timex.parse(value, "{YYYY}-{0M}-{D}"),
-           {:error, _} <- Timex.parse(value, "%-m/%-d/%Y", :strftime),
-           {:error, _} = r <- Timex.parse(value, "%B %e, %Y", :strftime) do
-        r
-      end
-
-    case results do
+    case DateTimeParser.parse_datetime(value, assume_time: true) do
       {:ok, parsed_date} ->
         parsed_date
         |> NaiveDateTime.to_date()

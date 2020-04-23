@@ -27,13 +27,6 @@ defmodule Liquex do
   Instead, we will need to do post processing to properly remove spaces.  As whitespace control is
   deemed of low importance for most applications, this has not been prioritized.
 
-  ***Date parsing isn't fully compatible***
-
-  Liquid uses Ruby's date parser which allows for a very wide range of formats.  Liquix takes a
-  somewhat simpler approach and only supports a few standard formats for ease of use.  The library
-  uses [Timex](https://hexdocs.pm/timex/Timex.html) for date parsing, but this may change to be an
-  optional dependency in the future.
-
   ## Custom filters
 
   Liquex contains the full suite of standard Liquid filters, but you may find that there are still
@@ -102,6 +95,28 @@ defmodule Liquex do
 
       iex> Liquex.parse("<<Hello World!>>", CustomParser)
       iex> {:ok, [custom_tag: [text: ["Hello World!"]]]}
+
+  ## Custom renderer
+
+  In many cases, if you are building custom tags for your Liquid documents, you probably want to
+  use a custom renderer.  Just like the custom filters, you add your module to the context object.
+
+      defmodule CustomRenderer do
+        def render({:custom_tag, contents}, context) do
+          {result, context} = Liquex.render(contents, context)
+
+          {["Custom Tag: ", result], context}
+        end
+      end
+
+      context = %Liquex.Context{render_module: CustomRenderer}
+
+      {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
+      {result, _} = Liquex.render(document, context)
+
+      result |> to_string()
+      iex> "Custom Tag: Hello World!"
+
 
   ## Installation
 

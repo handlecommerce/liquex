@@ -31,9 +31,9 @@ state of the project can be seen here:
 - [x] Objects and variables
 - [x] Custom filter
 - [x] Custom tags
+- [x] Date processing parity with Ruby
 
 **_Partial support_**
 
 - [.] Whitespace control
 - [.] Full test suite using Liquid gem
-- [.] Date processing parity with Ruby

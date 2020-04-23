@@ -6,8 +6,8 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.1.1",
-      elixir: "~> 1.10",
+      version: "0.2.0",
+      elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
@@ -35,7 +35,8 @@ defmodule Liquex.MixProject do
   defp deps do
     [
       {:nimble_parsec, "~> 0.5.3"},
-      {:timex, "~> 3.6.1"},
+      {:nimble_strftime, "~> 0.1"},
+      {:date_time_parser, "~> 1.0"},
       {:html_entities, "~> 0.5.1"},
       {:html_sanitize_ex, "~> 1.3.0"},
       {:credo, "~> 1.2", only: [:dev], runtime: false},
@@ -53,7 +54,7 @@ defmodule Liquex.MixProject do
 
   defp description do
     """
-    Liquid template parser for Elixir.  Its goal is to be 100% compatible with the Liquid
+    Liquid template parser for Elixir.  The goal is to be 100% compatible with the Liquid
     gem for Ruby.
     """
   end
