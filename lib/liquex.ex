@@ -189,4 +189,12 @@ defmodule Liquex do
     [result | content]
     |> do_render(tail, context)
   end
+
+  defp do_render(content, [custom_tag | tail], %{render_module: mod} = context)
+       when not is_nil(mod) do
+    {result, context} = mod.render(custom_tag, context)
+
+    [result | content]
+    |> do_render(tail, context)
+  end
 end

@@ -39,6 +39,14 @@ defmodule Liquex.Custom.CustomTagTest do
     defparsec(:parse, parsec(:document) |> eos())
   end
 
+  defmodule CustomRenderer do
+    def render({:custom_tag, contents}, context) do
+      {result, context} = Liquex.render(contents, context)
+
+      {["Custom Tag: ", result], context}
+    end
+  end
+
   describe "custom tag" do
     test "adds a custom tag" do
       {:ok, template} = Liquex.parse("<<Hello World!>>{{ variable }}", CustomParser)
@@ -47,6 +55,10 @@ defmodule Liquex.Custom.CustomTagTest do
                {:custom_tag, [text: ["Hello World!"]]},
                {:object, [field: [key: "variable"], filters: []]}
              ] == template
+
+      assert elem(Liquex.render(template, %Liquex.Context{render_module: CustomRenderer}), 0)
+             |> IO.chardata_to_string()
+             |> String.trim() == "Custom Tag: Hello World!"
     end
   end
 end
