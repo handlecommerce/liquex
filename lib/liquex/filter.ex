@@ -322,7 +322,7 @@ defmodule Liquex.Filter do
   """
   def join(values, joiner, _), do: Enum.join(values, joiner)
 
-  @spec last(list, Context.t()) :: any
+  @spec last(list, Liquex.Context.t()) :: any
   @doc """
   Returns the last item of `arr`.
 

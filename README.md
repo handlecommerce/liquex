@@ -12,7 +12,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.1.1"}
+    {:liquex, "~> 0.2"}
   ]
 end
 ```
@@ -33,7 +33,7 @@ state of the project can be seen here:
 - [x] Custom tags
 - [x] Date processing parity with Ruby
 
-**_Partial support_**
+**_Not yet implemented_**
 
-- [.] Whitespace control
+- [.] Full whitespace control
 - [.] Full test suite using Liquid gem

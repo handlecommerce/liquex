@@ -3,9 +3,9 @@ defmodule Liquex.Parser.Tag.Variable do
 
   import NimbleParsec
 
-  alias Liquex.Parser.Tag
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.Tag
 
   def assign_tag(combinator \\ empty()) do
     combinator

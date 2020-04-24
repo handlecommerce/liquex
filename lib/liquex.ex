@@ -16,7 +16,7 @@ defmodule Liquex do
   Currently, all standard Liquid tags, filters, and types are fully supported.  Liquex can
   be considered a drop in replacement of the Liquid gem, but in Elixir.
 
-  There are a few caveats that must be noted:
+  There is a caveat that must be noted:
 
   ***Whitespace control is partially supported.***
 
@@ -154,7 +154,7 @@ defmodule Liquex do
   def parse(template, parser \\ Liquex.Parser) do
     case parser.parse(template) do
       {:ok, content, _, _, _, _} -> {:ok, content}
-      {:error, reason, _, _, line, _} -> {:error, reason, line}
+      {:error, reason, _, _, {line, _}, _} -> {:error, reason, line}
     end
   end
 

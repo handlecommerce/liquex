@@ -6,7 +6,7 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -48,7 +48,7 @@ defmodule Liquex.MixProject do
 
   defp aliases do
     [
-      lint: ["format --check-formatted", "credo --strict", "dialyzer --halt-exit-status"]
+      lint: ["format --check-formatted", "credo --strict", "dialyzer"]
     ]
   end
 
