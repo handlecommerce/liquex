@@ -23,16 +23,34 @@ defmodule Liquex.Filter do
       Enum.map(
         arguments,
         &Liquex.Argument.eval(&1, context)
-      ) ++ [context]
+      )
+      |> merge_keywords()
 
     mod =
-      if mod != __MODULE__ and Kernel.function_exported?(mod, func, 2) do
+      if mod != __MODULE__ and Kernel.function_exported?(mod, func, length(function_args) + 2) do
         mod
       else
         __MODULE__
       end
 
-    Kernel.apply(mod, func, [value | function_args])
+    Kernel.apply(mod, func, [value | function_args] ++ [context])
+  end
+
+  # Merges the tuples at the end of the argument list into a keyword list, but with string keys
+  #     value, size, {"crop", direction}, {"filter", filter}
+  # becomes
+  #     value, size, [{"crop", direction}, {"filter", filter}]
+  defp merge_keywords(arguments) do
+    {keywords, rest} =
+      arguments
+      |> Enum.reverse()
+      |> Enum.split_while(&is_tuple/1)
+
+    case keywords do
+      [] -> rest
+      _ -> [Enum.reverse(keywords) | rest]
+    end
+    |> Enum.reverse()
   end
 
   @doc """

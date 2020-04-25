@@ -15,6 +15,17 @@ defmodule Liquex.Parser.Object do
       |> ignore(string(","))
       |> ignore(Literal.whitespace())
       |> concat(Literal.argument())
+      |> lookahead_not(string(":"))
+    )
+    |> repeat(
+      ignore(Literal.whitespace())
+      |> ignore(string(","))
+      |> ignore(Literal.whitespace())
+      |> concat(Field.identifier())
+      |> ignore(string(":"))
+      |> ignore(Literal.whitespace())
+      |> concat(Literal.argument())
+      |> tag(:keyword)
     )
   end
 
