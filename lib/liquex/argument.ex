@@ -20,6 +20,8 @@ defmodule Liquex.Argument do
   def eval({:inclusive_range, [begin: begin_value, end: end_value]}, context),
     do: eval(begin_value, context)..eval(end_value, context)
 
+  def eval({:keyword, [key, value]}, context), do: {key, eval(value, context)}
+
   defp do_eval(value, []), do: value
   defp do_eval(nil, _), do: nil
 
