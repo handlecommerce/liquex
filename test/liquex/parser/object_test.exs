@@ -43,6 +43,21 @@ defmodule Liquex.Parser.ObjectTest do
     )
   end
 
+  test "parses filter with key/value arguments as first argument" do
+    assert_parse(
+      "{{ product | img_url: crop: 'bottom' }}",
+      object: [
+        field: [key: "product"],
+        filters: [
+          filter: [
+            "img_url",
+            arguments: [keyword: ["crop", literal: "bottom"]]
+          ]
+        ]
+      ]
+    )
+  end
+
   test "parses multiple filters" do
     assert_parse("{{ 'adam!' | capitalize | prepend: 'Hello ' }}",
       object: [

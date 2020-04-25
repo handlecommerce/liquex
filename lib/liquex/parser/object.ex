@@ -8,25 +8,45 @@ defmodule Liquex.Parser.Object do
 
   @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
   def arguments(combinator \\ empty()) do
-    combinator
-    |> Literal.argument()
-    |> repeat(
-      ignore(Literal.whitespace())
-      |> ignore(string(","))
-      |> ignore(Literal.whitespace())
-      |> concat(Literal.argument())
+    choice([
+      combinator
+      |> Literal.argument()
       |> lookahead_not(string(":"))
-    )
+      |> repeat(
+        ignore(Literal.whitespace())
+        |> ignore(string(","))
+        |> ignore(Literal.whitespace())
+        |> concat(Literal.argument())
+        |> lookahead_not(string(":"))
+      )
+      |> optional(
+        ignore(Literal.whitespace())
+        |> ignore(string(","))
+        |> ignore(Literal.whitespace())
+        |> keyword_fields()
+      ),
+      keyword_fields()
+    ])
+  end
+
+  def keyword_fields(combinator \\ empty()) do
+    combinator
+    |> keyword_field()
     |> repeat(
       ignore(Literal.whitespace())
       |> ignore(string(","))
       |> ignore(Literal.whitespace())
-      |> concat(Field.identifier())
-      |> ignore(string(":"))
-      |> ignore(Literal.whitespace())
-      |> concat(Literal.argument())
-      |> tag(:keyword)
+      |> keyword_field()
     )
+  end
+
+  defp keyword_field(combinator) do
+    combinator
+    |> concat(Field.identifier())
+    |> ignore(string(":"))
+    |> ignore(Literal.whitespace())
+    |> concat(Literal.argument())
+    |> tag(:keyword)
   end
 
   @spec filter(NimbleParsec.t()) :: NimbleParsec.t()
