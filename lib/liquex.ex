@@ -123,7 +123,7 @@ defmodule Liquex do
   Add the package to your `mix.exs` file.
 
       def deps do
-        [{:liquex, "~> 0.1.1"}]
+        [{:liquex, "~> 0.2.1"}]
       end
 
   """
@@ -166,9 +166,23 @@ defmodule Liquex do
   this render.
   """
   def render(document, context \\ %Context{}),
-    do: do_render([], document, context)
+    do: do_render_custom([], document, context)
 
   @spec do_render(iolist(), document_t(), Context.t()) :: {iolist(), Context.t()}
+  defp do_render_custom(content, [tag | tail], %{render_module: mod} = context)
+       when not is_nil(mod) do
+    case mod.render(tag, context) do
+      {:ok, result, context} ->
+        [result | content]
+        |> do_render(tail, context)
+
+      _ ->
+        do_render(content, [tag | tail], context)
+    end
+  end
+
+  defp do_render_custom(content, list, context), do: do_render(content, list, context)
+
   defp do_render(content, [], context),
     do: {content |> Enum.reverse(), context}
 
@@ -207,7 +221,7 @@ defmodule Liquex do
 
   defp do_render(content, [custom_tag | tail], %{render_module: mod} = context)
        when not is_nil(mod) do
-    {result, context} = mod.render(custom_tag, context)
+    {:ok, result, context} = mod.render(custom_tag, context)
 
     [result | content]
     |> do_render(tail, context)
