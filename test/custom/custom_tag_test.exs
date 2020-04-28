@@ -43,8 +43,10 @@ defmodule Liquex.Custom.CustomTagTest do
     def render({:custom_tag, contents}, context) do
       {result, context} = Liquex.render(contents, context)
 
-      {["Custom Tag: ", result], context}
+      {:ok, ["Custom Tag: ", result], context}
     end
+
+    def render(_, _), do: :ignore
   end
 
   describe "custom tag" do
