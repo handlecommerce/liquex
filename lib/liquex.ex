@@ -166,10 +166,10 @@ defmodule Liquex do
   this render.
   """
   def render(document, context \\ %Context{}),
-    do: do_render_custom([], document, context)
+    do: do_render([], document, context)
 
   @spec do_render(iolist(), document_t(), Context.t()) :: {iolist(), Context.t()}
-  defp do_render_custom(content, [tag | tail], %{render_module: mod} = context)
+  defp do_render(content, [tag | tail], %{render_module: mod} = context)
        when not is_nil(mod) do
     case mod.render(tag, context) do
       {:ok, result, context} ->
@@ -177,42 +177,43 @@ defmodule Liquex do
         |> do_render(tail, context)
 
       _ ->
-        do_render(content, [tag | tail], context)
+        do_render_standard(content, [tag | tail], context)
     end
   end
 
-  defp do_render_custom(content, list, context), do: do_render(content, list, context)
+  defp do_render(content, list, context), do: do_render_standard(content, list, context)
 
-  defp do_render(content, [], context),
+  @spec do_render_standard(iolist(), document_t(), Context.t()) :: {iolist(), Context.t()}
+  defp do_render_standard(content, [], context),
     do: {content |> Enum.reverse(), context}
 
-  defp do_render(content, [{:text, text} | tail], context) do
+  defp do_render_standard(content, [{:text, text} | tail], context) do
     [text | content]
     |> do_render(tail, context)
   end
 
-  defp do_render(content, [{:object, object} | tail], context) do
+  defp do_render_standard(content, [{:object, object} | tail], context) do
     result = Object.render(object, context)
 
     [result | content]
     |> do_render(tail, context)
   end
 
-  defp do_render(content, [{:control_flow, tag} | tail], context) do
+  defp do_render_standard(content, [{:control_flow, tag} | tail], context) do
     {result, context} = ControlFlow.render(tag, context)
 
     [result | content]
     |> do_render(tail, context)
   end
 
-  defp do_render(content, [{:variable, tag} | tail], context) do
+  defp do_render_standard(content, [{:variable, tag} | tail], context) do
     {result, context} = Variable.render(tag, context)
 
     [result | content]
     |> do_render(tail, context)
   end
 
-  defp do_render(content, [{:iteration, tag} | tail], context) do
+  defp do_render_standard(content, [{:iteration, tag} | tail], context) do
     {result, context} = Iteration.render(tag, context)
 
     [result | content]
