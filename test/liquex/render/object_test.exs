@@ -5,7 +5,6 @@ defmodule Liquex.Render.ObjectTest do
 
   alias Liquex.Context
   alias Liquex.Parser
-  alias Liquex.Render.Object
 
   describe "render" do
     test "simple objects" do
@@ -35,9 +34,10 @@ defmodule Liquex.Render.ObjectTest do
   end
 
   def render(doc, context \\ %Context{}) do
-    with {:ok, parsed_doc, _, _, _, _} <- Parser.parse(doc),
-         [object: object] <- parsed_doc do
-      Object.render(object, context)
-    end
+    {:ok, parsed_doc, _, _, _, _} = Parser.parse(doc)
+
+    {[result], _} = Liquex.render(parsed_doc, context)
+
+    result
   end
 end

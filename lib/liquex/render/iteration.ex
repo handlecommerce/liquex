@@ -4,35 +4,38 @@ defmodule Liquex.Render.Iteration do
   alias Liquex.Argument
   alias Liquex.Context
 
-  @spec render(any, Context.t()) :: {any, any}
-  def render([for: for_statement], %Context{} = context),
-    do: render([for: for_statement, else: [contents: []]], context)
+  @spec render(any, Context.t()) :: {iolist, Context.t()}
+  def render({:iteration, tag}, context), do: do_render(tag, context)
+  def render(_, _), do: false
 
-  def render(
-        [
-          for: [
-            identifier: identifier,
-            collection: collection,
-            parameters: parameters,
-            contents: contents
-          ],
-          else: [contents: else_contents]
-        ],
-        %Context{} = context
-      ) do
+  defp do_render([for: for_statement], %Context{} = context),
+    do: do_render([for: for_statement, else: [contents: []]], context)
+
+  defp do_render(
+         [
+           for: [
+             identifier: identifier,
+             collection: collection,
+             parameters: parameters,
+             contents: contents
+           ],
+           else: [contents: else_contents]
+         ],
+         %Context{} = context
+       ) do
     collection
     |> Argument.eval(context)
     |> eval_modifiers(parameters)
     |> render_collection(identifier, contents, else_contents, context)
   end
 
-  def render([tag], context) when tag in [:break, :continue],
+  defp do_render([tag], context) when tag in [:break, :continue],
     do: throw({tag, context})
 
-  def render([cycle: [sequence: sequence]], %Context{} = context),
-    do: render([cycle: [group: sequence, sequence: sequence]], context)
+  defp do_render([cycle: [sequence: sequence]], %Context{} = context),
+    do: do_render([cycle: [group: sequence, sequence: sequence]], context)
 
-  def render([cycle: [group: group, sequence: sequence]], %Context{cycles: cycles} = context) do
+  defp do_render([cycle: [group: group, sequence: sequence]], %Context{cycles: cycles} = context) do
     index =
       cycles
       |> Map.get(group, 0)
@@ -47,17 +50,17 @@ defmodule Liquex.Render.Iteration do
     {result, %{context | cycles: Map.put(cycles, group, next_index)}}
   end
 
-  def render(
-        [
-          tablerow: [
-            identifier: identifier,
-            collection: collection,
-            parameters: parameters,
-            contents: contents
-          ]
-        ],
-        context
-      ) do
+  defp do_render(
+         [
+           tablerow: [
+             identifier: identifier,
+             collection: collection,
+             parameters: parameters,
+             contents: contents
+           ]
+         ],
+         context
+       ) do
     cols = Keyword.get(parameters, :cols, 1)
 
     collection
@@ -65,6 +68,8 @@ defmodule Liquex.Render.Iteration do
     |> eval_modifiers(parameters)
     |> render_row(identifier, contents, cols, context)
   end
+
+  defp do_render(_, _), do: false
 
   defp eval_modifiers(collection, []), do: collection
 
