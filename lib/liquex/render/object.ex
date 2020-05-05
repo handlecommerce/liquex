@@ -4,6 +4,9 @@ defmodule Liquex.Render.Object do
   alias Liquex.Argument
   alias Liquex.Context
 
+  @behaviour Liquex.Render
+
+  @impl Liquex.Render
   @spec render(any, Context.t()) :: {String.t(), Context.t()}
   def render({:object, tag}, context), do: do_render(tag, context)
 

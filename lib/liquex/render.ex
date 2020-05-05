@@ -1,5 +1,9 @@
 defmodule Liquex.Render do
+  @moduledoc false
+
   alias Liquex.Context
+
+  @callback render({atom, any}, Context.t()) :: {any, Context.t()} | false
 
   @spec render(iolist(), Liquex.document_t(), Context.t()) :: {iolist(), Context.t()}
   @doc """
@@ -11,8 +15,9 @@ defmodule Liquex.Render do
   def render(content, [], context),
     do: {content |> Enum.reverse(), context}
 
-  def render(content, [tag | tail], %{render_modules: custom_modules} = context) do
+  def render(content, [tag | tail], %{render_module: custom_module} = context) do
     [
+      custom_module,
       Liquex.Render.Text,
       Liquex.Render.Object,
       Liquex.Render.ControlFlow,
@@ -26,21 +31,13 @@ defmodule Liquex.Render do
         |> render(tail, context)
 
       _ ->
-        custom_modules
-        |> do_render(tag, context)
-        |> case do
-          {result, context} ->
-            [result | content]
-            |> render(tail, context)
-
-          _ ->
-            raise "No tag renderer found"
-        end
+        raise "No tag renderer found"
     end
   end
 
   defp do_render(modules, tag, context) do
     modules
+    |> Enum.reject(&is_nil/1)
     |> Enum.find_value(& &1.render(tag, context))
   end
 end

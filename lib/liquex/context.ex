@@ -7,14 +7,14 @@ defmodule Liquex.Context do
             cycles: %{},
             private: %{},
             filter_module: Liquex.Filter,
-            render_modules: []
+            render_module: nil
 
   @type t :: %__MODULE__{
           variables: map(),
           cycles: map(),
           private: map(),
           filter_module: module,
-          render_modules: [module]
+          render_module: module | nil
         }
 
   @spec new(map()) :: t()

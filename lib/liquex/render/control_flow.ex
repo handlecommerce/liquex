@@ -4,6 +4,9 @@ defmodule Liquex.Render.ControlFlow do
   alias Liquex.Argument
   alias Liquex.Expression
 
+  @behaviour Liquex.Render
+
+  @impl Liquex.Render
   def render({:control_flow, tag}, context), do: do_render(tag, context)
   def render(_, _), do: false
 

@@ -3,12 +3,14 @@ defmodule Liquex.Filter do
   Contains all the basic filters for Liquid
   """
 
+  @callback apply(any, {:filter, [...]}, map) :: any
+
   defmacro __using__(_) do
     quote do
-      @behaviour Liquex.Filterer
+      @behaviour Liquex.Filter
 
       @spec apply(any, {:filter, [...]}, map) :: any
-      @impl Liquex.Filterer
+      @impl Liquex.Filter
       def apply(value, filter, context),
         do: Liquex.Filter.apply(__MODULE__, value, filter, context)
     end

@@ -6,13 +6,13 @@ A goal for this project is to be 100% compatible with Shopify's Liquid templatin
 
 ## Installation
 
-The package is [available in Hex](https://hex.pm/docs/publish) and can be installed
+The package is [available in Hex](https://hex.pm/packages/liquex) and can be installed
 by adding `liquex` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.2"}
+    {:liquex, "~> 0.3"}
   ]
 end
 ```
