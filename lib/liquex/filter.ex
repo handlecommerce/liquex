@@ -5,7 +5,10 @@ defmodule Liquex.Filter do
 
   defmacro __using__(_) do
     quote do
+      @behaviour Liquex.Filterer
+
       @spec apply(any, {:filter, [...]}, map) :: any
+      @impl Liquex.Filterer
       def apply(value, filter, context),
         do: Liquex.Filter.apply(__MODULE__, value, filter, context)
     end

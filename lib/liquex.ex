@@ -130,13 +130,6 @@ defmodule Liquex do
 
   alias Liquex.Context
 
-  alias Liquex.Render.{
-    ControlFlow,
-    Iteration,
-    Object,
-    Variable
-  }
-
   @type document_t :: [
           {:control_flow, nonempty_maybe_improper_list}
           | {:iteration, [...]}
@@ -158,65 +151,6 @@ defmodule Liquex do
     end
   end
 
-  @spec render(document_t(), Context.t()) :: {iolist(), Context.t()}
-  @doc """
-  Renders a Liquid AST `document` into an `iolist`
-
-  A `context` is given to handle temporary contextual information for
-  this render.
-  """
   def render(document, context \\ %Context{}),
-    do: do_render([], document, context)
-
-  @spec do_render(iolist(), document_t(), Context.t()) :: {iolist(), Context.t()}
-  defp do_render(content, [tag | tail], %{render_module: mod} = context)
-       when not is_nil(mod) do
-    case mod.render(tag, context) do
-      {:ok, result, context} ->
-        [result | content]
-        |> do_render(tail, context)
-
-      _ ->
-        do_render_standard(content, [tag | tail], context)
-    end
-  end
-
-  defp do_render(content, list, context), do: do_render_standard(content, list, context)
-
-  @spec do_render_standard(iolist(), document_t(), Context.t()) :: {iolist(), Context.t()}
-  defp do_render_standard(content, [], context),
-    do: {content |> Enum.reverse(), context}
-
-  defp do_render_standard(content, [{:text, text} | tail], context) do
-    [text | content]
-    |> do_render(tail, context)
-  end
-
-  defp do_render_standard(content, [{:object, object} | tail], context) do
-    result = Object.render(object, context)
-
-    [result | content]
-    |> do_render(tail, context)
-  end
-
-  defp do_render_standard(content, [{:control_flow, tag} | tail], context) do
-    {result, context} = ControlFlow.render(tag, context)
-
-    [result | content]
-    |> do_render(tail, context)
-  end
-
-  defp do_render_standard(content, [{:variable, tag} | tail], context) do
-    {result, context} = Variable.render(tag, context)
-
-    [result | content]
-    |> do_render(tail, context)
-  end
-
-  defp do_render_standard(content, [{:iteration, tag} | tail], context) do
-    {result, context} = Iteration.render(tag, context)
-
-    [result | content]
-    |> do_render(tail, context)
-  end
+    do: Liquex.Render.render([], document, context)
 end

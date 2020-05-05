@@ -4,8 +4,8 @@ defmodule Liquex.Render.ControlFlow do
   alias Liquex.Argument
   alias Liquex.Expression
 
-  def render([{tag_name, _} | _] = tag, context) when tag_name in [:if, :unless, :case],
-    do: do_render(tag, context)
+  def render({:control_flow, tag}, context), do: do_render(tag, context)
+  def render(_, _), do: false
 
   defp do_render(list, context, match \\ nil)
 

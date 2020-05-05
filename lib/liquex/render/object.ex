@@ -4,13 +4,17 @@ defmodule Liquex.Render.Object do
   alias Liquex.Argument
   alias Liquex.Context
 
-  @spec render(any, Context.t()) :: String.t()
-  def render([argument, filters: filters], %Context{} = context) do
-    argument
-    |> List.wrap()
-    |> Argument.eval(context)
-    |> process_filters(filters, context)
-    |> to_string()
+  @spec render(any, Context.t()) :: {String.t(), Context.t()}
+  def render({:object, tag}, context), do: do_render(tag, context)
+
+  def render(_, _), do: false
+
+  def do_render([argument, filters: filters], %Context{} = context) do
+    {argument
+     |> List.wrap()
+     |> Argument.eval(context)
+     |> process_filters(filters, context)
+     |> to_string(), context}
   end
 
   @spec process_filters(any, [any], Context.t()) :: any

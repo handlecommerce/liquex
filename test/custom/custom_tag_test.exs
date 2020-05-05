@@ -29,6 +29,13 @@ defmodule Liquex.Custom.CustomTagTest do
       combinator
       |> choice([custom_tag(), Base.base_element()])
     end
+
+    def render({:custom_tag, contents}, context) do
+      {result, context} = Liquex.render(contents, context)
+      {["Custom Tag: ", result], context}
+    end
+
+    def render(_, _), do: false
   end
 
   defmodule CustomParser do
@@ -37,16 +44,6 @@ defmodule Liquex.Custom.CustomTagTest do
 
     defcombinatorp(:document, repeat(CustomTagExample.element()))
     defparsec(:parse, parsec(:document) |> eos())
-  end
-
-  defmodule CustomRenderer do
-    def render({:custom_tag, contents}, context) do
-      {result, context} = Liquex.render(contents, context)
-
-      {:ok, ["Custom Tag: ", result], context}
-    end
-
-    def render(_, _), do: :ignore
   end
 
   describe "custom tag" do
@@ -58,7 +55,7 @@ defmodule Liquex.Custom.CustomTagTest do
                {:object, [field: [key: "variable"], filters: []]}
              ] == template
 
-      assert elem(Liquex.render(template, %Liquex.Context{render_module: CustomRenderer}), 0)
+      assert elem(Liquex.render(template, %Liquex.Context{render_modules: [CustomTagExample]}), 0)
              |> IO.chardata_to_string()
              |> String.trim() == "Custom Tag: Hello World!"
     end

@@ -13,7 +13,7 @@ defmodule Liquex.TagTest do
         """
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{})
+      assert Liquex.render(template)
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() ==
