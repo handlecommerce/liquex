@@ -101,15 +101,18 @@ defmodule Liquex do
   In many cases, if you are building custom tags for your Liquid documents, you probably want to
   use a custom renderer.  Just like the custom filters, you add your module to the context object.
 
-      defmodule CustomRenderer do
+      defmodule CustomTagRender do
         def render({:custom_tag, contents}, context) do
           {result, context} = Liquex.render(contents, context)
 
           {["Custom Tag: ", result], context}
         end
+
+        # Ignore this tag if we don't match
+        def render(_, _), do: false
       end
 
-      context = %Liquex.Context{render_module: CustomRenderer}
+      context = %Liquex.Context{render_module: CustomTagRender}
 
       {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
       {result, _} = Liquex.render(document, context)
@@ -123,7 +126,7 @@ defmodule Liquex do
   Add the package to your `mix.exs` file.
 
       def deps do
-        [{:liquex, "~> 0.2.1"}]
+        [{:liquex, "~> 0.3"}]
       end
 
   """

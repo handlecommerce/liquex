@@ -6,6 +6,8 @@ defmodule Liquex.Custom.CustomTagTest do
   defmodule CustomTagExample do
     @moduledoc false
 
+    @behaviour Liquex.Render
+
     import NimbleParsec
     alias Liquex.Parser.Base
 
@@ -30,6 +32,7 @@ defmodule Liquex.Custom.CustomTagTest do
       |> choice([custom_tag(), Base.base_element()])
     end
 
+    @impl Liquex.Render
     def render({:custom_tag, contents}, context) do
       {result, context} = Liquex.render(contents, context)
       {["Custom Tag: ", result], context}
@@ -55,7 +58,7 @@ defmodule Liquex.Custom.CustomTagTest do
                {:object, [field: [key: "variable"], filters: []]}
              ] == template
 
-      assert elem(Liquex.render(template, %Liquex.Context{render_modules: [CustomTagExample]}), 0)
+      assert elem(Liquex.render(template, %Liquex.Context{render_module: CustomTagExample}), 0)
              |> IO.chardata_to_string()
              |> String.trim() == "Custom Tag: Hello World!"
     end
