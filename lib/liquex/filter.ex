@@ -43,6 +43,8 @@ defmodule Liquex.Filter do
       end
 
     Kernel.apply(mod, func, [value | function_args] ++ [context])
+  rescue
+    ArgumentError -> raise LiquexError, "Invalid filter #{function}"
   end
 
   # Merges the tuples at the end of the argument list into a keyword list, but with string keys
