@@ -31,7 +31,7 @@ defmodule Liquex.Render do
         |> render(tail, context)
 
       _ ->
-        raise "No tag renderer found"
+        raise LiquexError, "No tag renderer found for tag #{tag}"
     end
   end
 
