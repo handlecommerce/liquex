@@ -31,6 +31,10 @@ defmodule Liquex.Render.ObjectTest do
       assert "5" == render("{{ -5 | abs }}")
       assert "5" == render("{{ -5 | abs | abs }}")
     end
+
+    test "invalid filter" do
+      assert "-5" == render("{{ -5 | bad_filter }}")
+    end
   end
 
   def render(doc, context \\ %Context{}) do

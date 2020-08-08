@@ -3,18 +3,22 @@ defmodule Liquex.Filter do
   Contains all the basic filters for Liquid
   """
 
-  @callback apply(any, {:filter, [...]}, map) :: any
+  @type filter_t :: {:filter, [...]}
+  @callback apply(any, filter_t, map) :: any
 
   defmacro __using__(_) do
     quote do
       @behaviour Liquex.Filter
 
-      @spec apply(any, {:filter, [...]}, map) :: any
+      @spec apply(any, Liquex.Filter.filter_t(), map) :: any
       @impl Liquex.Filter
       def apply(value, filter, context),
         do: Liquex.Filter.apply(__MODULE__, value, filter, context)
     end
   end
+
+  @spec filter_name(filter_t) :: String.t()
+  def filter_name({:filter, [filter_name | _]}), do: filter_name
 
   def apply(
         mod \\ __MODULE__,
@@ -208,9 +212,9 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.date("March 14, 2016", "%b %d, %y", %{})
       "Mar 14, 16"
   """
-  def date(%Date{} = value, format, _), do: NimbleStrftime.format(value, format)
-  def date(%DateTime{} = value, format, _), do: NimbleStrftime.format(value, format)
-  def date(%NaiveDateTime{} = value, format, _), do: NimbleStrftime.format(value, format)
+  def date(%Date{} = value, format, _), do: Timex.format!(value, format, :strftime)
+  def date(%DateTime{} = value, format, _), do: Timex.format!(value, format, :strftime)
+  def date(%NaiveDateTime{} = value, format, _), do: Timex.format!(value, format, :strftime)
 
   def date("now", format, context), do: date(DateTime.utc_now(), format, context)
   def date("today", format, context), do: date(Date.utc_today(), format, context)

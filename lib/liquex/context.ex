@@ -3,18 +3,21 @@ defmodule Liquex.Context do
   Stores contextual information for the parser
   """
 
+  @type error_mode_t :: :lax | :warn | :strict
   defstruct variables: %{},
             cycles: %{},
             private: %{},
             filter_module: Liquex.Filter,
-            render_module: nil
+            render_module: nil,
+            errors: []
 
   @type t :: %__MODULE__{
           variables: map(),
           cycles: map(),
           private: map(),
           filter_module: module,
-          render_module: module | nil
+          render_module: module | nil,
+          errors: list(LiquexError.t())
         }
 
   @spec new(map()) :: t()
@@ -35,4 +38,11 @@ defmodule Liquex.Context do
     updated_variables = Map.put(variables, key, value)
     %{context | variables: updated_variables}
   end
+
+  @spec push_error(t(), struct) :: t()
+  @doc """
+  Assign an error to the error logs
+  """
+  def push_error(%__MODULE__{errors: errors} = context, error),
+    do: %{context | errors: [error | errors]}
 end
