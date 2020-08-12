@@ -29,11 +29,12 @@ state of the project can be seen here:
 - [x] All tags
 - [x] All filters
 - [x] Objects and variables
+- [x] Lazy variable resolvers
 - [x] Custom filter
 - [x] Custom tags
 - [x] Date processing parity with Ruby
 
 **_Not yet implemented_**
 
-- [.] Full whitespace control
-- [.] Full test suite using Liquid gem
+- Full whitespace control
+- Full test suite using Liquid gem

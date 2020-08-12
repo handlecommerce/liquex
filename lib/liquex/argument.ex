@@ -42,6 +42,7 @@ defmodule Liquex.Argument do
   defp do_eval(value, [{:key, key} | tail]) do
     value
     |> Map.get(key)
+    |> apply_lazy(value)
     |> do_eval(tail)
   end
 
@@ -50,4 +51,8 @@ defmodule Liquex.Argument do
     |> Enum.at(accessor)
     |> do_eval(tail)
   end
+
+  # Apply a lazy function if needed
+  defp apply_lazy(fun, parent) when is_function(fun), do: fun.(parent)
+  defp apply_lazy(value, _), do: value
 end

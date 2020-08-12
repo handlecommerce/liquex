@@ -27,6 +27,30 @@ defmodule Liquex do
   Instead, we will need to do post processing to properly remove spaces.  As whitespace control is
   deemed of low importance for most applications, this has not been prioritized.
 
+
+  ## Lazy variables
+
+  Liquex allows resolver functions for variables that may require some extra
+  work to generate. For example, Shopify has variables for things like
+  available products. Pulling all products every time would be too expensive
+  to do on every render. Instead, it would be better to lazily pull that
+  information as needed.
+
+  Instead of adding the product list to the context variable map, you can add
+  a function to the variable map. If a function is accessed in the variable
+  map, it is executed.
+
+      products_resolver = fn _parent -> Product.all() end
+
+      with context <- Liquex.Context.new(%{products: products_resolver}),
+          {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
+          {result, _} <- Liquex.render(document, context) do
+        result
+      end
+
+      iex> "There are 5 products"
+
+
   ## Custom filters
 
   Liquex contains the full suite of standard Liquid filters, but you may find that there are still
@@ -42,8 +66,8 @@ defmodule Liquex do
         def scream(value, _), do: String.upcase(value) <> "!"
       end
 
-      context = %Liquex.Context{filter_module: CustomFilter},
-      {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}",
+      context = Liquex.Context.new(%{}, filter_module: CustomFilter)
+      {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}"
 
       {result, _} =  Liquex.render(template_ast, context)
       result |> to_string()
@@ -112,7 +136,7 @@ defmodule Liquex do
         def render(_, _), do: false
       end
 
-      context = %Liquex.Context{render_module: CustomTagRender}
+      context = %Liquex.Context.new(%{}, render_module: CustomTagRender)
 
       {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
       {result, _} = Liquex.render(document, context)
@@ -154,6 +178,10 @@ defmodule Liquex do
     end
   end
 
+  @spec render(document_t, Context.t()) :: {iolist, Context.t()}
+  @doc """
+  Render a Liquex AST `document` with the given `context`
+  """
   def render(document, context \\ %Context{}),
     do: Liquex.Render.render([], document, context)
 end

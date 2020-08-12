@@ -1,7 +1,6 @@
 defmodule Liquex.Render.Text do
-  @moduledoc """
-  Renderer for text blocks
-  """
+  @moduledoc false
+
   @behaviour Liquex.Render
 
   @type text_t :: {:text, any}
