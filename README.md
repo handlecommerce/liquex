@@ -26,12 +26,10 @@ state of the project can be seen here:
 
 **_Supported:_**
 
-- [x] All tags
-- [x] All filters
+- [x] All standard tags and filters
 - [x] Objects and variables
 - [x] Lazy variable resolvers
-- [x] Custom filter
-- [x] Custom tags
+- [x] Custom tags and filters
 - [x] Date processing parity with Ruby
 
 **_Not yet implemented_**
