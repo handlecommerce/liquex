@@ -37,6 +37,25 @@ defmodule Liquex.Render.ObjectTest do
     end
   end
 
+  describe "dynamic fields" do
+    test "simple new field" do
+      context = Context.new(%{"message" => fn _ -> "hello world" end})
+      assert "hello world" == render("{{ message }}", context)
+    end
+
+    test "dynamic field on parent object" do
+      context =
+        Context.new(%{
+          "message" => %{
+            "value" => "Hello World",
+            "calculated_value" => fn %{"value" => value} -> value end
+          }
+        })
+
+      assert "Hello World" == render("{{ message.calculated_value }}", context)
+    end
+  end
+
   def render(doc, context \\ %Context{}) do
     {:ok, parsed_doc, _, _, _, _} = Parser.parse(doc)
 

@@ -3,7 +3,6 @@ defmodule Liquex.Context do
   Stores contextual information for the parser
   """
 
-  @type error_mode_t :: :lax | :warn | :strict
   defstruct variables: %{},
             cycles: %{},
             private: %{},
@@ -20,13 +19,19 @@ defmodule Liquex.Context do
           errors: list(LiquexError.t())
         }
 
-  @spec new(map()) :: t()
+  @spec new(map(), Keyword.t()) :: t()
   @doc """
   Create a new `Context.t` using predefined `variables` map
 
   Returns a new, initialized context object
   """
-  def new(variables), do: %__MODULE__{variables: variables}
+  def new(variables, opts \\ []) do
+    %__MODULE__{
+      variables: variables,
+      filter_module: Keyword.get(opts, :filter_module, Liquex.Filter),
+      render_module: Keyword.get(opts, :render_module)
+    }
+  end
 
   @spec assign(t(), String.t(), any) :: t()
   @doc """
