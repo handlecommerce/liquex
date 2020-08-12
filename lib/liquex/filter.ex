@@ -44,6 +44,7 @@ defmodule Liquex.Filter do
 
     Kernel.apply(mod, func, [value | function_args] ++ [context])
   rescue
+    # credo:disable-for-next-line
     ArgumentError -> raise LiquexError, "Invalid filter #{function}"
   end
 
