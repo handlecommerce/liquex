@@ -88,6 +88,9 @@ defmodule Liquex.Render.Iteration do
   defp eval_modifiers(collection, [{:cols, _} | tail]),
     do: collection |> eval_modifiers(tail)
 
+  defp render_collection(nil, _, _, contents, context),
+    do: Liquex.render(contents, context)
+
   defp render_collection([], _, _, contents, context),
     do: Liquex.render(contents, context)
 
