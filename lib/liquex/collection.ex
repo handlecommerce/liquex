@@ -12,7 +12,7 @@ defprotocol Liquex.Collection do
   def to_enumerable(collection)
 end
 
-defimpl Liquex.Collection, for: [Enumerable, List] do
+defimpl Liquex.Collection, for: [Enumerable, List, Range] do
   def limit(collection, limit), do: Enum.take(collection, limit)
   def offset(collection, offset), do: Enum.drop(collection, offset)
   def reverse(collection), do: Enum.reverse(collection)
