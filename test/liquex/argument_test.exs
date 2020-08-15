@@ -43,5 +43,35 @@ defmodule Liquex.ArgumentTest do
       obj = Context.new(%{"field" => [%{}, %{"child" => 5}]})
       assert nil == Argument.eval([field: [key: "field", accessor: 5, key: "child"]], obj)
     end
+
+    test "anonymous function field" do
+      obj = Context.new(%{"field" => fn -> 5 end})
+      assert 5 == Argument.eval([field: [key: "field"]], obj)
+    end
+  end
+
+  describe "assign" do
+    test "assign new value" do
+      context = Argument.assign(Context.new(%{}), [field: [key: "i"]], 5)
+      assert 5 == Argument.eval([field: [key: "i"]], context)
+    end
+
+    test "assign new nested value" do
+      context =
+        %{"a" => %{}}
+        |> Context.new()
+        |> Argument.assign([field: [key: "a", key: "b"]], 5)
+
+      assert 5 == Argument.eval([field: [key: "a", key: "b"]], context)
+    end
+
+    test "assign in list" do
+      context =
+        %{"field" => [1, 2, 3]}
+        |> Context.new()
+        |> Argument.assign([field: [key: "field", accessor: 1]], 9)
+
+      assert [1, 9, 3] == Argument.eval([field: [key: "field"]], context)
+    end
   end
 end

@@ -2,6 +2,7 @@ defmodule Liquex.Render.Iteration do
   @moduledoc false
 
   alias Liquex.Argument
+  alias Liquex.Collection
   alias Liquex.Context
 
   @behaviour Liquex.Render
@@ -29,6 +30,7 @@ defmodule Liquex.Render.Iteration do
     collection
     |> Argument.eval(context)
     |> eval_modifiers(parameters)
+    |> Collection.to_enumerable()
     |> render_collection(identifier, contents, else_contents, context)
   end
 
@@ -39,9 +41,7 @@ defmodule Liquex.Render.Iteration do
     do: do_render([cycle: [group: sequence, sequence: sequence]], context)
 
   defp do_render([cycle: [group: group, sequence: sequence]], %Context{cycles: cycles} = context) do
-    index =
-      cycles
-      |> Map.get(group, 0)
+    index = Map.get(cycles, group, 0)
 
     next_index = rem(index + 1, length(sequence))
 
@@ -69,6 +69,7 @@ defmodule Liquex.Render.Iteration do
     collection
     |> Argument.eval(context)
     |> eval_modifiers(parameters)
+    |> Collection.to_enumerable()
     |> render_row(identifier, contents, cols, context)
   end
 
@@ -77,13 +78,13 @@ defmodule Liquex.Render.Iteration do
   defp eval_modifiers(collection, []), do: collection
 
   defp eval_modifiers(collection, [{:limit, limit} | tail]),
-    do: collection |> Enum.take(limit) |> eval_modifiers(tail)
+    do: collection |> Collection.limit(limit) |> eval_modifiers(tail)
 
   defp eval_modifiers(collection, [{:offset, offset} | tail]),
-    do: collection |> Enum.drop(offset) |> eval_modifiers(tail)
+    do: collection |> Collection.offset(offset) |> eval_modifiers(tail)
 
   defp eval_modifiers(collection, [{:order, :reversed} | tail]),
-    do: collection |> Enum.reverse() |> eval_modifiers(tail)
+    do: collection |> Collection.reverse() |> eval_modifiers(tail)
 
   defp eval_modifiers(collection, [{:cols, _} | tail]),
     do: collection |> eval_modifiers(tail)

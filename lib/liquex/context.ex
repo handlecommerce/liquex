@@ -33,12 +33,15 @@ defmodule Liquex.Context do
     }
   end
 
-  @spec assign(t(), String.t(), any) :: t()
+  @spec assign(t(), String.t() | atom, any) :: t()
   @doc """
   Assign a new variable to the `context`
 
   Set a variable named `key` with the given `value` in the current context
   """
+  def assign(%__MODULE__{} = context, key, value) when is_atom(key),
+    do: assign(context, Atom.to_string(key), value)
+
   def assign(%__MODULE__{variables: variables} = context, key, value) do
     updated_variables = Map.put(variables, key, value)
     %{context | variables: updated_variables}
