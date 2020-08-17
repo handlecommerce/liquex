@@ -12,7 +12,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.3"}
+    {:liquex, "~> 0.4"}
   ]
 end
 ```
@@ -27,9 +27,8 @@ state of the project can be seen here:
 **_Supported:_**
 
 - [x] All standard tags and filters
-- [x] Objects and variables
-- [x] Lazy variable resolvers
 - [x] Custom tags and filters
+- [x] Lazy variable resolvers
 - [x] Date processing parity with Ruby
 
 **_Not yet implemented_**
