@@ -1,16 +1,30 @@
 defmodule Liquex.Parser.Tag.VariableTest do
+  @moduledoc false
+
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
   describe "assign_tag" do
     test "parse simple assign" do
       "{% assign a = 5 %}"
-      |> assert_parse(variable: [assign: [left: "a", right: [literal: 5]]])
+      |> assert_parse(variable: [assign: [left: "a", right: [literal: 5, filters: []]]])
     end
 
     test "parse field assign" do
       "{% assign a = b %}"
-      |> assert_parse(variable: [assign: [left: "a", right: [field: [key: "b"]]]])
+      |> assert_parse(variable: [assign: [left: "a", right: [field: [key: "b"], filters: []]]])
+    end
+
+    test "parse field assign with filter" do
+      "{% assign a = b | divided_by: 4 %}"
+      |> assert_parse(
+        variable: [
+          assign: [
+            left: "a",
+            right: [field: [key: "b"], filters: [filter: ["divided_by", arguments: [literal: 4]]]]
+          ]
+        ]
+      )
     end
   end
 
