@@ -3,6 +3,7 @@ defmodule Liquex.Render.Variable do
 
   alias Liquex.Argument
   alias Liquex.Context
+  alias Liquex.Render.Filter
 
   @behaviour Liquex.Render
 
@@ -12,9 +13,15 @@ defmodule Liquex.Render.Variable do
   def render(_, _), do: false
 
   @spec do_render(any, Context.t()) :: {iolist(), Context.t()}
-  defp do_render([assign: [left: left, right: right]], %Context{} = context)
+  defp do_render(
+         [assign: [left: left, right: [right, {:filters, filters}]]],
+         %Context{} = context
+       )
        when is_binary(left) do
-    right = Argument.eval(right, context)
+    {right, context} =
+      right
+      |> Argument.eval(context)
+      |> Filter.apply_filters(filters, context)
 
     context = Context.assign(context, left, right)
 

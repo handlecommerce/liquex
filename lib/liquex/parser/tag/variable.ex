@@ -5,9 +5,15 @@ defmodule Liquex.Parser.Tag.Variable do
 
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.Object
   alias Liquex.Parser.Tag
 
   def assign_tag(combinator \\ empty()) do
+    literal_and_filters =
+      empty()
+      |> Literal.argument()
+      |> optional(tag(repeat(Object.filter()), :filters))
+
     combinator
     |> ignore(Tag.open_tag())
     |> ignore(string("assign"))
@@ -16,7 +22,7 @@ defmodule Liquex.Parser.Tag.Variable do
     |> ignore(Literal.whitespace())
     |> ignore(string("="))
     |> ignore(Literal.whitespace())
-    |> tag(Literal.argument(), :right)
+    |> tag(literal_and_filters, :right)
     |> ignore(Tag.close_tag())
     |> tag(:assign)
   end

@@ -39,6 +39,23 @@ defmodule Liquex.Render.VariableTest do
              |> IO.chardata_to_string()
              |> String.trim() == "Hello World!"
     end
+
+    test "assign another field with filter" do
+      context = Context.new(%{"a" => %{"b" => 10}})
+
+      {:ok, template} =
+        """
+        {% assign c = a.b | divided_by: 2 %}
+        {{ c }}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, context)
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim() == "5"
+    end
   end
 
   describe "capture" do
