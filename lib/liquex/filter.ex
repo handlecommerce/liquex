@@ -794,7 +794,8 @@ defmodule Liquex.Filter do
     map
     |> Enum.filter(fn v ->
       case Map.get(v, key) do
-        falsy when falsy in [false, nil] -> false
+        false -> false
+        nil -> false
         _ -> true
       end
     end)
