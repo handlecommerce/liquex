@@ -781,4 +781,22 @@ defmodule Liquex.Filter do
     map
     |> Enum.filter(&(Map.get(&1, key) == value))
   end
+
+  @doc """
+  Creates an array including only the objects with a given truthy property value
+
+  ## Examples
+
+      iex> Liquex.Filter.where([%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}, %{"b" => false, "value" => 3}], "b", %{})
+      [%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}]
+  """
+  def where(map, key, _) do
+    map
+    |> Enum.filter(fn v ->
+      case Map.get(v, key) do
+        falsy when falsy in [false, nil] -> false
+        _ -> true
+      end
+    end)
+  end
 end
