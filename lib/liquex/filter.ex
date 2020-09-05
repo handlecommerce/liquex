@@ -586,7 +586,8 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.sort(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
       ["Sally Snake", "giraffe", "octopus", "zebra"]
   """
-  def sort(list, _), do: Enum.sort(list)
+  def sort(list, _), do: Liquex.Collection.sort(list)
+  def sort(list, field_name, _), do: Liquex.Collection.sort(list, field_name)
 
   @doc """
   Sorts items in an array in case-insensitive order.
@@ -596,7 +597,10 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.sort_natural(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
       ["giraffe", "octopus", "Sally Snake", "zebra"]
   """
-  def sort_natural(list, _), do: Enum.sort_by(list, &String.downcase/1)
+  def sort_natural(list, _), do: Liquex.Collection.sort_case_insensitive(list)
+
+  def sort_natural(list, field_name, _),
+    do: Liquex.Collection.sort_case_insensitive(list, field_name)
 
   @doc """
   Divides a string into an array using the argument as a separator. split is
@@ -777,10 +781,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.where([%{"b" => 2}, %{"b" => 1}], "b", 1, %{})
       [%{"b" => 1}]
   """
-  def where(map, key, value, _) do
-    map
-    |> Enum.filter(&(Map.get(&1, key) == value))
-  end
+  def where(list, key, value, _), do: Liquex.Collection.where(list, key, value)
 
   @doc """
   Creates an array including only the objects with a given truthy property value
@@ -790,14 +791,5 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.where([%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}, %{"b" => false, "value" => 3}], "b", %{})
       [%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}]
   """
-  def where(map, key, _) do
-    map
-    |> Enum.filter(fn v ->
-      case Map.get(v, key) do
-        false -> false
-        nil -> false
-        _ -> true
-      end
-    end)
-  end
+  def where(list, key, _), do: Liquex.Collection.where(list, key)
 end
