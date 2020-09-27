@@ -8,10 +8,12 @@ defmodule Liquex.Parser.Field do
   @spec identifier(NimbleParsec.t()) :: NimbleParsec.t()
   def identifier(combinator \\ empty()) do
     # Identifiers can start with any letter or underscore.
-    #   - the remaining characters can include digits
+    #   - The remaining characters can include digits
+    #   - May end in a question mark (?)
     combinator
     |> utf8_string([?a..?z, ?A..?Z, ?_], 1)
     |> concat(utf8_string([?a..?z, ?A..?Z, ?0..?9, ?_], min: 0))
+    |> concat(optional(string("?")))
     |> reduce({Enum, :join, []})
   end
 
