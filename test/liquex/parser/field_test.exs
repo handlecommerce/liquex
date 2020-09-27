@@ -16,6 +16,10 @@ defmodule Liquex.Parser.FieldTest do
     )
   end
 
+  test "field with question mark at end" do
+    assert_parse("{{ field? }}", object: [field: [key: "field?"], filters: []])
+  end
+
   test "with accessors" do
     assert_parse(
       "{{ field[1] }}",
