@@ -401,7 +401,7 @@ defmodule Liquex.Filter do
   def minus(left, right, _), do: left - right
 
   @doc """
-  Subtracts a number from another number.
+  Returns the remainder of a division operation.
 
   ## Examples
 
