@@ -352,7 +352,6 @@ defmodule Liquex.Filter do
   """
   def join(values, joiner, _), do: Enum.join(values, joiner)
 
-  @spec last(list, Liquex.Context.t()) :: any
   @doc """
   Returns the last item of `arr`.
 
@@ -364,6 +363,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.first([], %{})
       nil
   """
+  @spec last(list, Liquex.Context.t()) :: any
   def last(arr, context), do: arr |> Enum.reverse() |> first(context)
 
   @doc """
@@ -375,6 +375,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.lstrip("          So much room for activities!          ", %{})
       "So much room for activities!          "
   """
+  @spec lstrip(String.t(), Context.t()) :: String.t()
   def lstrip(value, _), do: value |> String.trim_leading()
 
   @doc """
@@ -385,6 +386,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.map([%{"a" => 1}, %{"a" => 2, "b" => 1}], "a", %{})
       [1, 2]
   """
+  @spec map([any], term, Context.t()) :: [any]
   def map(arr, key, _), do: Enum.map(arr, &Map.get(&1, key, nil))
 
   @doc """
@@ -398,6 +400,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.minus(183.357, 12, %{})
       171.357
   """
+  @spec minus(number, number, Context.t()) :: number
   def minus(left, right, _), do: left - right
 
   @doc """
@@ -411,6 +414,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.modulo(183.357, 12, %{})
       3.357
   """
+  @spec modulo(number, number, Context.t()) :: number
   def modulo(left, right, _) when is_float(left) or is_float(right),
     do: :math.fmod(left, right) |> Float.round(5)
 
@@ -424,6 +428,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.newline_to_br("\\nHello\\nthere\\n", %{})
       "<br />\\nHello<br />\\nthere<br />\\n"
   """
+  @spec newline_to_br(String.t(), Context.t()) :: String.t()
   def newline_to_br(value, _), do: String.replace(value, "\n", "<br />\n")
 
   @doc """
