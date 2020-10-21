@@ -42,7 +42,7 @@ defmodule Liquex.Argument do
 
   defp do_eval(value, [{:key, key} | tail]) do
     value
-    |> Map.get(key)
+    |> fetch_with_indifferent_access(key)
     |> apply_lazy(value)
     |> do_eval(tail)
   end
@@ -89,4 +89,25 @@ defmodule Liquex.Argument do
 
   defp do_assign(_variables, [], value), do: value
   defp do_assign(_, _, _), do: raise(LiquexError, "Could not assign value")
+
+  @spec fetch_with_indifferent_access(map, String.t()) :: term | nil
+  defp fetch_with_indifferent_access(%{} = map, key) do
+    case Map.fetch(map, key) do
+      {:ok, value} -> value
+      _ -> fetch_with_atom(map, safe_string_to_atom(key))
+    end
+  end
+
+  @spec fetch_with_atom(map, {:ok, atom} | :error) :: term | nil
+  defp fetch_with_atom(%{} = map, {:ok, key}), do: Map.get(map, key)
+  defp fetch_with_atom(_, :error), do: nil
+
+  @spec safe_string_to_atom(String.t()) :: {:ok, atom} | :error
+  defp safe_string_to_atom(str) do
+    try do
+      {:ok, String.to_existing_atom(str)}
+    rescue
+      ArgumentError -> :error
+    end
+  end
 end
