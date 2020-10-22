@@ -40,7 +40,7 @@ defmodule Liquex.Render.Variable do
          [increment: [identifier: identifier, by: increment]],
          %Context{variables: variables} = context
        ) do
-    value = Map.get(variables, identifier, 0) + increment
+    value = Liquex.Indifferent.get(variables, identifier, 0) + increment
     {[], Context.assign(context, identifier, value)}
   end
 end
