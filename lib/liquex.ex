@@ -165,7 +165,7 @@ defmodule Liquex do
   Add the package to your `mix.exs` file.
 
       def deps do
-        [{:liquex, "~> 0.4"}]
+        [{:liquex, "~> 0.5"}]
       end
 
   """
