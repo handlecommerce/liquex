@@ -70,6 +70,8 @@ defmodule Liquex.Indifferent do
       true ->
         :error
     end
+  rescue
+    ArgumentError -> :error
   end
 
   defp get_key!(map, key, default) do
