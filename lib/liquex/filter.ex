@@ -387,7 +387,7 @@ defmodule Liquex.Filter do
       [1, 2]
   """
   @spec map([any], term, Context.t()) :: [any]
-  def map(arr, key, _), do: Enum.map(arr, &Map.get(&1, key, nil))
+  def map(arr, key, _), do: Enum.map(arr, &Liquex.Indifferent.get(&1, key, nil))
 
   @doc """
   Subtracts a number from another number.

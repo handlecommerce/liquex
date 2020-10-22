@@ -2,6 +2,7 @@ defmodule Liquex.Argument do
   @moduledoc false
 
   alias Liquex.Context
+  alias Liquex.Indifferent
 
   @type field_t :: any
   @type argument_t ::
@@ -42,7 +43,7 @@ defmodule Liquex.Argument do
 
   defp do_eval(value, [{:key, key} | tail]) do
     value
-    |> Map.get(key)
+    |> Indifferent.get(key)
     |> apply_lazy(value)
     |> do_eval(tail)
   end
