@@ -19,6 +19,8 @@ defmodule Liquex.Context do
           errors: list(LiquexError.t())
         }
 
+  alias Liquex.Indifferent
+
   @spec new(map(), Keyword.t()) :: t()
   @doc """
   Create a new `Context.t` using predefined `variables` map
@@ -39,11 +41,8 @@ defmodule Liquex.Context do
 
   Set a variable named `key` with the given `value` in the current context
   """
-  def assign(%__MODULE__{} = context, key, value) when is_atom(key),
-    do: assign(context, Atom.to_string(key), value)
-
   def assign(%__MODULE__{variables: variables} = context, key, value) do
-    updated_variables = Map.put(variables, key, value)
+    updated_variables = Indifferent.put(variables, key, value)
     %{context | variables: updated_variables}
   end
 

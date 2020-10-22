@@ -21,6 +21,11 @@ defmodule Liquex.ArgumentTest do
       assert 5 == Argument.eval([field: [key: "a", key: "b"]], Context.new(%{"a" => %{"b" => 5}}))
     end
 
+    test "evaluate with atom keys" do
+      assert 5 == Argument.eval([field: [key: "i"]], Context.new(%{i: 5}))
+      assert 5 == Argument.eval([field: [key: "a", key: "b"]], Context.new(%{a: %{b: 5}}))
+    end
+
     test "evaluate with array field" do
       obj = Context.new(%{"field" => [%{}, %{"child" => 5}]})
 
