@@ -38,7 +38,8 @@ defimpl Liquex.Collection, for: [Enumerable, List, Range] do
 
   def sort(collection), do: Enum.sort(collection)
 
-  def sort(collection, field_name), do: Enum.sort_by(collection, &Map.get(&1, field_name))
+  def sort(collection, field_name),
+    do: Enum.sort_by(collection, &Liquex.Indifferent.get(&1, field_name))
 
   def sort_case_insensitive(collection) do
     Enum.sort_by(collection, fn
@@ -49,7 +50,7 @@ defimpl Liquex.Collection, for: [Enumerable, List, Range] do
 
   def sort_case_insensitive(collection, field_name) do
     Enum.sort_by(collection, fn record ->
-      case Map.get(record, field_name) do
+      case Liquex.Indifferent.get(record, field_name) do
         value when is_binary(value) -> String.downcase(value)
         value -> value
       end
@@ -59,7 +60,7 @@ defimpl Liquex.Collection, for: [Enumerable, List, Range] do
   def where(collection, field_name) do
     collection
     |> Enum.filter(fn v ->
-      case Map.get(v, field_name) do
+      case Liquex.Indifferent.get(v, field_name) do
         false -> false
         nil -> false
         _ -> true
@@ -69,7 +70,7 @@ defimpl Liquex.Collection, for: [Enumerable, List, Range] do
 
   def where(collection, field_name, value) do
     collection
-    |> Enum.filter(&(Map.get(&1, field_name) == value))
+    |> Enum.filter(&(Liquex.Indifferent.get(&1, field_name) == value))
   end
 
   def to_enumerable(collection), do: collection

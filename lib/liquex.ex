@@ -50,6 +50,21 @@ defmodule Liquex do
 
       iex> "There are 5 products"
 
+  ## Indifferent access
+
+  By default, Liquex accesses your maps and structs that may have atom or
+  string (or other type) keys. Liquex will try a string key first. If that
+  fails, it will fall back to using an atom keys.  This is similar to how
+  Ruby on Rails handles many of its hashes.
+
+  This allows you to pass in your structs without having to replace all your
+  keys with string keys.
+
+      iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
+      iex> context = Liquex.Context.new(%{name: "World"})
+      iex> {content, _context} = Liquex.render(template_ast, context)
+      iex> content |> to_string()
+      "Hello World!"
 
   ## Custom filters
 
@@ -69,7 +84,7 @@ defmodule Liquex do
       context = Liquex.Context.new(%{}, filter_module: CustomFilter)
       {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}"
 
-      {result, _} =  Liquex.render(template_ast, context)
+      {result, _} = Liquex.render(template_ast, context)
       result |> to_string()
 
       iex> "HELLO WORLD!"
