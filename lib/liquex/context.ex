@@ -23,7 +23,7 @@ defmodule Liquex.Context do
 
   @spec new(map(), Keyword.t()) :: t()
   @doc """
-  Create a new `Context.t` using predefined `variables` map
+  Create a new `Context` using predefined `variables` map
 
   Returns a new, initialized context object
   """

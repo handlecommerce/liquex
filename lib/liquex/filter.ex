@@ -6,6 +6,8 @@ defmodule Liquex.Filter do
   @type filter_t :: {:filter, [...]}
   @callback apply(any, filter_t, map) :: any
 
+  alias Liquex.Context
+
   defmacro __using__(_) do
     quote do
       @behaviour Liquex.Filter
