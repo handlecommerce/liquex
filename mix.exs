@@ -6,7 +6,7 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.5.0",
+      version: "0.6.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -34,14 +34,14 @@ defmodule Liquex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nimble_parsec, "~> 0.5.3"},
+      {:nimble_parsec, "~> 1.1"},
       {:timex, "~> 3.6"},
-      {:date_time_parser, "~> 1.0"},
+      {:date_time_parser, "~> 1.1"},
       {:html_entities, "~> 0.5.1"},
       {:html_sanitize_ex, "~> 1.3.0"},
       {:credo, "~> 1.2", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:jason, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end

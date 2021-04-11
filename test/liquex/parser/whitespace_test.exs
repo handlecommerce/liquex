@@ -4,7 +4,7 @@ defmodule Liquex.Parser.WhitespaceTest do
 
   test "Parses with {%- and -%} properly" do
     assert_parse("Hello {%- comment -%}Ignored text{%- endcomment -%} World",
-      text: "Hello ",
+      text: "Hello",
       text: "World"
     )
   end

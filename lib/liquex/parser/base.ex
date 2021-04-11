@@ -12,6 +12,6 @@ defmodule Liquex.Parser.Base do
   @spec base_element(NimbleParsec.t()) :: NimbleParsec.t()
   def base_element(combinator \\ empty()) do
     combinator
-    |> choice([Object.object(), Tag.tag(), Literal.text()])
+    |> choice([Object.object(), Tag.tag(), Literal.text(), Literal.ignored_leading_whitespace()])
   end
 end
