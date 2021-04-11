@@ -2,8 +2,10 @@
 
 A [Liquid](https://shopify.github.io/liquid/) template parser for Elixir.
 
-Liquid template renderer for Elixir with a goal of 100% compatibility with the
+Liquid template renderer for Elixir with 100% compatibility with the
 [Liquid](https://shopify.github.io/liquid/) gem by [Shopify](https://www.shopify.com/).
+If you find that this library is not byte for byte equivalent to liquid, please
+[open an issue](https://github.com/markglenn/liquex/issues).
 
 ## Installation
 

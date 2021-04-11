@@ -54,8 +54,7 @@ defmodule Liquex.MixProject do
 
   defp description do
     """
-    Liquid template parser for Elixir.  The goal is to be 100% compatible with the Liquid
-    gem for Ruby.
+    Liquid template parser for Elixir.  100% compatibility with the Liquid gem for Ruby.
     """
   end
 end

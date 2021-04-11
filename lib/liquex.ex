@@ -1,6 +1,6 @@
 defmodule Liquex do
   @moduledoc """
-  Liquid template renderer for Elixir with a goal of 100% compatibility with the
+  Liquid template renderer for Elixir with 100% compatibility with the
   [Liquid](https://shopify.github.io/liquid/) gem by [Shopify](https://www.shopify.com/).
 
   ## Basic Usage
