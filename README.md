@@ -13,7 +13,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.5"}
+    {:liquex, "~> 0.6"}
   ]
 end
 ```
@@ -45,15 +45,7 @@ be considered a drop in replacement of the Liquid gem, but in Elixir.
 - [x] Lazy variable resolvers
 - [x] Date processing parity with Ruby
 - [x] Access maps with atom or string keys
-
-There is a caveat that must be noted: ***Whitespace control is partially supported.***
-
-[Whitespace control](https://shopify.github.io/liquid/basics/whitespace/) is only partially
-supported.  Whitespace is successfully removed after `-%}` and `-}}` tags.  However, whitespace
-isn't removed from the left side yet, before `{%-` and `{{-`.  This is because we're using
-[NimbleParsec](https://github.com/dashbitco/nimble_parsec) which does not support greedy matches.
-Instead, we will need to do post processing to properly remove spaces.  As whitespace control is
-deemed of low importance for most applications, this has not been prioritized.
+- [x] Whitespace control
 
 ## Lazy variables
 

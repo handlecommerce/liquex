@@ -24,6 +24,14 @@ defmodule Liquex.Render.ObjectTest do
       assert "hello" == render("{{ a }}", context)
       assert "1" == render("{{ b.c }}", context)
     end
+
+    test "removes tail whitespace" do
+      assert "Hello" == render("{{ 'Hello' -}} ")
+    end
+
+    test "removes leading whitespace" do
+      assert "Hello" == render(" {{- 'Hello' }}")
+    end
   end
 
   describe "render with filter" do
@@ -59,8 +67,8 @@ defmodule Liquex.Render.ObjectTest do
   def render(doc, context \\ %Context{}) do
     {:ok, parsed_doc, _, _, _, _} = Parser.parse(doc)
 
-    {[result], _} = Liquex.render(parsed_doc, context)
+    {result, _} = Liquex.render(parsed_doc, context)
 
-    result
+    result |> to_string()
   end
 end

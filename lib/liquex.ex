@@ -14,19 +14,7 @@ defmodule Liquex do
   ## Supported features
 
   Currently, all standard Liquid tags, filters, and types are fully supported.  Liquex can
-  be considered a drop in replacement of the Liquid gem, but in Elixir.
-
-  There is a caveat that must be noted:
-
-  ***Whitespace control is partially supported.***
-
-  [Whitespace control](https://shopify.github.io/liquid/basics/whitespace/) is only partially
-  supported.  Whitespace is successfully removed after `-%}` and `-}}` tags.  However, whitespace
-  isn't removed from the left side yet, before `{%-` and `{{-`.  This is because we're using
-  [NimbleParsec](https://github.com/dashbitco/nimble_parsec) which does not support greedy matches.
-  Instead, we will need to do post processing to properly remove spaces.  As whitespace control is
-  deemed of low importance for most applications, this has not been prioritized.
-
+  be considered a byte for byte drop in replacement of the Liquid gem.
 
   ## Lazy variables
 
@@ -165,7 +153,7 @@ defmodule Liquex do
   Add the package to your `mix.exs` file.
 
       def deps do
-        [{:liquex, "~> 0.5"}]
+        [{:liquex, "~> 0.6"}]
       end
 
   """

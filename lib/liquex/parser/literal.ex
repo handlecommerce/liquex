@@ -42,7 +42,19 @@ defmodule Liquex.Parser.Literal do
 
   def whitespace(combinator \\ empty(), min \\ 0) do
     combinator
-    |> utf8_string([?\s, ?\n, ?\r], min: min)
+    |> utf8_string([?\s, ?\n, ?\r, ?\t], min: min)
+  end
+
+  def ignored_leading_whitespace(combinator \\ empty()) do
+    combinator
+    |> whitespace(1)
+    |> lookahead(
+      choice([
+        string("{%-"),
+        string("{{-")
+      ])
+    )
+    |> ignore()
   end
 
   def int(combinator \\ empty()) do
@@ -102,10 +114,20 @@ defmodule Liquex.Parser.Literal do
   @spec text(NimbleParsec.t()) :: NimbleParsec.t()
   def text(combinator \\ empty()) do
     combinator
-    |> lookahead_not(choice([string("{{"), string("{%")]))
+    |> lookahead_not(opening_tag())
     |> utf8_char([])
     |> times(min: 1)
     |> reduce({Kernel, :to_string, []})
     |> unwrap_and_tag(:text)
+  end
+
+  def opening_tag(combinator \\ empty()) do
+    combinator
+    |> choice([
+      whitespace(empty(), 1) |> string("{{-"),
+      whitespace(empty(), 1) |> string("{%-"),
+      string("{{"),
+      string("{%")
+    ])
   end
 end
