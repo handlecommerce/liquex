@@ -18,7 +18,7 @@ defmodule Liquex.Parser.Tag.ControlFlow do
         string("<"),
         string("contains")
       ])
-      |> map({String, :to_existing_atom, []})
+      |> map({String, :to_atom, []})
 
     boolean_operator =
       choice([
