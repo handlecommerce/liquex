@@ -50,10 +50,14 @@ defmodule Liquex.Argument do
 
   defp do_eval(value, [{:accessor, accessor} | tail]) do
     value
-    |> Enum.at(accessor)
+    |> value_at(accessor)
     |> apply_lazy(value)
     |> do_eval(tail)
   end
+
+  defp value_at(value, index) when is_map(value), do: (Enum.at(value, index) || {nil, []}) |> elem(1)
+  defp value_at(value, index) when is_list(value), do: Enum.at(value, index)
+  defp value_at(_value, _index), do: []
 
   # Apply a lazy function if needed
   defp apply_lazy(fun, _parent) when is_function(fun, 0), do: fun.()
