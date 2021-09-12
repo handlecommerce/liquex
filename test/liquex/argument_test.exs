@@ -29,7 +29,7 @@ defmodule Liquex.ArgumentTest do
     test "evaluate with array field" do
       obj = Context.new(%{"field" => [%{}, %{"child" => 5}]})
 
-      assert 5 == Argument.eval([field: [key: "field", accessor: 1, key: "child"]], obj)
+      assert 5 == Argument.eval([field: [key: "field", accessor: {:literal, 1}, key: "child"]], obj)
     end
 
     test "evaluate with array.first" do
@@ -46,7 +46,7 @@ defmodule Liquex.ArgumentTest do
 
     test "evaluate with out of bounds array field" do
       obj = Context.new(%{"field" => [%{}, %{"child" => 5}]})
-      assert nil == Argument.eval([field: [key: "field", accessor: 5, key: "child"]], obj)
+      assert nil == Argument.eval([field: [key: "field", accessor: {:literal, 5}, key: "child"]], obj)
     end
 
     test "anonymous function field" do
