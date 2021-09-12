@@ -131,3 +131,9 @@ defmodule Liquex.Parser.Literal do
     ])
   end
 end
+defmodule Liquex.Parser.LiteralHelper do
+  import NimbleParsec
+  import Liquex.Parser.Literal
+
+  defcombinator(:argument, argument())
+end
