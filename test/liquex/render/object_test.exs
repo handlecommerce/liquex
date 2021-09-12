@@ -25,6 +25,28 @@ defmodule Liquex.Render.ObjectTest do
       assert "1" == render("{{ b.c }}", context)
     end
 
+    test "list access to object fields" do
+      context =
+        Context.new(%{
+          "a" => ["b", ["c", "d"]]
+        })
+
+      assert "bcd" == render("{{ a }}", context)
+      assert "b" == render("{{ a[0] }}", context)
+      assert "cd" == render("{{ a[1] }}", context)
+      assert "c" == render("{{ a[1][0] }}", context)
+      assert "" == render("{{ a[2] }}", context)
+    end
+
+    test "wrong access to object and list fields" do
+      context =
+        Context.new(%{
+          "b" => %{"c" => 1}
+        })
+
+      assert "" == render("{{ b[0] }}", context)
+    end
+
     test "removes tail whitespace" do
       assert "Hello" == render("{{ 'Hello' -}} ")
     end
@@ -61,6 +83,41 @@ defmodule Liquex.Render.ObjectTest do
         })
 
       assert "Hello World" == render("{{ message.calculated_value }}", context)
+    end
+  end
+
+  describe "square brackets object access" do
+    test "simple field name" do
+      context =
+        Context.new(%{
+          "message" => %{"key" => "Hello World"}
+        })
+
+      assert "Hello World" == render("{{ message['key'] }}", context)
+      assert "Hello World" == render("{{ message[\"key\"] }}", context)
+    end
+
+    test "field name from context" do
+      context =
+        Context.new(%{
+          "keyvar" => "key",
+          "message" => %{
+            "key" => "Hello World"
+          }
+        })
+
+      assert "Hello World" == render("{{ message[keyvar] }}", context)
+    end
+
+    test "field name from variable" do
+      context =
+        Context.new(%{
+          "message" => %{
+            "map" => %{"key" => "Hello World"}
+          }
+        })
+
+      assert "Hello World" == render("{% assign mapvar = \"map\" %}{% assign keyvar = \"key\" %}{{ message[mapvar][keyvar] }}", context)
     end
   end
 

@@ -5,18 +5,19 @@ defmodule Liquex.Parser.Object do
 
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.LiteralHelper
 
   @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
   def arguments(combinator \\ empty()) do
     choice([
       combinator
-      |> Literal.argument()
+      |> parsec({LiteralHelper, :argument})
       |> lookahead_not(string(":"))
       |> repeat(
         ignore(Literal.whitespace())
         |> ignore(string(","))
         |> ignore(Literal.whitespace())
-        |> concat(Literal.argument())
+        |> concat(parsec({LiteralHelper, :argument}))
         |> lookahead_not(string(":"))
       )
       |> optional(
@@ -45,7 +46,7 @@ defmodule Liquex.Parser.Object do
     |> concat(Field.identifier())
     |> ignore(string(":"))
     |> ignore(Literal.whitespace())
-    |> concat(Literal.argument())
+    |> concat(parsec({LiteralHelper, :argument}))
     |> tag(:keyword)
   end
 
@@ -73,7 +74,7 @@ defmodule Liquex.Parser.Object do
     |> ignore(string("{{"))
     |> ignore(optional(string("-")))
     |> ignore(Literal.whitespace())
-    |> Literal.argument()
+    |> parsec({LiteralHelper, :argument})
     |> optional(tag(repeat(filter()), :filters))
     |> ignore(Literal.whitespace())
     |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
