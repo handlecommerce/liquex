@@ -13,8 +13,8 @@ defmodule Liquex.Argument do
   @spec eval(argument_t | [argument_t], Context.t()) :: field_t
   def eval([argument], context), do: eval(argument, context)
 
-  def eval({:field, accesses}, %Context{variables: variables}),
-    do: do_eval(variables, accesses)
+  def eval({:field, accesses}, %Context{variables: variables} = context),
+    do: do_eval(variables, accesses, context)
 
   def eval({:literal, literal}, _context), do: literal
 
@@ -23,43 +23,51 @@ defmodule Liquex.Argument do
 
   def eval({:keyword, [key, value]}, context), do: {key, eval(value, context)}
 
-  defp do_eval(value, []), do: apply_lazy(value, nil)
-  defp do_eval(nil, _), do: nil
+  defp do_eval(value, [], context), do: apply_lazy(value, nil, context)
+  defp do_eval(nil, _, _context), do: nil
 
   # Special case ".first"
-  defp do_eval(value, [{:key, "first"} | tail]) when is_list(value) do
+  defp do_eval(value, [{:key, "first"} | tail], context) when is_list(value) do
     value
     |> Enum.at(0)
-    |> apply_lazy(value)
-    |> do_eval(tail)
+    |> apply_lazy(value, context)
+    |> do_eval(tail, context)
   end
 
   # Special case ".size"
-  defp do_eval(value, [{:key, "size"} | tail]) when is_list(value) do
+  defp do_eval(value, [{:key, "size"} | tail], context) when is_list(value) do
     value
     |> length()
-    |> do_eval(tail)
+    |> do_eval(tail, context)
   end
 
-  defp do_eval(value, [{:key, key} | tail]) do
+  defp do_eval(value, [{:key, key} | tail], context) do
     value
     |> Indifferent.get(key)
-    |> apply_lazy(value)
-    |> do_eval(tail)
+    |> apply_lazy(value, context)
+    |> do_eval(tail, context)
   end
 
-  defp do_eval(value, [{:accessor, accessor} | tail]) do
+  defp do_eval(value, [{:accessor, accessor} | tail], context) do
     value
-    |> Enum.at(accessor)
-    |> apply_lazy(value)
-    |> do_eval(tail)
+    |> value_at(accessor, context)
+    |> apply_lazy(value, context)
+    |> do_eval(tail, context)
   end
+
+  defp value_at(value, argument, context) when is_tuple(argument) and is_map(value),
+    do: Indifferent.get(value, eval(argument, context))
+
+  defp value_at(value, argument, context) when is_tuple(argument) and is_list(value),
+    do: Enum.at(value, eval(argument, context))
+
+  defp value_at(_value, _index, _context), do: []
 
   # Apply a lazy function if needed
-  defp apply_lazy(fun, _parent) when is_function(fun, 0), do: fun.()
-  defp apply_lazy(fun, parent) when is_function(fun, 1), do: fun.(parent)
+  defp apply_lazy(fun, _parent, _context) when is_function(fun, 0), do: fun.()
+  defp apply_lazy(fun, parent, _context) when is_function(fun, 1), do: fun.(parent)
 
-  defp apply_lazy(value, _), do: value
+  defp apply_lazy(value, _, _context), do: value
 
   def assign(context, [argument], value), do: assign(context, argument, value)
 

@@ -4,6 +4,7 @@ defmodule Liquex.Parser.Field do
   import NimbleParsec
 
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.LiteralHelper
 
   @spec identifier(NimbleParsec.t()) :: NimbleParsec.t()
   def identifier(combinator \\ empty()) do
@@ -22,24 +23,30 @@ defmodule Liquex.Parser.Field do
     combinator
     |> ignore(string("["))
     |> ignore(Literal.whitespace())
-    |> integer(min: 1)
+    |> parsec({LiteralHelper, :argument})
     |> ignore(Literal.whitespace())
     |> ignore(string("]"))
     |> unwrap_and_tag(:accessor)
   end
+
+  @spec key_access(NimbleParsec.t()) :: NimbleParsec.t()
+  def key_access(combinator \\ empty()) do
+    combinator
+    |> ignore(string("."))
+    |> identifier()
+    |> unwrap_and_tag(:key)
+end
 
   @spec field(NimbleParsec.t()) :: NimbleParsec.t()
   def field(combinator \\ empty()) do
     combinator
     |> identifier()
     |> unwrap_and_tag(:key)
-    |> optional(accessor())
-    |> repeat(
-      ignore(string("."))
-      |> identifier()
-      |> unwrap_and_tag(:key)
-      |> optional(accessor())
-    )
+    |> repeat(choice([
+      accessor(),
+      key_access()
+    ]))
     |> tag(:field)
   end
+
 end
