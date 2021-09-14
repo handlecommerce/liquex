@@ -4,7 +4,7 @@ defmodule Liquex.ComparisonTest do
 
   test "run examples" do
     File.ls!("test/integration/cases/")
-    |> Enum.filter(&String.ends_with?(&1, ".liquid"))
+    |> Enum.filter(&String.ends_with?(&1, ".hrx"))
     |> Enum.each(&assert_match_liquid("test/integration/cases/#{&1}"))
   end
 end
