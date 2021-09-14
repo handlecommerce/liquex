@@ -3,6 +3,7 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   import NimbleParsec
 
+  alias Liquex.Parser.Argument
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
@@ -64,11 +65,11 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   defp argument_sequence(combinator \\ empty()) do
     combinator
-    |> Literal.argument()
+    |> Argument.argument()
     |> repeat(
       ignore(string(","))
       |> ignore(Literal.whitespace())
-      |> Literal.argument()
+      |> Argument.argument()
     )
   end
 
@@ -89,7 +90,7 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   defp collection(combinator \\ empty()) do
     combinator
-    |> choice([Literal.range(), Literal.argument()])
+    |> choice([Literal.range(), Argument.argument()])
   end
 
   defp for_parameters(combinator \\ empty()) do

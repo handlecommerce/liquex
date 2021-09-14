@@ -3,6 +3,7 @@ defmodule Liquex.Parser.Tag.Variable do
 
   import NimbleParsec
 
+  alias Liquex.Parser.Argument
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Object
@@ -11,7 +12,7 @@ defmodule Liquex.Parser.Tag.Variable do
   def assign_tag(combinator \\ empty()) do
     literal_and_filters =
       empty()
-      |> Literal.argument()
+      |> Argument.argument()
       |> optional(tag(repeat(Object.filter()), :filters))
 
     combinator
