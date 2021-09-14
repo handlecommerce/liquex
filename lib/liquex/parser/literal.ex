@@ -3,7 +3,7 @@ defmodule Liquex.Parser.Literal do
 
   import NimbleParsec
 
-  alias Liquex.Parser.Field
+  alias Liquex.Parser.Argument
 
   def boolean(combinator \\ empty()) do
     true_value = string("true") |> replace(true)
@@ -79,20 +79,14 @@ defmodule Liquex.Parser.Literal do
     |> map({String, :to_float, []})
   end
 
-  @spec argument(NimbleParsec.t()) :: NimbleParsec.t()
-  def argument(combinator \\ empty()) do
-    combinator
-    |> choice([literal(), Field.field()])
-  end
-
   @spec range(NimbleParsec.t()) :: NimbleParsec.t()
   def range(combinator \\ empty()) do
     combinator
     |> ignore(string("("))
     |> ignore(whitespace())
-    |> tag(argument(), :begin)
+    |> tag(Argument.argument(), :begin)
     |> ignore(string(".."))
-    |> tag(argument(), :end)
+    |> tag(Argument.argument(), :end)
     |> ignore(whitespace())
     |> ignore(string(")"))
     |> tag(:inclusive_range)
@@ -130,10 +124,4 @@ defmodule Liquex.Parser.Literal do
       string("{%")
     ])
   end
-end
-defmodule Liquex.Parser.LiteralHelper do
-  import NimbleParsec
-  import Liquex.Parser.Literal
-
-  defcombinator(:argument, argument())
 end

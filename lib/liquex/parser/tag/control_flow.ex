@@ -3,6 +3,7 @@ defmodule Liquex.Parser.Tag.ControlFlow do
 
   import NimbleParsec
 
+  alias Liquex.Parser.Argument
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
 
@@ -27,20 +28,20 @@ defmodule Liquex.Parser.Tag.ControlFlow do
       ])
 
     boolean_operation =
-      tag(Literal.argument(), :left)
+      tag(Argument.argument(), :left)
       |> ignore(Literal.whitespace())
       |> unwrap_and_tag(operator, :op)
       |> ignore(Literal.whitespace())
-      |> tag(Literal.argument(), :right)
+      |> tag(Argument.argument(), :right)
       |> wrap()
 
     combinator
-    |> choice([boolean_operation, Literal.literal(), Literal.argument()])
+    |> choice([boolean_operation, Literal.literal(), Argument.argument()])
     |> ignore(Literal.whitespace())
     |> repeat(
       boolean_operator
       |> ignore(Literal.whitespace())
-      |> choice([boolean_operation, Literal.literal(), Literal.argument()])
+      |> choice([boolean_operation, Literal.literal(), Argument.argument()])
     )
   end
 
@@ -81,7 +82,7 @@ defmodule Liquex.Parser.Tag.ControlFlow do
       ignore(Tag.open_tag())
       |> ignore(string("case"))
       |> ignore(Literal.whitespace(empty(), 1))
-      |> concat(Literal.argument())
+      |> concat(Argument.argument())
       |> ignore(Tag.close_tag())
 
     combinator

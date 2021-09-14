@@ -1,3 +1,7 @@
+<===> capture_and_filter.json
+{}
+
+<===> capture_and_filter.liquid
 {% assign hello = "Hello" %}
 {% assign world = "world" %}
 {% capture hello_world %}
