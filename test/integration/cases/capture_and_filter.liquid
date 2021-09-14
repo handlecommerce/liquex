@@ -1,0 +1,6 @@
+{% assign hello = "Hello" %}
+{% assign world = "world" %}
+{% capture hello_world %}
+{{hello}} {{world}}!
+{% endcapture %}
+{{ hello_world | strip }}

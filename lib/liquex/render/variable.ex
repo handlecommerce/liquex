@@ -33,7 +33,8 @@ defmodule Liquex.Render.Variable do
          %Context{} = context
        ) do
     {rendered_contents, context} = Liquex.render(contents, context)
-    {[], Context.assign(context, identifier, rendered_contents)}
+    rendered_contents_string = IO.chardata_to_string(rendered_contents)
+    {[], Context.assign(context, identifier, rendered_contents_string)}
   end
 
   defp do_render(
