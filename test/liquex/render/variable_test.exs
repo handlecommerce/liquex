@@ -75,6 +75,23 @@ defmodule Liquex.Render.VariableTest do
              |> IO.chardata_to_string()
              |> String.trim() == "Hello World!"
     end
+
+    test "capture text as string" do
+      {:ok, template} =
+        """
+        {% assign hello = "Hello" %}
+        {% capture a %}
+        {{ hello }} World!
+        {% endcapture %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      {_, %Liquex.Context{variables: variables}} = Liquex.render(template, %Context{})
+
+      assert variables["a"]
+             |> String.trim() == "Hello World!"
+    end
   end
 
   describe "increment" do
