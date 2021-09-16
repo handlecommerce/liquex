@@ -15,7 +15,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.6"}
+    {:liquex, "~> 0.7"}
   ]
 end
 ```
@@ -26,10 +26,7 @@ Documentation can be found at [https://hexdocs.pm/liquex](https://hexdocs.pm/liq
 
 ```elixir
 iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-
-iex> context = Liquex.Context.new(%{"name" => "World"})
-
-iex> {content, _context} = Liquex.render(template_ast, context)
+iex> {content, _context} = Liquex.render(template_ast, %{"name" => "World"})
 
 iex> content |> to_string()
 "Hello World!"
@@ -64,13 +61,12 @@ map, it is executed.
 ```elixir
 products_resolver = fn _parent -> Product.all() end
 
-with context <- Liquex.Context.new(%{products: products_resolver}),
-    {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
-    {result, _} <- Liquex.render(document, context) do
+with {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
+    {result, _} <- Liquex.render(document, %{products: products_resolver}) do
   result
 end
 
-iex> "There are 5 products"
+"There are 5 products"
 ```
 
 ## Indifferent access
@@ -85,8 +81,7 @@ keys with string keys.
 
 ```elixir
 iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-iex> context = Liquex.Context.new(%{name: "World"})
-iex> {content, _context} = Liquex.render(template_ast, context)
+iex> {content, _context} = Liquex.render(template_ast, %{name: "World"})
 iex> content |> to_string()
 "Hello World!"
 ```
@@ -125,66 +120,44 @@ liquid parser.
 
 ```elixir
 defmodule CustomTag do
-  import NimbleParsec
-  alias Liquex.Parser.Base
+	@moduledoc false
 
-  # Parse <<Custom Tag>>
-  def custom_tag(combinator \\\\ empty()) do
-    text =
-      lookahead_not(string(">>"))
-      |> utf8_char([])
-      |> times(min: 1)
-      |> reduce({Kernel, :to_string, []})
-      |> tag(:text)
+	@behaviour Liquex.Tag
 
-    combinator
-    |> ignore(string("<<"))
-    |> optional(text)
-    |> ignore(string(">>"))
-    |> tag(:custom_tag)
-  end
+	import NimbleParsec
 
-  def element(combinator \\\\ empty()) do
-    # Add the `custom_tag/1` parsing function to the supported element tag list
-    combinator
-    |> choice([custom_tag(), Base.base_element()])
-  end
+	@impl true
+	# Parse <<Custom Tag>>
+	def parse() do
+		text =
+			lookahead_not(string(">>"))
+			|> utf8_char([])
+			|> times(min: 1)
+			|> reduce({Kernel, :to_string, []})
+			|> tag(:text)
+
+		ignore(string("<<"))
+		|> optional(text)
+		|> ignore(string(">>"))
+	end
+
+	@impl true
+	def render(contents, context) do
+		{result, context} = Liquex.render(contents, context)
+		{["Custom Tag: ", result], context}
+	end
 end
 
 defmodule CustomParser do
-  @moduledoc false
-  import NimbleParsec
-
-  defcombinatorp(:document, repeat(CustomTag.element()))
-  defparsec(:parse, parsec(:document) |> eos())
+	use Liquex.Parser, tags: [CustomTag]
 end
-
-iex> Liquex.parse("<<Hello World!>>", CustomParser)
-iex> {:ok, [custom_tag: [text: ["Hello World!"]]]}
-```
-
-## Custom renderer
-
-In many cases, if you are building custom tags for your Liquid documents, you probably want to
-use a custom renderer.  Just like the custom filters, you add your module to the context object.
-
-```elixir
-defmodule CustomTagRender do
-  def render({:custom_tag, contents}, context) do
-    {result, context} = Liquex.render(contents, context)
-
-    {["Custom Tag: ", result], context}
-  end
-
-  # Ignore this tag if we don't match
-  def render(_, _), do: false
-end
-
-context = %Liquex.Context.new(%{}, render_module: CustomTagRender)
 
 {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
 {result, _} = Liquex.render(document, context)
 
-result |> to_string()
-iex> "Custom Tag: Hello World!"
+iex> Liquex.parse("<<Hello World!>>", CustomParser)
+iex> {:ok, [custom_tag: [text: ["Hello World!"]]]}
+
+iex> result |> to_string()
+"Custom Tag: Hello World!
 ```

@@ -4,7 +4,7 @@ defmodule Liquex.Render.ObjectTest do
   use ExUnit.Case, async: true
 
   alias Liquex.Context
-  alias Liquex.Parser
+  alias Liquex.Parser.Base
 
   describe "render" do
     test "simple objects" do
@@ -117,12 +117,16 @@ defmodule Liquex.Render.ObjectTest do
           }
         })
 
-      assert "Hello World" == render("{% assign mapvar = \"map\" %}{% assign keyvar = \"key\" %}{{ message[mapvar][keyvar] }}", context)
+      assert "Hello World" ==
+               render(
+                 "{% assign mapvar = \"map\" %}{% assign keyvar = \"key\" %}{{ message[mapvar][keyvar] }}",
+                 context
+               )
     end
   end
 
   def render(doc, context \\ %Context{}) do
-    {:ok, parsed_doc, _, _, _, _} = Parser.parse(doc)
+    {:ok, parsed_doc, _, _, _, _} = Base.parse(doc)
 
     {result, _} = Liquex.render(parsed_doc, context)
 

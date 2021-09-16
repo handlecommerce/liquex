@@ -47,7 +47,7 @@ defmodule Liquex.Filter do
     Kernel.apply(mod, func, [value | function_args] ++ [context])
   rescue
     # credo:disable-for-next-line
-    ArgumentError -> raise LiquexError, "Invalid filter #{function}"
+    ArgumentError -> raise Liquex.Error, "Invalid filter #{function}"
   end
 
   # Merges the tuples at the end of the argument list into a keyword list, but with string keys

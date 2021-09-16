@@ -9,9 +9,9 @@ defmodule Liquex.Parser.Object do
 
   @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
   def arguments(combinator \\ empty()) do
-    choice([
-      combinator
-      |> Argument.argument()
+    combinator
+    |> choice([
+      Argument.argument()
       |> lookahead_not(string(":"))
       |> repeat(
         ignore(Literal.whitespace())
@@ -30,6 +30,7 @@ defmodule Liquex.Parser.Object do
     ])
   end
 
+  @spec keyword_fields(NimbleParsec.t()) :: NimbleParsec.t()
   def keyword_fields(combinator \\ empty()) do
     combinator
     |> keyword_field()
@@ -81,6 +82,7 @@ defmodule Liquex.Parser.Object do
     |> tag(:object)
   end
 
+  @spec close_object_remove_whitespace(NimbleParsec.t()) :: NimbleParsec.t()
   def close_object_remove_whitespace(combinator \\ empty()) do
     combinator
     |> string("-}}")

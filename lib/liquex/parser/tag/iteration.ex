@@ -21,11 +21,16 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   @spec cycle_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def cycle_tag(combinator \\ empty()) do
+    cycle_group =
+      Literal.literal()
+      |> ignore(string(":"))
+      |> ignore(Literal.whitespace())
+
     combinator
     |> ignore(Tag.open_tag())
     |> ignore(string("cycle"))
     |> ignore(Literal.whitespace(empty(), 1))
-    |> optional(cycle_group() |> unwrap_and_tag(:group))
+    |> optional(cycle_group |> unwrap_and_tag(:group))
     |> tag(argument_sequence(), :sequence)
     |> ignore(Tag.close_tag())
     |> tag(:cycle)
@@ -46,6 +51,8 @@ defmodule Liquex.Parser.Tag.Iteration do
   end
 
   def tablerow_tag(combinator \\ empty()) do
+    tablerow_parameters = repeat(choice([cols(), limit(), offset()]))
+
     combinator
     |> ignore(Tag.open_tag())
     |> ignore(string("tablerow"))
@@ -56,7 +63,7 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(collection(), :collection)
     |> ignore(Literal.whitespace())
-    |> tag(tablerow_parameters(), :parameters)
+    |> tag(tablerow_parameters, :parameters)
     |> ignore(Tag.close_tag())
     |> tag(parsec(:document), :contents)
     |> ignore(Tag.tag_directive("endtablerow"))
@@ -88,53 +95,34 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> ignore(Tag.close_tag())
   end
 
-  defp collection(combinator \\ empty()) do
-    combinator
-    |> choice([Literal.range(), Argument.argument()])
+  defp collection do
+    choice([Literal.range(), Argument.argument()])
   end
 
-  defp for_parameters(combinator \\ empty()) do
-    combinator
-    |> repeat(choice([reversed(), limit(), offset()]))
+  defp for_parameters do
+    reversed =
+      replace(string("reversed"), :reversed)
+      |> unwrap_and_tag(:order)
+      |> ignore(Literal.whitespace())
+
+    repeat(choice([reversed, limit(), offset()]))
   end
 
-  defp tablerow_parameters(combinator \\ empty()) do
-    combinator
-    |> repeat(choice([cols(), limit(), offset()]))
-  end
-
-  defp reversed(combinator \\ empty()) do
-    combinator
-    |> replace(string("reversed"), :reversed)
-    |> unwrap_and_tag(:order)
-    |> ignore(Literal.whitespace())
-  end
-
-  defp cols(combinator \\ empty()) do
-    combinator
-    |> ignore(string("cols:"))
+  defp cols do
+    ignore(string("cols:"))
     |> unwrap_and_tag(integer(min: 1), :cols)
     |> ignore(Literal.whitespace())
   end
 
-  defp limit(combinator \\ empty()) do
-    combinator
-    |> ignore(string("limit:"))
+  defp limit do
+    ignore(string("limit:"))
     |> unwrap_and_tag(integer(min: 1), :limit)
     |> ignore(Literal.whitespace())
   end
 
-  defp offset(combinator \\ empty()) do
-    combinator
-    |> ignore(string("offset:"))
+  defp offset do
+    ignore(string("offset:"))
     |> unwrap_and_tag(integer(min: 1), :offset)
-    |> ignore(Literal.whitespace())
-  end
-
-  defp cycle_group(combinator \\ empty()) do
-    combinator
-    |> Literal.literal()
-    |> ignore(string(":"))
     |> ignore(Literal.whitespace())
   end
 end
