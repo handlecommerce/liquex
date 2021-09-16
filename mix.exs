@@ -6,7 +6,7 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.6.3",
+      version: "0.7.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -55,7 +55,7 @@ defmodule Liquex.MixProject do
 
   defp description do
     """
-    Liquid template parser for Elixir.  100% compatibility with the Liquid gem for Ruby.
+    Liquid template parser for Elixir. 100% compatibility with the Liquid gem for Ruby.
     """
   end
 end

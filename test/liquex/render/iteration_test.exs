@@ -29,7 +29,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ["hat", "shirt", "pants"]
@@ -49,7 +49,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(1 2)
@@ -69,7 +69,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(3 4 5 6)
@@ -89,7 +89,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(6 5 4 3 2 1)
@@ -109,7 +109,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(5)
@@ -127,7 +127,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(3 4 5)
@@ -145,7 +145,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, Context.new(%{"num" => 4}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(1 2 3 4)
@@ -169,7 +169,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(true 1 0 false 3 3 2 false 2 1 false 3 2 1 false 3 2 true 3 1 0)
@@ -193,7 +193,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(1 2 3)
@@ -215,7 +215,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(1 2 3 5)
@@ -236,7 +236,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(one two three one)
@@ -255,7 +255,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(one one two two)
@@ -277,7 +277,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list()
@@ -299,7 +299,7 @@ defmodule Liquex.Render.IterationTest do
 
       assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list()

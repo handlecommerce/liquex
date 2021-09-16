@@ -3,7 +3,8 @@ defmodule Liquex.TestHelpers do
 
   import ExUnit.Assertions
 
-  def assert_parse(doc, match), do: assert({:ok, ^match, "", _, _, _} = Liquex.Parser.parse(doc))
+  def assert_parse(doc, match),
+    do: assert({:ok, ^match, "", _, _, _} = Liquex.Parser.Base.parse(doc))
 
   def assert_match_liquid(path) do
     {:ok, archive} = Hrx.load(path)
@@ -11,21 +12,21 @@ defmodule Liquex.TestHelpers do
     object_json = get_file_contents(archive, ".json")
     liquid = get_file_contents(archive, ".liquid")
 
-    context =
-      object_json
-      |> Jason.decode!()
-      |> Liquex.Context.new()
+    context = Jason.decode!(object_json)
 
     with {:ok, ast} <- Liquex.parse(liquid),
          {data, _} <- Liquex.render(ast, context),
          {liquid_result, 0} <- liquid_render(liquid, object_json) do
-      assert String.trim_trailing(liquid_result) == to_string(data)
+      assert liquid_result == to_string(data)
     else
       {:error, msg, _} ->
         flunk("Unable to parse: #{msg}")
 
+      {response, exit_code} when is_integer(exit_code) ->
+        flunk("Unable to parse: '#{response}', exit code: #{exit_code}")
+
       _r ->
-        IO.puts("Could not execute liquid for ruby.  Ignoring...")
+        IO.warn("Could not execute liquid for ruby.  Ignoring...")
         :ok
     end
   end
