@@ -120,36 +120,36 @@ liquid parser.
 
 ```elixir
 defmodule CustomTag do
-	@moduledoc false
+  @moduledoc false
 
-	@behaviour Liquex.Tag
+  @behaviour Liquex.Tag
 
-	import NimbleParsec
+  import NimbleParsec
 
-	@impl true
-	# Parse <<Custom Tag>>
-	def parse() do
-		text =
-			lookahead_not(string(">>"))
-			|> utf8_char([])
-			|> times(min: 1)
-			|> reduce({Kernel, :to_string, []})
-			|> tag(:text)
+  @impl true
+  # Parse <<Custom Tag>>
+  def parse() do
+    text =
+      lookahead_not(string(">>"))
+      |> utf8_char([])
+      |> times(min: 1)
+      |> reduce({Kernel, :to_string, []})
+      |> tag(:text)
 
-		ignore(string("<<"))
-		|> optional(text)
-		|> ignore(string(">>"))
-	end
+    ignore(string("<<"))
+    |> optional(text)
+    |> ignore(string(">>"))
+  end
 
-	@impl true
-	def render(contents, context) do
-		{result, context} = Liquex.render(contents, context)
-		{["Custom Tag: ", result], context}
-	end
+  @impl true
+  def render(contents, context) do
+    {result, context} = Liquex.render(contents, context)
+    {["Custom Tag: ", result], context}
+  end
 end
 
 defmodule CustomParser do
-	use Liquex.Parser, tags: [CustomTag]
+  use Liquex.Parser, tags: [CustomTag]
 end
 
 {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
