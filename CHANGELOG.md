@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2021-09-17
+
+- Refactored custom tags for better developer experience [#20](https://github.com/markglenn/liquex/issues/20)
+  - Deprecated old custom tags format
+- Added `Liquex.parse!/2` that raises an exception instead of returning an error tuple
+
 ## [0.6.3] - 2021-09-14
 
 - Capture variables as strings instead of an iodata [#17](https://github.com/markglenn/liquex/pull/17)
