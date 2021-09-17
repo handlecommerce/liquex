@@ -40,7 +40,10 @@ defmodule Liquex.Parser.FieldTest do
 
     assert_parse(
       "{{ field[1].child[0] }}",
-      object: [field: [key: "field", accessor: {:literal, 1}, key: "child", accessor: {:literal, 0}], filters: []]
+      object: [
+        field: [key: "field", accessor: {:literal, 1}, key: "child", accessor: {:literal, 0}],
+        filters: []
+      ]
     )
   end
 end

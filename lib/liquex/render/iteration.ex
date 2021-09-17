@@ -8,7 +8,7 @@ defmodule Liquex.Render.Iteration do
   @behaviour Liquex.Render
 
   @impl Liquex.Render
-  @spec render(any, Context.t()) :: {iolist, Context.t()}
+  @spec render(any, Context.t()) :: {iodata, Context.t()}
   def render({:iteration, tag}, context), do: do_render(tag, context)
   def render(_, _), do: false
 

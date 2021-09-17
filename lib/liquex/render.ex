@@ -3,11 +3,11 @@ defmodule Liquex.Render do
 
   alias Liquex.Context
 
-  @callback render({atom, any}, Context.t()) :: {any, Context.t()} | false
+  @callback render({atom, any}, Context.t()) :: {iodata, Context.t()} | iodata | false
 
-  @spec render(iolist(), Liquex.document_t(), Context.t()) :: {iolist(), Context.t()}
+  @spec render(iodata(), Liquex.document_t(), Context.t()) :: {iodata(), Context.t()}
   @doc """
-  Renders a Liquid AST `document` into an `iolist`
+  Renders a Liquid AST `document` into an `iodata`
 
   A `context` is given to handle temporary contextual information for
   this render.
@@ -16,8 +16,13 @@ defmodule Liquex.Render do
     do: {content |> Enum.reverse(), context}
 
   def render(content, [tag | tail], %{render_module: custom_module} = context) do
+    if !is_nil(custom_module) do
+      IO.warn("Use of render with render_module is deprecated.  Use custom tags instead.")
+    end
+
     [
       custom_module,
+      Liquex.Render.Tag,
       Liquex.Render.Text,
       Liquex.Render.Object,
       Liquex.Render.ControlFlow,
@@ -26,12 +31,17 @@ defmodule Liquex.Render do
     ]
     |> do_render(tag, context)
     |> case do
-      {result, context} ->
-        [result | content]
-        |> render(tail, context)
+      # No tag renderer found
+      nil ->
+        raise Liquex.Error, "No tag renderer found for tag #{tag}"
 
-      _ ->
-        raise LiquexError, "No tag renderer found for tag #{tag}"
+      # Returned the rendered results and new context
+      {result, %Context{} = context} ->
+        render([result | content], tail, context)
+
+      # Returned the rendered results without a new context
+      result ->
+        render([result | content], tail, context)
     end
   end
 

@@ -19,7 +19,7 @@ defmodule Liquex.Render.ControlFlowTest do
         |> Liquex.parse()
 
       assert elem(Liquex.render(template, context), 0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == ""
     end
 
@@ -38,7 +38,7 @@ defmodule Liquex.Render.ControlFlowTest do
         |> Liquex.parse()
 
       assert elem(Liquex.render(template, context), 0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "These are Not Awesome Shoes"
     end
 
@@ -59,7 +59,7 @@ defmodule Liquex.Render.ControlFlowTest do
         |> Liquex.parse()
 
       assert elem(Liquex.render(template, context), 0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "These are not awesome shoes"
     end
 
@@ -79,7 +79,7 @@ defmodule Liquex.Render.ControlFlowTest do
 
       assert Liquex.render(template, Context.new(%{"customer" => customer}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() ==
                "Welcome! We're pleased to offer you a special discount of 15% on all products."
     end
@@ -100,7 +100,7 @@ defmodule Liquex.Render.ControlFlowTest do
 
       assert Liquex.render(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "These shoes ARE awesome."
 
       assert Liquex.render(
@@ -108,7 +108,7 @@ defmodule Liquex.Render.ControlFlowTest do
                Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
              )
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "These shoes are not awesome."
     end
   end
@@ -131,17 +131,17 @@ defmodule Liquex.Render.ControlFlowTest do
 
       assert Liquex.render(template, Context.new(%{"name" => "James"}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "Hello, James!"
 
       assert Liquex.render(template, Context.new(%{"name" => "John"}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "Hello, John!"
 
       assert Liquex.render(template, Context.new(%{"name" => "Jim"}))
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "Hello! Who are you?"
     end
   end
