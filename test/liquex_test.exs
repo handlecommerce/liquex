@@ -33,8 +33,10 @@ defmodule LiquexTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert elem(Liquex.render(template, context), 0)
-             |> IO.chardata_to_string()
+      assert template
+             |> Liquex.render(context)
+             |> elem(0)
+             |> to_string()
              |> String.trim() == "These shoes are awesome!"
     end
   end

@@ -9,6 +9,7 @@ defmodule Liquex.Parser.Tag.Variable do
   alias Liquex.Parser.Object
   alias Liquex.Parser.Tag
 
+  @spec assign_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def assign_tag(combinator \\ empty()) do
     literal_and_filters =
       empty()
@@ -28,6 +29,7 @@ defmodule Liquex.Parser.Tag.Variable do
     |> tag(:assign)
   end
 
+  @spec capture_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def capture_tag(combinator \\ empty()) do
     combinator
     |> ignore(Tag.open_tag())
@@ -40,6 +42,7 @@ defmodule Liquex.Parser.Tag.Variable do
     |> tag(:capture)
   end
 
+  @spec incrementer_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def incrementer_tag(combinator \\ empty()) do
     increment = replace(string("increment"), 1)
     decrement = replace(string("decrement"), -1)

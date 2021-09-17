@@ -19,7 +19,7 @@ defmodule Liquex.Render.VariableTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "Hello World!"
     end
 
@@ -36,7 +36,7 @@ defmodule Liquex.Render.VariableTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "Hello World!"
     end
 
@@ -53,7 +53,7 @@ defmodule Liquex.Render.VariableTest do
 
       assert Liquex.render(template, context)
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "5"
     end
   end
@@ -72,7 +72,7 @@ defmodule Liquex.Render.VariableTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "Hello World!"
     end
 
@@ -111,7 +111,7 @@ defmodule Liquex.Render.VariableTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "13-2"
     end
 
@@ -131,7 +131,7 @@ defmodule Liquex.Render.VariableTest do
 
       assert Liquex.render(template, %Context{})
              |> elem(0)
-             |> IO.chardata_to_string()
+             |> to_string()
              |> String.trim() == "7--2"
     end
   end

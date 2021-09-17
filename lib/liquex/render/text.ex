@@ -3,7 +3,7 @@ defmodule Liquex.Render.Text do
 
   @behaviour Liquex.Render
 
-  @type text_t :: {:text, any}
+  @type text_t :: {:text, iodata}
 
   @impl Liquex.Render
   def render({:text, text}, context), do: {text, context}

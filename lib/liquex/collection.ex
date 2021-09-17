@@ -1,4 +1,6 @@
 defprotocol Liquex.Collection do
+  @type t :: term
+
   @spec limit(t, pos_integer()) :: t
   def limit(collection, limit)
 
@@ -31,9 +33,10 @@ defprotocol Liquex.Collection do
 end
 
 defimpl Liquex.Collection, for: [Enumerable, List, Range] do
-  @spec limit(any, integer) :: [any]
   def limit(collection, limit), do: Enum.take(collection, limit)
+
   def offset(collection, offset), do: Enum.drop(collection, offset)
+
   def reverse(collection), do: Enum.reverse(collection)
 
   def sort(collection), do: Enum.sort(collection)

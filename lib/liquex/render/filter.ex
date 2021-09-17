@@ -12,7 +12,7 @@ defmodule Liquex.Render.Filter do
     # If we have no matching filter, add to errors and return the original value
     UndefinedFunctionError ->
       {value,
-       Context.push_error(context, %LiquexError{
+       Context.push_error(context, %Liquex.Error{
          message: "Invalid filter #{Liquex.Filter.filter_name(filter)}"
        })}
   end

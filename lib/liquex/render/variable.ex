@@ -8,11 +8,11 @@ defmodule Liquex.Render.Variable do
   @behaviour Liquex.Render
 
   @impl Liquex.Render
-  @spec render(any, Context.t()) :: {iolist, Context.t()}
+  @spec render(any, Context.t()) :: {iodata, Context.t()}
   def render({:variable, tag}, context), do: do_render(tag, context)
   def render(_, _), do: false
 
-  @spec do_render(any, Context.t()) :: {iolist(), Context.t()}
+  @spec do_render(any, Context.t()) :: {iodata(), Context.t()}
   defp do_render(
          [assign: [left: left, right: [right, {:filters, filters}]]],
          %Context{} = context
@@ -33,8 +33,7 @@ defmodule Liquex.Render.Variable do
          %Context{} = context
        ) do
     {rendered_contents, context} = Liquex.render(contents, context)
-    rendered_contents_string = IO.chardata_to_string(rendered_contents)
-    {[], Context.assign(context, identifier, rendered_contents_string)}
+    {[], Context.assign(context, identifier, to_string(rendered_contents))}
   end
 
   defp do_render(

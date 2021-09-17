@@ -11,6 +11,7 @@ defmodule Liquex.Parser.Tag do
     Variable
   }
 
+  @spec open_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def open_tag(combinator \\ empty()) do
     combinator
     |> string("{%")
@@ -18,6 +19,7 @@ defmodule Liquex.Parser.Tag do
     |> Literal.whitespace()
   end
 
+  @spec close_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def close_tag(combinator \\ empty()) do
     combinator
     |> Literal.whitespace()
@@ -40,6 +42,7 @@ defmodule Liquex.Parser.Tag do
     |> ignore(tag_directive("endcomment"))
   end
 
+  @spec raw_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def raw_tag(combinator \\ empty()) do
     endraw = tag_directive("endraw") |> wrap()
 
@@ -96,9 +99,8 @@ defmodule Liquex.Parser.Tag do
   end
 
   # Close tag that also removes the whitespace after it
-  defp close_tag_remove_whitespace(combinator \\ empty()) do
-    combinator
-    |> string("-%}")
+  defp close_tag_remove_whitespace do
+    string("-%}")
     |> Literal.whitespace()
   end
 end

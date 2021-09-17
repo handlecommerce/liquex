@@ -1,18 +1,17 @@
 defmodule Liquex.Custom.CustomTagTest do
   @moduledoc false
-
   use ExUnit.Case, async: true
 
-  defmodule CustomTagExample do
+  defmodule CustomTag do
     @moduledoc false
 
-    @behaviour Liquex.Render
+    @behaviour Liquex.Tag
 
     import NimbleParsec
-    alias Liquex.Parser.Base
 
+    @impl true
     # Parse <<Custom Tag>>
-    def custom_tag(combinator \\ empty()) do
+    def parse() do
       text =
         lookahead_not(string(">>"))
         |> utf8_char([])
@@ -20,46 +19,32 @@ defmodule Liquex.Custom.CustomTagTest do
         |> reduce({Kernel, :to_string, []})
         |> tag(:text)
 
-      combinator
-      |> ignore(string("<<"))
+      ignore(string("<<"))
       |> optional(text)
       |> ignore(string(">>"))
-      |> tag(:custom_tag)
     end
 
-    def element(combinator \\ empty()) do
-      combinator
-      |> choice([custom_tag(), Base.base_element()])
+    @impl true
+    def render(contents, context) do
+      {result, _context} = Liquex.render(contents, context)
+      ["Custom Tag: ", result]
     end
-
-    @impl Liquex.Render
-    def render({:custom_tag, contents}, context) do
-      {result, context} = Liquex.render(contents, context)
-      {["Custom Tag: ", result], context}
-    end
-
-    def render(_, _), do: false
   end
 
   defmodule CustomParser do
-    @moduledoc false
-    import NimbleParsec
-
-    defcombinatorp(:document, repeat(CustomTagExample.element()))
-    defparsec(:parse, parsec(:document) |> eos())
+    use Liquex.Parser, tags: [CustomTag]
   end
 
   describe "custom tag" do
     test "adds a custom tag" do
-      {:ok, template} = Liquex.parse("<<Hello World!>>{{ variable }}", CustomParser)
+      {:ok, template} = Liquex.parse("<<Hello World!>>", CustomParser)
 
       assert [
-               {:custom_tag, [text: ["Hello World!"]]},
-               {:object, [field: [key: "variable"], filters: []]}
+               {{:custom_tag, CustomTag}, [text: ["Hello World!"]]}
              ] == template
 
-      assert elem(Liquex.render(template, %Liquex.Context{render_module: CustomTagExample}), 0)
-             |> IO.chardata_to_string()
+      assert elem(Liquex.render(template), 0)
+             |> to_string()
              |> String.trim() == "Custom Tag: Hello World!"
     end
   end

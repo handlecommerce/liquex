@@ -97,5 +97,5 @@ defmodule Liquex.Argument do
   end
 
   defp do_assign(_variables, [], value), do: value
-  defp do_assign(_, _, _), do: raise(LiquexError, "Could not assign value")
+  defp do_assign(_, _, _), do: raise(Liquex.Error, "Could not assign value")
 end

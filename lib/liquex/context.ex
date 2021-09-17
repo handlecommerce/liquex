@@ -16,7 +16,7 @@ defmodule Liquex.Context do
           private: map(),
           filter_module: module,
           render_module: module | nil,
-          errors: list(LiquexError.t())
+          errors: list(Liquex.Error.t())
         }
 
   alias Liquex.Indifferent

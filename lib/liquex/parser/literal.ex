@@ -5,6 +5,7 @@ defmodule Liquex.Parser.Literal do
 
   alias Liquex.Parser.Argument
 
+  @spec boolean(NimbleParsec.t()) :: NimbleParsec.t()
   def boolean(combinator \\ empty()) do
     true_value = string("true") |> replace(true)
     false_value = string("false") |> replace(false)
@@ -13,6 +14,7 @@ defmodule Liquex.Parser.Literal do
     |> choice([true_value, false_value])
   end
 
+  @spec nil_value(NimbleParsec.t()) :: NimbleParsec.t()
   def nil_value(combinator \\ empty()),
     do: combinator |> string("nil") |> replace(nil)
 
@@ -40,11 +42,13 @@ defmodule Liquex.Parser.Literal do
     |> choice([single_quote_string, double_quote_string])
   end
 
+  @spec whitespace(NimbleParsec.t(), non_neg_integer()) :: NimbleParsec.t()
   def whitespace(combinator \\ empty(), min \\ 0) do
     combinator
     |> utf8_string([?\s, ?\n, ?\r, ?\t], min: min)
   end
 
+  @spec ignored_leading_whitespace(NimbleParsec.t()) :: NimbleParsec.t()
   def ignored_leading_whitespace(combinator \\ empty()) do
     combinator
     |> whitespace(1)
@@ -57,6 +61,7 @@ defmodule Liquex.Parser.Literal do
     |> ignore()
   end
 
+  @spec int(NimbleParsec.t()) :: NimbleParsec.t()
   def int(combinator \\ empty()) do
     combinator
     |> optional(string("-"))
@@ -65,6 +70,7 @@ defmodule Liquex.Parser.Literal do
     |> map({String, :to_integer, []})
   end
 
+  @spec float(NimbleParsec.t()) :: NimbleParsec.t()
   def float(combinator \\ empty()) do
     combinator
     |> int()
@@ -115,6 +121,7 @@ defmodule Liquex.Parser.Literal do
     |> unwrap_and_tag(:text)
   end
 
+  @spec opening_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def opening_tag(combinator \\ empty()) do
     combinator
     |> choice([
