@@ -115,12 +115,8 @@ defmodule Liquex do
        use Liquex.Parser, tags: [CustomTag]
       end
 
-      {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
-      {result, _} = Liquex.render(document, context)
-
-      iex> Liquex.parse("<<Hello World!>>", CustomParser)
-      iex> {:ok, [custom_tag: [text: ["Hello World!"]]]}
-
+      iex> document = Liquex.parse!("<<Hello World!>>", CustomParser)
+      iex> {result, _} = Liquex.render(document, context)
       iex> result |> to_string()
       "Custom Tag: Hello World
 
