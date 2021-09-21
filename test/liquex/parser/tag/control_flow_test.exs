@@ -45,6 +45,16 @@ defmodule Liquex.Parser.Tag.ControlFlowTest do
         ]
       )
 
+      "{% if true and false or true %}Hello{% endif %}"
+      |> assert_parse(
+        control_flow: [
+          if: [
+            expression: [{:literal, true}, :and, {:literal, false}, :or, {:literal, true}],
+            contents: [text: "Hello"]
+          ]
+        ]
+      )
+
       "{% if a > b and b > c %}Hello{% endif %}"
       |> assert_parse(
         control_flow: [
