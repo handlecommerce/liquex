@@ -1,0 +1,5 @@
+<===> if_statement.json
+{}
+
+<===> if_statement.liquid
+{% if true and false  or true %}foo{% else %}bar{% endif %}

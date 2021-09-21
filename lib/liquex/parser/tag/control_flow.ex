@@ -42,6 +42,7 @@ defmodule Liquex.Parser.Tag.ControlFlow do
       boolean_operator
       |> ignore(Literal.whitespace())
       |> choice([boolean_operation, Literal.literal(), Argument.argument()])
+      |> ignore(Literal.whitespace())
     )
   end
 

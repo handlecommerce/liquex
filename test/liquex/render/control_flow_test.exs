@@ -83,6 +83,26 @@ defmodule Liquex.Render.ControlFlowTest do
              |> String.trim() ==
                "Welcome! We're pleased to offer you a special discount of 15% on all products."
     end
+
+    test "mixed or/and statement" do
+
+      {:ok, template} =
+        """
+        {% if true and false or true %}
+          It's true
+        {% else %}
+          It's not true
+        {% endif %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, Context.new(%{}))
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim() ==
+               "It's true"
+    end
   end
 
   describe "unless statements" do
