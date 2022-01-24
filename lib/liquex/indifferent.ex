@@ -29,6 +29,18 @@ defmodule Liquex.Indifferent do
     end
   end
 
+  @spec put(map, any, any) :: map
+  @doc """
+  Puts a value in a key using indifferent access
+
+    ## Examples
+
+      iex> Liquex.Indifferent.put(%{"a" => "Hello"}, "a", "World")
+      %{"a" => "World"}
+
+      iex> Liquex.Indifferent.put(%{a: "Hello"}, "b", "World")
+      %{"b" => "World", :a => "Hello"}
+  """
   def put(map, key, value), do: Map.put(map, get_key!(map, key, key), value)
 
   @spec fetch(map, any) :: {:ok, term} | :error
