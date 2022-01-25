@@ -125,7 +125,11 @@ defmodule Liquex.Parser.Tag.Iteration do
   defp offset do
     ignore(string("offset:"))
     |> ignore(Literal.whitespace())
-    |> unwrap_and_tag(integer(min: 1), :offset)
+    |> choice([
+      replace(string("continue"), :continue)
+      |> unwrap_and_tag(:offset),
+      unwrap_and_tag(integer(min: 1), :offset)
+    ])
     |> ignore(Literal.whitespace())
   end
 end

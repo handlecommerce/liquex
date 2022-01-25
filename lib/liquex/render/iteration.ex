@@ -27,6 +27,8 @@ defmodule Liquex.Render.Iteration do
          ],
          %Context{} = context
        ) do
+    parameters = eval_for_offset(parameters, identifier, context)
+
     collection
     |> Argument.eval(context)
     |> eval_modifiers(parameters)
@@ -65,6 +67,7 @@ defmodule Liquex.Render.Iteration do
          context
        ) do
     cols = Keyword.get(parameters, :cols, 1)
+    parameters = eval_tablerow_offset(parameters, identifier, context)
 
     collection
     |> Argument.eval(context)
@@ -89,6 +92,20 @@ defmodule Liquex.Render.Iteration do
   defp eval_modifier(collection, {:limit, limit}), do: collection |> Collection.limit(limit)
   defp eval_modifier(collection, {:offset, offset}), do: collection |> Collection.offset(offset)
   defp eval_modifier(collection, {:order, :reversed}), do: collection |> Collection.reverse()
+
+  defp eval_for_offset(parameters, identifier, context) do
+    Keyword.update(parameters, :offset, 0, fn
+      :continue -> Context.for_loop_offset(context, identifier)
+      offset -> offset
+    end)
+  end
+
+  defp eval_tablerow_offset(parameters, identifier, context) do
+    Keyword.update(parameters, :offset, 0, fn
+      :continue -> Context.tablerow_loop_offset(context, identifier)
+      offset -> offset
+    end)
+  end
 
   defp render_collection(nil, _, _, contents, context),
     do: Liquex.render(contents, context)
@@ -116,6 +133,7 @@ defmodule Liquex.Render.Iteration do
           {
             [r | acc],
             Context.assign(ctx, "forloop", forloop_init)
+            |> Context.for_loop_offset_inc(identifier)
           }
         catch
           {:continue, ctx} ->
@@ -157,7 +175,7 @@ defmodule Liquex.Render.Iteration do
               ["<td>", result, "</td>"]
           end
 
-        {[result | acc], ctx}
+        {[result | acc], Context.tablerow_loop_offset_inc(ctx, identifier)}
       end)
 
     # Close out the table

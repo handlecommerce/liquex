@@ -1,0 +1,26 @@
+<===> for_loop.json
+{
+    "array": [1,2,3,4,5,6]
+}
+
+<===> for_loop.liquid
+{% for item3 in array offset: 2 limit: 2 %}
+  {{ item1 }}
+{% endfor %}
+{% for item3 in array limit: 2 offset: 2 %}
+  {{ item2 }}
+{% endfor %}
+--- 
+{% for item1 in array limit: 2 %}
+  {{ item1 }}
+{% endfor %}
+{% for item2 in array limit: 3 %}
+  {{ item2 }}
+{% endfor %}
+--- 
+{% for item1 in array limit: 2 offset: continue %}
+  {{ item1 }}
+{% endfor %}
+{% for item2 in array limit: 3 offset: continue %}
+  {{ item2 }}
+{% endfor %}

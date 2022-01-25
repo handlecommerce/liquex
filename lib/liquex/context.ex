@@ -5,6 +5,8 @@ defmodule Liquex.Context do
 
   defstruct variables: %{},
             cycles: %{},
+            for_loop_offsets: %{},
+            tablerow_loop_offsets: %{},
             private: %{},
             filter_module: Liquex.Filter,
             render_module: nil,
@@ -13,6 +15,8 @@ defmodule Liquex.Context do
   @type t :: %__MODULE__{
           variables: map(),
           cycles: map(),
+          for_loop_offsets: map(),
+          tablerow_loop_offsets: map(),
           private: map(),
           filter_module: module,
           render_module: module | nil,
@@ -52,4 +56,26 @@ defmodule Liquex.Context do
   """
   def push_error(%__MODULE__{errors: errors} = context, error),
     do: %{context | errors: [error | errors]}
+
+  @doc """
+  receive the last offset for a for loop
+  """
+  def for_loop_offset(%__MODULE__{for_loop_offsets: offsets}, identifier) do
+    offsets[identifier] || 0
+  end
+
+  def tablerow_loop_offset(%__MODULE__{tablerow_loop_offsets: offsets}, identifier) do
+    offsets[identifier] || 0
+  end
+
+  @doc """
+  increase the offset for a for loop
+  """
+  def for_loop_offset_inc(%__MODULE__{for_loop_offsets: offsets} = ctx, identifier) do
+    %__MODULE__{ctx | for_loop_offsets: Map.update(offsets, identifier, 1, &(&1 + 1))}
+  end
+
+  def tablerow_loop_offset_inc(%__MODULE__{tablerow_loop_offsets: offsets} = ctx, identifier) do
+    %__MODULE__{ctx | tablerow_loop_offsets: Map.update(offsets, identifier, 1, &(&1 + 1))}
+  end
 end
