@@ -75,19 +75,20 @@ defmodule Liquex.Render.Iteration do
 
   defp do_render(_, _), do: false
 
-  defp eval_modifiers(collection, []), do: collection
+  defp maybe_eval_modifier(collection, params, mod) do
+    if param = params[mod], do: eval_modifier(collection, {mod, param}), else: collection
+  end
 
-  defp eval_modifiers(collection, [{:limit, limit} | tail]),
-    do: collection |> Collection.limit(limit) |> eval_modifiers(tail)
+  defp eval_modifiers(collection, params) do
+    collection
+    |> maybe_eval_modifier(params, :order)
+    |> maybe_eval_modifier(params, :offset)
+    |> maybe_eval_modifier(params, :limit)
+  end
 
-  defp eval_modifiers(collection, [{:offset, offset} | tail]),
-    do: collection |> Collection.offset(offset) |> eval_modifiers(tail)
-
-  defp eval_modifiers(collection, [{:order, :reversed} | tail]),
-    do: collection |> Collection.reverse() |> eval_modifiers(tail)
-
-  defp eval_modifiers(collection, [{:cols, _} | tail]),
-    do: collection |> eval_modifiers(tail)
+  defp eval_modifier(collection, {:limit, limit}), do: collection |> Collection.limit(limit)
+  defp eval_modifier(collection, {:offset, offset}), do: collection |> Collection.offset(offset)
+  defp eval_modifier(collection, {:order, :reversed}), do: collection |> Collection.reverse()
 
   defp render_collection(nil, _, _, contents, context),
     do: Liquex.render(contents, context)

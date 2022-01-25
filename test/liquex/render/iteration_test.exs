@@ -112,7 +112,7 @@ defmodule Liquex.Render.IterationTest do
              |> to_string()
              |> String.trim()
              |> String.split("\n")
-             |> trim_list() == ~w(5)
+             |> trim_list() == ~w(5 4)
     end
 
     test "render loop with range" do
@@ -305,6 +305,32 @@ defmodule Liquex.Render.IterationTest do
              |> trim_list()
              |> Enum.join() ==
                "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
+    end
+
+    test "tablerow with offset continue" do
+      {:ok, template} =
+        """
+        <table>
+        {% tablerow product in collection limit: 1 %}
+          {{ product }}
+        {% endtablerow %}
+        </table><table>
+        {% tablerow product in collection offset: continue %}
+          {{ product }}
+        {% endtablerow %}
+        </table>
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list()
+             |> Enum.join() ==
+               "<table><tr><td>1</td></tr></table><table><tr><td>2</td></tr><tr><td>3</td></tr></table>"
     end
   end
 
