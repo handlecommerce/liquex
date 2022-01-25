@@ -110,18 +110,21 @@ defmodule Liquex.Parser.Tag.Iteration do
 
   defp cols do
     ignore(string("cols:"))
+    |> ignore(Literal.whitespace())
     |> unwrap_and_tag(integer(min: 1), :cols)
     |> ignore(Literal.whitespace())
   end
 
   defp limit do
     ignore(string("limit:"))
+    |> ignore(Literal.whitespace())
     |> unwrap_and_tag(integer(min: 1), :limit)
     |> ignore(Literal.whitespace())
   end
 
   defp offset do
     ignore(string("offset:"))
+    |> ignore(Literal.whitespace())
     |> unwrap_and_tag(integer(min: 1), :offset)
     |> ignore(Literal.whitespace())
   end
