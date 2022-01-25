@@ -75,6 +75,58 @@ defmodule Liquex.Render.IterationTest do
              |> trim_list() == ~w(3 4 5 6)
     end
 
+    test "render loop with offset continue" do
+      context = Context.new(%{"array" => [1, 2, 3, 4, 5, 6]})
+
+      {:ok, template} =
+        """
+        {% for item in array limit: 2 %}
+          {{ item }}
+        {% endfor %}
+        {% for item in array limit: 2 offset: continue %}
+          {{ item }}
+        {% endfor %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, context)
+             |> elem(0)
+             |> to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(1 2 3 4)
+    end
+
+    test "render loop with offset continue shoud reset" do
+      context = Context.new(%{"array" => [1, 2, 3, 4, 5, 6]})
+
+      {:ok, template} =
+        """
+        {% for item in array limit: 2 %}
+          {{ item }}
+        {% endfor %}
+        {% for item in array limit: 2 offset: continue %}
+          {{ item }}
+        {% endfor %}
+        {% for item in array limit: 2 %}
+          {{ item }}
+        {% endfor %}
+        {% for item in array limit: 2 offset: continue %}
+          {{ item }}
+        {% endfor %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, context)
+             |> elem(0)
+             |> to_string()
+             |> String.trim()
+             |> String.split("\n")
+             |> trim_list() == ~w(1 2 3 4 1 2 3 4)
+    end
+
     test "render loop with reverse" do
       context = Context.new(%{"array" => [1, 2, 3, 4, 5, 6]})
 

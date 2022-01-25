@@ -78,4 +78,15 @@ defmodule Liquex.Context do
   def tablerow_loop_offset_inc(%__MODULE__{tablerow_loop_offsets: offsets} = ctx, identifier) do
     %__MODULE__{ctx | tablerow_loop_offsets: Map.update(offsets, identifier, 1, &(&1 + 1))}
   end
+
+  @doc """
+  reset the offset for a for loop
+  """
+  def for_loop_offset_reset(%__MODULE__{for_loop_offsets: offsets} = ctx, identifier) do
+    %__MODULE__{ctx | for_loop_offsets: Map.put(offsets, identifier, 0)}
+  end
+
+  def tablerow_loop_offset_reset(%__MODULE__{tablerow_loop_offsets: offsets} = ctx, identifier) do
+    %__MODULE__{ctx | tablerow_loop_offsets: Map.put(offsets, identifier, 0)}
+  end
 end

@@ -27,7 +27,7 @@ defmodule Liquex.Render.Iteration do
          ],
          %Context{} = context
        ) do
-    parameters = eval_for_offset(parameters, identifier, context)
+    {parameters, context} = eval_for_offset(parameters, context, identifier)
 
     collection
     |> Argument.eval(context)
@@ -67,7 +67,7 @@ defmodule Liquex.Render.Iteration do
          context
        ) do
     cols = Keyword.get(parameters, :cols, 1)
-    parameters = eval_tablerow_offset(parameters, identifier, context)
+    {parameters, context} = eval_tablerow_offset(parameters, context, identifier)
 
     collection
     |> Argument.eval(context)
@@ -93,18 +93,37 @@ defmodule Liquex.Render.Iteration do
   defp eval_modifier(collection, {:offset, offset}), do: collection |> Collection.offset(offset)
   defp eval_modifier(collection, {:order, :reversed}), do: collection |> Collection.reverse()
 
-  defp eval_for_offset(parameters, identifier, context) do
-    Keyword.update(parameters, :offset, 0, fn
-      :continue -> Context.for_loop_offset(context, identifier)
-      offset -> offset
-    end)
+  defp eval_for_offset(parameters, context, identifier) do
+    eval_offset(
+      parameters,
+      context,
+      identifier,
+      &Context.for_loop_offset/2,
+      &Context.for_loop_offset_reset/2
+    )
   end
 
-  defp eval_tablerow_offset(parameters, identifier, context) do
-    Keyword.update(parameters, :offset, 0, fn
-      :continue -> Context.tablerow_loop_offset(context, identifier)
-      offset -> offset
-    end)
+  defp eval_tablerow_offset(parameters, context, identifier) do
+    eval_offset(
+      parameters,
+      context,
+      identifier,
+      &Context.tablerow_loop_offset/2,
+      &Context.tablerow_loop_offset_reset/2
+    )
+  end
+
+  defp maybe_reset(context, _identifier, :continue, _reset_fun), do: context
+  defp maybe_reset(context, identifier, _offset, reset_fun), do: reset_fun.(context, identifier)
+
+  defp eval_offset(parameters, context, identifier, offset_fun, reset_fun) do
+    {
+      Keyword.update(parameters, :offset, 0, fn
+        :continue -> offset_fun.(context, identifier)
+        offset -> offset
+      end),
+      maybe_reset(context, identifier, parameters[:offset], reset_fun)
+    }
   end
 
   defp render_collection(nil, _, _, contents, context),
