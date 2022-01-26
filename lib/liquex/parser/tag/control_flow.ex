@@ -76,7 +76,15 @@ defmodule Liquex.Parser.Tag.ControlFlow do
       ignore(Tag.open_tag())
       |> ignore(string("when"))
       |> ignore(Literal.whitespace(empty(), 1))
-      |> tag(Literal.literal(), :expression)
+      |> tag(
+        Literal.literal()
+        |> repeat(
+          ignore(string(","))
+          |> ignore(Literal.whitespace(empty(), 1))
+          |> Literal.literal()
+        ),
+        :expression
+      )
       |> ignore(Tag.close_tag())
       |> tag(parsec(:document), :contents)
 
