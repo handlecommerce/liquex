@@ -142,6 +142,8 @@ defmodule Liquex.Render.ControlFlowTest do
             Hello, James!
           {% when "John" %}
             Hello, John!
+          {% when "Peter", "Paul" %}
+            Hello, Peter or Paul (cannot tell you apart).
           {% else %}
             Hello! Who are you?
         {% endcase %}
@@ -158,6 +160,16 @@ defmodule Liquex.Render.ControlFlowTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, John!"
+
+      assert Liquex.render(template, Context.new(%{"name" => "Peter"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
+
+      assert Liquex.render(template, Context.new(%{"name" => "Paul"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
 
       assert Liquex.render(template, Context.new(%{"name" => "Jim"}))
              |> elem(0)

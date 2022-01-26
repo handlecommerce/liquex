@@ -1,0 +1,12 @@
+<===> case_when.json
+{}
+
+<===> case_when.liquid
+
+{% assign foo = 'a' %}
+{% case foo %}
+{% when 'a', 'b' %}
+  bar
+{% else %}
+  buzz
+{% endcase %}
