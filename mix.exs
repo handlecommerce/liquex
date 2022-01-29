@@ -39,8 +39,8 @@ defmodule Liquex.MixProject do
       {:date_time_parser, "~> 1.1"},
       {:html_entities, "~> 0.5.1"},
       {:html_sanitize_ex, "~> 1.3.0"},
-      {:credo, "~> 1.2", only: [:dev], runtime: false},
-      {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:jason, "~> 1.0", only: [:dev, :test], runtime: false},
       {:hrx, "~> 0.1.0", only: [:test], runtime: false}
