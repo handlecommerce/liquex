@@ -44,6 +44,7 @@ defmodule Liquex.ExpressionTest do
       assert eval(["Meat"], :contains, "Pack") == false
       assert eval(nil, :contains, "Pack") == false
       assert eval("Meat", :contains, nil) == false
+      assert eval("12345", :contains, 234) == true
     end
   end
 
