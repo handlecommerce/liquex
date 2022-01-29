@@ -85,7 +85,6 @@ defmodule Liquex.Render.ControlFlowTest do
     end
 
     test "mixed or/and statement" do
-
       {:ok, template} =
         """
         {% if true and false or true %}
