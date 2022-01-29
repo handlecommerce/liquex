@@ -40,8 +40,8 @@ defmodule Liquex.Expression do
   defp do_eval({_, :contains, nil}), do: false
   defp do_eval({left, :contains, right}) when is_list(left), do: right in left
 
-  defp do_eval({left, :contains, right}) when is_binary(left) and is_binary(right),
-    do: String.contains?(left, right)
+  defp do_eval({left, :contains, right}),
+    do: String.contains?(to_string(left), to_string(right))
 
   defp do_eval({left, op, right}), do: apply(Kernel, op, [left, right])
 

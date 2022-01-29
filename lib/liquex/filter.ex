@@ -98,7 +98,7 @@ defmodule Liquex.Filter do
       "myfile.html"
   """
   @spec append(String.t(), String.t(), map()) :: String.t()
-  def append(value, text, _), do: value <> text
+  def append(value, text, _), do: to_string(value) <> to_string(text)
 
   @doc """
   Sets a minimum value
@@ -142,7 +142,7 @@ defmodule Liquex.Filter do
       "My great title"
   """
   @spec capitalize(String.t(), map()) :: String.t()
-  def capitalize(value, _), do: String.capitalize(value)
+  def capitalize(value, _), do: String.capitalize(to_string(value))
 
   @doc """
   Rounds `value` up to the nearest whole number. Liquid tries to convert the input to a number before the filter is applied.
@@ -285,7 +285,7 @@ defmodule Liquex.Filter do
       "apple"
   """
   def downcase(nil, _), do: nil
-  def downcase(value, _), do: String.downcase(value)
+  def downcase(value, _), do: String.downcase(to_string(value))
 
   @doc """
   Escapes a string by replacing characters with escape sequences (so that the string can
@@ -301,7 +301,7 @@ defmodule Liquex.Filter do
       "Tetsuro Takara"
   """
   def escape(value, _),
-    do: HtmlEntities.encode(value)
+    do: HtmlEntities.encode(to_string(value))
 
   @doc """
   Escapes a string by replacing characters with escape sequences (so that the string can
@@ -314,7 +314,7 @@ defmodule Liquex.Filter do
       "1 &lt; 2 &amp; 3"
   """
   def escape_once(value, _),
-    do: value |> HtmlEntities.decode() |> HtmlEntities.encode()
+    do: to_string(value) |> HtmlEntities.decode() |> HtmlEntities.encode()
 
   @doc """
   Returns the first item of an array.
@@ -378,7 +378,7 @@ defmodule Liquex.Filter do
       "So much room for activities!          "
   """
   @spec lstrip(String.t(), Context.t()) :: String.t()
-  def lstrip(value, _), do: value |> String.trim_leading()
+  def lstrip(value, _), do: to_string(value) |> String.trim_leading()
 
   @doc """
   Creates an array (`arr`) of values by extracting the values of a named property from another object (`key`).
@@ -431,7 +431,7 @@ defmodule Liquex.Filter do
       "<br />\\nHello<br />\\nthere<br />\\n"
   """
   @spec newline_to_br(String.t(), Context.t()) :: String.t()
-  def newline_to_br(value, _), do: String.replace(value, "\n", "<br />\n")
+  def newline_to_br(value, _), do: String.replace(to_string(value), "\n", "<br />\n")
 
   @doc """
   Adds a number to another number.
@@ -457,7 +457,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.prepend("/index.html", "example.com", %{})
       "example.com/index.html"
   """
-  def prepend(value, prepender, _), do: prepender <> value
+  def prepend(value, prepender, _), do: to_string(prepender) <> to_string(value)
 
   @doc """
   Removes every occurrence of the specified substring from a string.
@@ -488,7 +488,7 @@ defmodule Liquex.Filter do
       "Take your protein pills and put your helmet on"
   """
   def replace(value, original, replacement, _),
-    do: String.replace(value, original, replacement)
+    do: String.replace(to_string(value), to_string(original), to_string(replacement))
 
   @doc """
   Replaces only the first occurrence of the first argument in a string with the second argument.
@@ -499,7 +499,8 @@ defmodule Liquex.Filter do
       "Take your protein pills and put my helmet on"
   """
   def replace_first(value, original, replacement, _),
-    do: String.replace(value, original, replacement, global: false)
+    do:
+      String.replace(to_string(value), to_string(original), to_string(replacement), global: false)
 
   @doc """
   Reverses the order of the items in an array. reverse cannot reverse a string.
@@ -542,7 +543,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.rstrip("          So much room for activities!          ", %{})
       "          So much room for activities!"
   """
-  def rstrip(value, _), do: value |> String.trim_trailing()
+  def rstrip(value, _), do: to_string(value) |> String.trim_trailing()
 
   @doc """
   Returns the number of characters in a string or the number of items in an array.
@@ -556,7 +557,7 @@ defmodule Liquex.Filter do
       4
   """
   def size(value, _) when is_list(value), do: length(value)
-  def size(value, _) when is_binary(value), do: String.length(value)
+  def size(value, _), do: String.length(to_string(value))
 
   @doc """
   Returns a substring of 1 character beginning at the index specified by the
@@ -583,7 +584,7 @@ defmodule Liquex.Filter do
       "ui"
   """
   def slice(value, start, length \\ 1, _),
-    do: String.slice(value, start, length)
+    do: String.slice(to_string(value), start, length)
 
   @doc """
   Sorts items in an array in case-sensitive order.
@@ -618,7 +619,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.split("John, Paul, George, Ringo", ", ", %{})
       ["John", "Paul", "George", "Ringo"]
   """
-  def split(value, separator, _), do: String.split(value, separator)
+  def split(value, separator, _), do: String.split(to_string(value), to_string(separator))
 
   @doc """
   Removes all whitespace (tabs, spaces, and newlines) from both the left and
@@ -629,7 +630,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.strip("          So much room for activities!          ", %{})
       "So much room for activities!"
   """
-  def strip(value, _), do: String.trim(value)
+  def strip(value, _), do: String.trim(to_string(value))
 
   @doc """
   Removes any HTML tags from a string.
@@ -639,7 +640,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.strip_html("Have <em>you</em> read <strong>Ulysses</strong>?", %{})
       "Have you read Ulysses?"
   """
-  def strip_html(value, _), do: HtmlSanitizeEx.strip_tags(value)
+  def strip_html(value, _), do: HtmlSanitizeEx.strip_tags(to_string(value))
 
   @doc """
   Removes any newline characters (line breaks) from a string.
@@ -650,7 +651,7 @@ defmodule Liquex.Filter do
       "Hellothere"
   """
   def strip_newlines(value, _) do
-    value
+    to_string(value)
     |> String.replace("\r", "")
     |> String.replace("\n", "")
   end
@@ -689,6 +690,8 @@ defmodule Liquex.Filter do
       "Ground control to Ma"
   """
   def truncate(value, length, ellipsis \\ "...", _) do
+    value = to_string(value)
+
     if String.length(value) <= length do
       value
     else
@@ -718,6 +721,7 @@ defmodule Liquex.Filter do
       "Ground control to"
   """
   def truncatewords(value, length, ellipsis \\ "...", _) do
+    value = to_string(value)
     words = value |> String.split()
 
     if length(words) <= length do
@@ -754,7 +758,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.upcase("APPLE", %{})
       "APPLE"
   """
-  def upcase(value, _), do: String.upcase(value)
+  def upcase(value, _), do: String.upcase(to_string(value))
 
   @doc """
   Decodes a string that has been encoded as a URL or by url_encode/2.
@@ -764,7 +768,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.url_decode("%27Stop%21%27+said+Fred", %{})
       "'Stop!' said Fred"
   """
-  def url_decode(value, _), do: URI.decode_www_form(value)
+  def url_decode(value, _), do: URI.decode_www_form(to_string(value))
 
   @doc """
   Decodes a string that has been encoded as a URL or by url_encode/2.
@@ -777,7 +781,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.url_encode("Tetsuro Takara", %{})
       "Tetsuro+Takara"
   """
-  def url_encode(value, _), do: URI.encode_www_form(value)
+  def url_encode(value, _), do: URI.encode_www_form(to_string(value))
 
   @doc """
   Creates an array including only the objects with a given property value, or
