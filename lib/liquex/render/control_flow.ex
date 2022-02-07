@@ -40,8 +40,9 @@ defmodule Liquex.Render.ControlFlow do
   defp do_render([], context, _), do: {[], context}
 
   defp do_render([{:when, [expression: expressions, contents: contents]} | tail], context, match) do
-    expressions = Enum.map(expressions, &Argument.eval(&1, context))
-    if match in expressions do
+    result = Enum.any?(expressions, &(match == Argument.eval(&1, context)))
+
+    if result do
       Liquex.render(contents, context)
     else
       do_render(tail, context, match)
