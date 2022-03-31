@@ -6,7 +6,7 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.7.0",
+      version: "0.7.1",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),

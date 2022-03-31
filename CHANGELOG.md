@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2022-03-31
+
+- Allow accessing variables that implement the Access behaviour [#26](https://github.com/markglenn/liquex/pull/26)
+  - Thank you [cipater](https://github.com/cipater)
+
 ## [0.7.0] - 2021-09-17
 
 - Refactored custom tags for better developer experience [#20](https://github.com/markglenn/liquex/issues/20)
