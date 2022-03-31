@@ -41,6 +41,9 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.put(%{"a" => "Hello"}, "a", "World")
       %{"a" => "World"}
 
+      iex> Liquex.Indifferent.put(%{"a" => "Hello"}, :a, "World")
+      %{"a" => "World"}
+
       iex> Liquex.Indifferent.put(%{a: "Hello"}, "b", "World")
       %{"b" => "World", :a => "Hello"}
   """
@@ -70,18 +73,29 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.fetch(%StructWithAccess{key: "Hello"}, :key)
       {:ok, "Hello World"}
   """
-  def fetch(data, key) when is_struct(data) do
-    if implements_access_fetch_behaviour?(data) do
-      Access.fetch(data, key)
-    else
-      Map.fetch(data, get_key!(data, key, key))
-    end
-  end
+  def fetch(data, key) do
+    case Access.fetch(data, key) do
+      {:ok, _} = result ->
+        result
 
-  def fetch(data, key), do: Map.fetch(data, get_key!(data, key, key))
+      :error ->
+        # try either a string or atom
+
+        cond do
+          is_binary(key) -> Access.fetch(data, String.to_existing_atom(key))
+          is_atom(key) -> Access.fetch(data, Atom.to_string(key))
+          true -> :error
+        end
+    end
+  rescue
+    ArgumentError -> :error
+  end
 
   defp get_key(map, key) do
     cond do
+      implements_behaviour?(map, Access) ->
+        {:ok, key}
+
       Map.has_key?(map, key) ->
         {:ok, key}
 
@@ -107,7 +121,8 @@ defmodule Liquex.Indifferent do
     end
   end
 
-  defp implements_access_fetch_behaviour?(struct) do
-    Kernel.function_exported?(struct.__struct__, :fetch, 2)
-  end
+  defp implements_behaviour?(map, behaviour) when is_struct(map),
+    do: Enum.member?(map.__struct__.module_info[:attributes][:behaviour], behaviour)
+
+  defp implements_behaviour?(_, _), do: false
 end

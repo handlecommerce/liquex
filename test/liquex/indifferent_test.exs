@@ -8,10 +8,7 @@ defmodule Liquex.IndifferentTest do
 
     defstruct [:key]
 
-    def fetch(container, :key) do
-      {:ok, container.key <> " World"}
-    end
-
+    def fetch(container, :key), do: {:ok, container.key <> " World"}
     def fetch(_container, _), do: :error
 
     def pop(container, _key), do: {container.key, container}
