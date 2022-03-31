@@ -22,8 +22,11 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.get(%{a: "Hello"}, "b", "Goodbye")
       "Goodbye"
 
-      iex> Liquex.Indifferent.get(%StructWithAccess{key: "Hello"}, :key)
-      "Hello World"
+      iex> Liquex.Indifferent.get(%TestAccessModule{}, :atom_test)
+      %{title: "Atom Test"}
+
+      iex> Liquex.Indifferent.get(%TestAccessModule{}, "atom_test")
+      %{title: "Atom Test"}
   """
   def get(map, key, default \\ nil) do
     case fetch(map, key) do
@@ -70,8 +73,11 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.fetch(%{:a => "Hello", "a" => "Goodbye"}, "a")
       {:ok, "Goodbye"}
 
-      iex> Liquex.Indifferent.fetch(%StructWithAccess{key: "Hello"}, :key)
-      {:ok, "Hello World"}
+      iex> Liquex.Indifferent.fetch(%TestAccessModule{}, :atom_test)
+      {:ok, %{title: "Atom Test"}}
+
+      iex> Liquex.Indifferent.fetch(%TestAccessModule{}, "atom_test")
+      {:ok, %{title: "Atom Test"}}
   """
   def fetch(data, key) do
     case Access.fetch(data, key) do
