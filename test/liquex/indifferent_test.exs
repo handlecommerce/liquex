@@ -3,19 +3,36 @@ defmodule Liquex.IndifferentTest do
 
   use ExUnit.Case, async: true
 
-  defmodule StructWithAccess do
+  defmodule TestAccessModule do
     @behaviour Access
 
-    defstruct [:key]
+    defstruct []
 
-    def fetch(container, :key), do: {:ok, container.key <> " World"}
-    def fetch(_container, _), do: :error
+    def fetch(_container, :atom_test), do: {:ok, %{title: "Atom Test"}}
+    def fetch(_container, "string_test"), do: {:ok, %{title: "String Test"}}
+    def fetch(_, _), do: :error
 
-    def pop(container, _key), do: {container.key, container}
+    def pop(container, _key), do: {nil, container}
 
-    def get_and_update(container, _key, func),
-      do: {container.key, %{container | key: func.(container.key)}}
+    def get_and_update(container, _key, _func), do: {nil, container}
   end
 
   doctest Liquex.Indifferent
+
+  describe "access behaviour" do
+    test "allows lazy access to Access implementing modules" do
+      {:ok, template} =
+        """
+        {{ test['atom_test'].title }}!
+        {{ test['string_test'].title }}!
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %{test: %TestAccessModule{}})
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Atom Test!\nString Test!"
+    end
+  end
 end
