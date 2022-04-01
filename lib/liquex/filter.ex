@@ -82,12 +82,7 @@ defmodule Liquex.Filter do
       1.1
   """
   @spec abs(String.t() | number, any) :: number
-  def abs(value, _) when is_binary(value) do
-    {float, ""} = Float.parse(value)
-    abs(float)
-  end
-
-  def abs(value, _), do: abs(value)
+  def abs(value, _), do: abs(to_number(value))
 
   @doc """
   Appends `text` to the end of `value`
@@ -110,10 +105,14 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.at_least(5, 3, %{})
       5
+
+      iex> Liquex.Filter.at_least("5", "3", %{})
+      5
   """
-  @spec at_least(number, number, map()) :: number
-  def at_least(value, min, _) when value > min, do: value
-  def at_least(_value, min, _), do: min
+  @spec at_least(number | binary, number | binary, map()) :: number
+  def at_least(value, max, _), do: do_at_least(to_number(value), to_number(max))
+  defp do_at_least(value, min) when value > min, do: value
+  defp do_at_least(_value, min), do: min
 
   @doc """
   Sets a maximum value
@@ -125,10 +124,15 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.at_most(4, 3, %{})
       3
+
+      iex> Liquex.Filter.at_most("4", "3", %{})
+      3
   """
   @spec at_most(number, number, map()) :: number
-  def at_most(value, max, _) when value < max, do: value
-  def at_most(_value, max, _), do: max
+  def at_most(value, max, _), do: do_at_most(to_number(value), to_number(max))
+
+  defp do_at_most(value, max) when value < max, do: value
+  defp do_at_most(_value, max), do: max
 
   @doc """
   Capitalizes a string
@@ -163,11 +167,14 @@ defmodule Liquex.Filter do
   """
   @spec ceil(number | String.t(), map()) :: number
   def ceil(value, _) when is_binary(value) do
-    {num, ""} = Float.parse(value)
-    Float.ceil(num) |> trunc()
+    case Float.parse(value) do
+      {num, ""} -> Float.ceil(num) |> trunc()
+      _ -> 0
+    end
   end
 
-  def ceil(value, _), do: Float.ceil(value) |> trunc()
+  def ceil(value, _) when is_float(value), do: Float.ceil(value) |> trunc()
+  def ceil(value, _) when is_integer(value), do: value
 
   @doc """
   Removes any nil values from an array.
@@ -269,8 +276,16 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.divided_by(20, 7.0, %{})
       2.857142857142857
   """
-  def divided_by(value, divisor, _) when is_integer(divisor), do: trunc(value / divisor)
-  def divided_by(value, divisor, _), do: value / divisor
+  def divided_by(value, divisor, _) do
+    # Blindly convert to a number to follow standard
+    divisor = to_number(divisor)
+
+    case divisor do
+      0 -> "Liquid error: divided by 0"
+      d when is_integer(d) -> trunc(to_number(value) / divisor)
+      _ -> to_number(value) / divisor
+    end
+  end
 
   @doc """
   Makes each character in a string lowercase. It has no effect on strings
@@ -342,7 +357,12 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.floor(2.0, %{})
       2
   """
-  def floor(value, _), do: Kernel.trunc(value)
+  @spec floor(binary | number, any) :: integer
+  def floor(value, _) do
+    value
+    |> to_number()
+    |> trunc()
+  end
 
   @doc """
   Combines the items in `values` into a single string using `joiner` as a separator.
@@ -403,7 +423,7 @@ defmodule Liquex.Filter do
       171.357
   """
   @spec minus(number, number, Context.t()) :: number
-  def minus(left, right, _), do: left - right
+  def minus(left, right, _), do: to_number(left) - to_number(right)
 
   @doc """
   Returns the remainder of a division operation.
@@ -417,10 +437,16 @@ defmodule Liquex.Filter do
       3.357
   """
   @spec modulo(number, number, Context.t()) :: number
-  def modulo(left, right, _) when is_float(left) or is_float(right),
-    do: :math.fmod(left, right) |> Float.round(5)
+  def modulo(left, right, _) do
+    left = to_number(left)
+    right = to_number(right)
 
-  def modulo(left, right, _), do: rem(left, right)
+    cond do
+      right == 0 -> "Liquid error: divided by 0"
+      is_float(left) or is_float(right) -> :math.fmod(left, right) |> Float.round(5)
+      true -> rem(left, right)
+    end
+  end
 
   @doc """
   Replaces every newline (\n) in a string with an HTML line break (<br />).
@@ -444,7 +470,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.plus(183.357, 12, %{})
       195.357
   """
-  def plus(left, right, _), do: left + right
+  def plus(left, right, _), do: to_number(left) + to_number(right)
 
   @doc """
   Adds the specified string to the beginning of another string.
@@ -529,10 +555,18 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.round(183.357, 2, %{})
       183.36
   """
-  def round(value, precision \\ 0, context)
-  def round(value, _, _) when is_integer(value), do: value
-  def round(value, 0, _), do: value |> Float.round() |> trunc()
-  def round(value, precision, _), do: Float.round(value, precision)
+  @spec round(binary | number, binary | number, any) :: number
+  def round(value, precision \\ 0, context),
+    do: do_round(to_number(value), to_number(precision, false), context)
+
+  defp do_round(value, _, _) when is_integer(value), do: value
+  defp do_round(value, 0, _), do: Float.round(value) |> trunc()
+
+  defp do_round(value, precision, _) do
+    # Special case negative and invalid precisions
+    precision = Enum.max([0, precision || 0])
+    Float.round(value, precision)
+  end
 
   @doc """
   Removes all whitespace (tabs, spaces, and newlines) from the right side of a string.
@@ -670,7 +704,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.times(183.357, 12, %{})
       2200.284
   """
-  def times(value, divisor, _), do: value * divisor
+  def times(value, divisor, _), do: to_number(value) * to_number(divisor)
 
   @doc """
   Shortens a string down to the number of characters passed as an argument. If
@@ -803,4 +837,26 @@ defmodule Liquex.Filter do
       [%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}]
   """
   def where(list, key, _), do: Liquex.Collection.where(list, key)
+
+  defp to_number(value, allow_conversion_to_zero \\ true)
+  defp to_number(value, _) when is_number(value), do: value
+
+  defp to_number(value, allow_conversion_to_zero) when is_binary(value) do
+    case Integer.parse(value) do
+      # Integer value
+      {int_val, ""} ->
+        int_val
+
+      # Floating point value
+      {_, "." <> _rest} ->
+        case Float.parse(value) do
+          {float_value, ""} -> float_value
+          _ -> 0.0
+        end
+
+      # Unknown, so use Ruby's style of "Convert to 0 instead"
+      _ ->
+        if allow_conversion_to_zero == true, do: 0, else: nil
+    end
+  end
 end

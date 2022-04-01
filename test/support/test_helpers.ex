@@ -9,14 +9,14 @@ defmodule Liquex.TestHelpers do
   def assert_match_liquid(path) do
     {:ok, archive} = Hrx.load(path)
 
-    object_json = get_file_contents(archive, ".json")
+    object_json = get_file_contents(archive, ".json") || "{}"
     liquid = get_file_contents(archive, ".liquid")
 
     context = Jason.decode!(object_json)
 
-    with {:ok, ast} <- Liquex.parse(liquid),
-         {data, _} <- Liquex.render(ast, context),
-         {liquid_result, 0} <- liquid_render(liquid, object_json) do
+    with {liquid_result, 0} <- liquid_render(liquid, object_json),
+         {:ok, ast} <- Liquex.parse(liquid),
+         {data, _} <- Liquex.render(ast, context) do
       assert liquid_result == to_string(data)
     else
       {:error, msg, _} ->

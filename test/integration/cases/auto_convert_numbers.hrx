@@ -1,0 +1,73 @@
+<===> auto_convert_numbers.liquid
+
+{% comment %} Plus {% endcomment %}
+
+{{ '2' | plus: '7' }}
+{{ 2 | plus: '7' }}
+{{ '2' | plus: 7 }}
+{{ '2' | plus: 'a' }}
+
+{% comment %} Minus {% endcomment %}
+
+{{ '2' | minus: '7' }}
+{{ 2 | minus: '7' }}
+{{ '2' | minus: 7 }}
+{{ '2' | minus: 'a' }}
+
+{% comment %} Times {% endcomment %}
+
+{{ '2' | times: '7' }}
+{{ 2 | times: '7' }}
+{{ '2' | times: 7 }}
+{{ '2' | times: 'a' }}
+
+{% comment %} Divided by {% endcomment %}
+
+{{ '10' | divided_by: '2' }}
+{{ 10 | divided_by: '2' }}
+{{ '10' | divided_by: 2 }}
+{{ '10' | divided_by: 'a' }}
+
+{% comment %} Ceil {% endcomment %}
+
+{{ 10 | ceil }}
+{{ 10.2 | ceil }}
+{{ '10.2' | ceil }}
+{{ 'a' | ceil }}
+
+{% comment %} Floor {% endcomment %}
+
+{{ 10 | floor }}
+{{ 10.2 | floor }}
+{{ '10.2' | floor }}
+{{ 'a' | floor }}
+
+{% comment %} Modulo {% endcomment %}
+
+{{ 10 | modulo: 3 }}
+{{ 10.2 | modulo: 3 }}
+{{ '10.2' | modulo: 3 }}
+{{ 'a' | modulo: 3 }}
+{{ 10 | modulo: '3' }}
+{{ 10.2 | modulo: '3' }}
+{{ '10.2' | modulo: '3' }}
+{{ '10.2' | modulo: 'a' }}
+
+{% comment %} Round {% endcomment %}
+
+{{ 10.2 | round }}
+{{ '10.2' | round }}
+{{ 'a' | round }}
+{{ 10.201 | round: 0 }}
+{{ 10.201 | round: 1 }}
+{{ '10.201' | round: 1 }}
+{{ 'a' | round: 1 }}
+{{ 10.201 | round: 'a' }}
+{{ 10.201 | round: -1 }}
+
+{% comment %} abs {% endcomment %}
+
+{{ 10.2 | abs }}
+{{ '10.2' | abs}}
+{{ '-10.2' | abs}}
+{{ 'a' | abs}}
