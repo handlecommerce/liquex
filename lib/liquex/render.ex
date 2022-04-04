@@ -26,7 +26,6 @@ defmodule Liquex.Render do
       Liquex.Render.Text,
       Liquex.Render.Object,
       Liquex.Render.ControlFlow,
-      Liquex.Render.Variable,
       Liquex.Render.Iteration
     ]
     |> do_render(tag, context)
