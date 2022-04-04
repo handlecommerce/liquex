@@ -1,4 +1,4 @@
-defmodule Liquex.Parser.Tag.Raw do
+defmodule Liquex.Tag.Raw do
   @behaviour Liquex.Tag
   import NimbleParsec
 

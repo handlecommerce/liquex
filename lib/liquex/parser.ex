@@ -15,8 +15,11 @@ defmodule Liquex.Parser do
 
       tags =
         [
-          Liquex.Parser.Tag.Comment,
-          Liquex.Parser.Tag.Raw
+          Liquex.Tag.Comment,
+          Liquex.Tag.Raw,
+          Liquex.Tag.Assign,
+          Liquex.Tag.Capture,
+          Liquex.Tag.Increment
         ]
         |> Enum.map(&tag(&1.parse(), {:tag, &1}))
 

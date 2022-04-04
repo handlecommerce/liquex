@@ -7,8 +7,7 @@ defmodule Liquex.Parser.Tag do
 
   alias Liquex.Parser.Tag.{
     ControlFlow,
-    Iteration,
-    Variable
+    Iteration
   }
 
   @spec open_tag(NimbleParsec.t()) :: NimbleParsec.t()
@@ -54,19 +53,10 @@ defmodule Liquex.Parser.Tag do
       ])
       |> tag(:iteration)
 
-    variable_tags =
-      choice([
-        Variable.assign_tag(),
-        Variable.capture_tag(),
-        Variable.incrementer_tag()
-      ])
-      |> tag(:variable)
-
     combinator
     |> choice([
       control_flow_tags,
-      iteration_tags,
-      variable_tags
+      iteration_tags
     ])
   end
 
