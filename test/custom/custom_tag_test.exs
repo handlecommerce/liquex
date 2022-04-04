@@ -40,7 +40,7 @@ defmodule Liquex.Custom.CustomTagTest do
       {:ok, template} = Liquex.parse("<<Hello World!>>", CustomParser)
 
       assert [
-               {{:custom_tag, CustomTag}, [text: ["Hello World!"]]}
+               {{:tag, CustomTag}, [text: ["Hello World!"]]}
              ] == template
 
       assert elem(Liquex.render(template), 0)

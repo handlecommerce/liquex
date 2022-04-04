@@ -3,19 +3,21 @@ defmodule Liquex.Parser.TagTest do
   import Liquex.TestHelpers
 
   test "parses comment" do
-    assert_parse("Hello {% comment %}Ignored text{% endcomment %} World",
-      text: "Hello ",
-      text: " World"
+    assert_parse(
+      "Hello {% comment %}Ignored text{% endcomment %} World",
+      [{:text, "Hello "}, {{:tag, Liquex.Parser.Tag.Comment}, []}, {:text, " World"}]
     )
   end
 
   test "parses raw" do
-    assert_parse("{% raw %} {{ test }} {% endraw %}",
-      text: [" {{ test }} "]
+    assert_parse(
+      "{% raw %} {{ test }} {% endraw %}",
+      [{{:tag, Liquex.Parser.Tag.Raw}, [" {{ test }} "]}]
     )
 
-    assert_parse("{% raw %} {{ test }} {% tag %} {% endraw %}",
-      text: [" {{ test }} {% tag %} "]
+    assert_parse(
+      "{% raw %} {{ test }} {% tag %} {% endraw %}",
+      [{{:tag, Liquex.Parser.Tag.Raw}, [" {{ test }} {% tag %} "]}]
     )
   end
 end
