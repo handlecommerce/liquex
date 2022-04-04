@@ -34,32 +34,6 @@ defmodule Liquex.Parser.Tag do
     |> close_tag()
   end
 
-  @spec comment_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def comment_tag(combinator \\ empty()) do
-    combinator
-    |> ignore(tag_directive("comment"))
-    |> ignore(parsec(:document))
-    |> ignore(tag_directive("endcomment"))
-  end
-
-  @spec raw_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def raw_tag(combinator \\ empty()) do
-    endraw = tag_directive("endraw") |> wrap()
-
-    text =
-      lookahead_not(endraw)
-      |> utf8_char([])
-      |> times(min: 1)
-      |> reduce({Kernel, :to_string, []})
-      |> tag(:text)
-      |> label("raw content followed by {% endraw %}")
-
-    combinator
-    |> ignore(tag_directive("raw"))
-    |> optional(text)
-    |> ignore(endraw)
-  end
-
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
     control_flow_tags =
@@ -92,9 +66,7 @@ defmodule Liquex.Parser.Tag do
     |> choice([
       control_flow_tags,
       iteration_tags,
-      variable_tags,
-      raw_tag(),
-      comment_tag()
+      variable_tags
     ])
   end
 

@@ -139,7 +139,7 @@ defmodule Liquex do
           | {:object, [...]}
           | {:text, iodata}
           | {:variable, [...]}
-          | {{:custom_tag, module()}, any}
+          | {{:tag, module()}, any}
         ]
 
   @spec parse(String.t(), module) :: {:ok, document_t} | {:error, String.t(), pos_integer()}

@@ -11,11 +11,19 @@ defmodule Liquex.Parser do
     quote location: :keep do
       import NimbleParsec
 
-      custom_tags = Enum.map(unquote(tags), &tag(&1.parse(), {:custom_tag, &1}))
+      custom_tags = Enum.map(unquote(tags), &tag(&1.parse(), {:tag, &1}))
+
+      tags =
+        [
+          Liquex.Parser.Tag.Comment,
+          Liquex.Parser.Tag.Raw
+        ]
+        |> Enum.map(&tag(&1.parse(), {:tag, &1}))
 
       base =
         choice(
           custom_tags ++
+            tags ++
             [
               # credo:disable-for-lines:4
               Liquex.Parser.Object.object(),
