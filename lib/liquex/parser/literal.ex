@@ -6,20 +6,19 @@ defmodule Liquex.Parser.Literal do
   alias Liquex.Parser.Argument
 
   @spec boolean(NimbleParsec.t()) :: NimbleParsec.t()
-  def boolean(combinator \\ empty()) do
-    true_value = string("true") |> replace(true)
-    false_value = string("false") |> replace(false)
+  defp boolean(combinator \\ empty()) do
+    true_value = replace(string("true"), true)
+    false_value = replace(string("false"), false)
 
-    combinator
-    |> choice([true_value, false_value])
+    choice(combinator, [true_value, false_value])
   end
 
   @spec nil_value(NimbleParsec.t()) :: NimbleParsec.t()
-  def nil_value(combinator \\ empty()),
+  defp nil_value(combinator \\ empty()),
     do: combinator |> string("nil") |> replace(nil)
 
   @spec quoted_string(NimbleParsec.t()) :: NimbleParsec.t()
-  def quoted_string(combinator \\ empty()) do
+  defp quoted_string(combinator \\ empty()) do
     single_quote_string =
       ignore(utf8_char([?']))
       |> repeat(
@@ -62,7 +61,7 @@ defmodule Liquex.Parser.Literal do
   end
 
   @spec int(NimbleParsec.t()) :: NimbleParsec.t()
-  def int(combinator \\ empty()) do
+  defp int(combinator \\ empty()) do
     combinator
     |> optional(string("-"))
     |> concat(integer(min: 1))
@@ -71,7 +70,7 @@ defmodule Liquex.Parser.Literal do
   end
 
   @spec float(NimbleParsec.t()) :: NimbleParsec.t()
-  def float(combinator \\ empty()) do
+  defp float(combinator \\ empty()) do
     combinator
     |> int()
     |> string(".")

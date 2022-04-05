@@ -37,7 +37,6 @@ defmodule Liquex.Parser.Tag do
   def tag(combinator \\ empty()) do
     control_flow_tags =
       choice([
-        ControlFlow.if_expression(),
         ControlFlow.unless_expression(),
         ControlFlow.case_expression()
       ])
