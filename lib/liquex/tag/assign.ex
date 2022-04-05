@@ -28,7 +28,7 @@ defmodule Liquex.Tag.Assign do
     |> ignore(Tag.close_tag())
   end
 
-  def render([left: left, right: [right, {:filters, filters}]], %Context{} = context)
+  def render([left: left, right: [right, filters: filters]], %Context{} = context)
       when is_binary(left) do
     {right, context} =
       right

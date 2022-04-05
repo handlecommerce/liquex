@@ -8,7 +8,7 @@ defmodule Liquex.Tag.Increment do
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
 
-  def parse() do
+  def parse do
     increment = replace(string("increment"), 1)
     decrement = replace(string("decrement"), -1)
 

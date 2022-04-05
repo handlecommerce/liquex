@@ -29,7 +29,7 @@ defmodule Liquex.Tag.If do
     |> tag(:elsif)
   end
 
-  def render([expression: expression, contents: contents] ++ tail, context) do
+  def render([{:expression, expression}, {:contents, contents} | tail], context) do
     if Expression.eval(expression, context) do
       Liquex.render(contents, context)
     else
@@ -37,7 +37,7 @@ defmodule Liquex.Tag.If do
     end
   end
 
-  defp do_render([elsif: [expression: expression, contents: contents]] ++ tail, context) do
+  defp do_render([{:elsif, [expression: expression, contents: contents]} | tail], context) do
     if Expression.eval(expression, context) do
       Liquex.render(contents, context)
     else
