@@ -6,8 +6,6 @@ defmodule Liquex.Tag.If do
   alias Liquex.Parser.Tag
   alias Liquex.Parser.Tag.ControlFlow
 
-  # alias Liquex.Context
-
   def parse do
     ControlFlow.expression_tag("if")
     |> tag(parsec(:document), :contents)
@@ -16,35 +14,34 @@ defmodule Liquex.Tag.If do
     |> ignore(Tag.tag_directive("endif"))
   end
 
-  @spec else_tag :: NimbleParsec.t()
+  def elsif_tag do
+    ControlFlow.expression_tag("elsif")
+    |> tag(parsec(:document), :contents)
+    |> tag(:elsif)
+  end
+
   def else_tag do
     ignore(Tag.tag_directive("else"))
     |> tag(parsec(:document), :contents)
     |> tag(:else)
   end
 
-  defp elsif_tag do
-    ControlFlow.expression_tag("elsif")
-    |> tag(parsec(:document), :contents)
-    |> tag(:elsif)
-  end
-
   def render([{:expression, expression}, {:contents, contents} | tail], context) do
     if Expression.eval(expression, context) do
       Liquex.render(contents, context)
     else
-      do_render(tail, context)
+      render(tail, context)
     end
   end
 
-  defp do_render([{:elsif, [expression: expression, contents: contents]} | tail], context) do
+  def render([{:elsif, [expression: expression, contents: contents]} | tail], context) do
     if Expression.eval(expression, context) do
       Liquex.render(contents, context)
     else
-      do_render(tail, context)
+      render(tail, context)
     end
   end
 
-  defp do_render([else: [contents: contents]], context), do: Liquex.render(contents, context)
-  defp do_render([], context), do: {[], context}
+  def render([else: [contents: contents]], context), do: Liquex.render(contents, context)
+  def render([], context), do: {[], context}
 end

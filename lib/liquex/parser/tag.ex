@@ -36,10 +36,7 @@ defmodule Liquex.Parser.Tag do
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
     control_flow_tags =
-      choice([
-        ControlFlow.unless_expression(),
-        ControlFlow.case_expression()
-      ])
+      ControlFlow.case_expression()
       |> tag(:control_flow)
 
     iteration_tags =

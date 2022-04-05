@@ -5,34 +5,6 @@ defmodule Liquex.Render.ControlFlowTest do
 
   alias Liquex.Context
 
-  describe "unless statements" do
-    test "simple unless" do
-      {:ok, template} =
-        """
-        {% unless product.title == "Awesome Shoes" %}
-          These shoes are not awesome.
-        {% else %}
-          These shoes ARE awesome.
-        {% endunless %}
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
-             |> elem(0)
-             |> to_string()
-             |> String.trim() == "These shoes ARE awesome."
-
-      assert Liquex.render(
-               template,
-               Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
-             )
-             |> elem(0)
-             |> to_string()
-             |> String.trim() == "These shoes are not awesome."
-    end
-  end
-
   describe "case statements" do
     test "simple case" do
       {:ok, template} =

@@ -20,7 +20,8 @@ defmodule Liquex.Parser do
           Liquex.Tag.Comment,
           Liquex.Tag.If,
           Liquex.Tag.Increment,
-          Liquex.Tag.Raw
+          Liquex.Tag.Raw,
+          Liquex.Tag.Unless
         ]
         |> Enum.map(&tag(&1.parse(), {:tag, &1}))
 

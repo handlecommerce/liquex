@@ -46,17 +46,6 @@ defmodule Liquex.Parser.Tag.ControlFlow do
     )
   end
 
-  @spec unless_expression(NimbleParsec.t()) :: NimbleParsec.t()
-  def unless_expression(combinator \\ empty()) do
-    combinator
-    |> expression_tag("unless")
-    |> tag(parsec(:document), :contents)
-    |> tag(:unless)
-    |> repeat(elsif_tag())
-    |> optional(else_tag())
-    |> ignore(Tag.tag_directive("endunless"))
-  end
-
   @spec case_expression(NimbleParsec.t()) :: NimbleParsec.t()
   def case_expression(combinator \\ empty()) do
     when_tag =
@@ -96,13 +85,6 @@ defmodule Liquex.Parser.Tag.ControlFlow do
     |> ignore(Tag.tag_directive("else"))
     |> tag(parsec(:document), :contents)
     |> tag(:else)
-  end
-
-  defp elsif_tag(combinator \\ empty()) do
-    combinator
-    |> expression_tag("elsif")
-    |> tag(parsec(:document), :contents)
-    |> tag(:elsif)
   end
 
   @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
