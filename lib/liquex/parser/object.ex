@@ -8,7 +8,7 @@ defmodule Liquex.Parser.Object do
   alias Liquex.Parser.Literal
 
   @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
-  def arguments(combinator \\ empty()) do
+  defp arguments(combinator \\ empty()) do
     combinator
     |> choice([
       Argument.argument()
@@ -31,7 +31,7 @@ defmodule Liquex.Parser.Object do
   end
 
   @spec keyword_fields(NimbleParsec.t()) :: NimbleParsec.t()
-  def keyword_fields(combinator \\ empty()) do
+  defp keyword_fields(combinator \\ empty()) do
     combinator
     |> keyword_field()
     |> repeat(
