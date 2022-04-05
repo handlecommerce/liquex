@@ -4,7 +4,7 @@ defmodule Liquex.Tag.Raw do
 
   alias Liquex.Parser.Tag
 
-  def parse() do
+  def parse do
     endraw = Tag.tag_directive("endraw")
 
     text =
