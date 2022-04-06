@@ -53,6 +53,6 @@ defmodule Liquex.Tag do
   @doc """
   Render the tag built by the parser defined in `parse/0`
   """
-  @callback render(Liquex.document_t(), Liquex.Context.t()) ::
+  @callback render(list(), Liquex.Context.t()) ::
               {iodata, Liquex.Context.t()} | iodata
 end

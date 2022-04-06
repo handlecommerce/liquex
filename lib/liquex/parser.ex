@@ -17,6 +17,7 @@ defmodule Liquex.Parser do
         [
           Liquex.Tag.Assign,
           Liquex.Tag.Capture,
+          Liquex.Tag.Case,
           Liquex.Tag.Comment,
           Liquex.Tag.If,
           Liquex.Tag.Increment,
