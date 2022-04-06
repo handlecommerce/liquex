@@ -16,9 +16,13 @@ defmodule Liquex.Parser do
       tags =
         [
           Liquex.Tag.Assign,
+          Liquex.Tag.Break,
           Liquex.Tag.Capture,
           Liquex.Tag.Case,
           Liquex.Tag.Comment,
+          Liquex.Tag.Continue,
+          Liquex.Tag.Cycle,
+          Liquex.Tag.For,
           Liquex.Tag.If,
           Liquex.Tag.Increment,
           Liquex.Tag.Raw,

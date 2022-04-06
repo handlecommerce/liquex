@@ -8,40 +8,6 @@ defmodule Liquex.Parser.Tag.Iteration do
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
 
-  @spec for_expression(NimbleParsec.t()) :: NimbleParsec.t()
-  def for_expression(combinator \\ empty()) do
-    combinator
-    |> for_in_tag()
-    |> tag(parsec(:document), :contents)
-    |> tag(:for)
-    |> optional(else_tag())
-    |> ignore(Tag.tag_directive("endfor"))
-  end
-
-  @spec cycle_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def cycle_tag(combinator \\ empty()) do
-    cycle_group =
-      Literal.literal()
-      |> ignore(string(":"))
-      |> ignore(Literal.whitespace())
-
-    combinator
-    |> ignore(Tag.open_tag())
-    |> ignore(string("cycle"))
-    |> ignore(Literal.whitespace(empty(), 1))
-    |> optional(cycle_group |> unwrap_and_tag(:group))
-    |> tag(argument_sequence(), :sequence)
-    |> ignore(Tag.close_tag())
-    |> tag(:cycle)
-  end
-
-  @spec continue_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def continue_tag(combinator \\ empty()) do
-    combinator
-    |> ignore(Tag.tag_directive("continue"))
-    |> replace(:continue)
-  end
-
   @spec break_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def break_tag(combinator \\ empty()) do
     combinator
@@ -69,42 +35,8 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> tag(:tablerow)
   end
 
-  defp argument_sequence(combinator \\ empty()) do
-    combinator
-    |> Argument.argument()
-    |> repeat(
-      ignore(string(","))
-      |> ignore(Literal.whitespace())
-      |> Argument.argument()
-    )
-  end
-
-  defp for_in_tag(combinator) do
-    combinator
-    |> ignore(Tag.open_tag())
-    |> ignore(string("for"))
-    |> ignore(Literal.whitespace(empty(), 1))
-    |> unwrap_and_tag(Field.identifier(), :identifier)
-    |> ignore(Literal.whitespace(empty(), 1))
-    |> ignore(string("in"))
-    |> ignore(Literal.whitespace(empty(), 1))
-    |> tag(collection(), :collection)
-    |> ignore(Literal.whitespace())
-    |> tag(for_parameters(), :parameters)
-    |> ignore(Tag.close_tag())
-  end
-
   defp collection do
     choice([Literal.range(), Argument.argument()])
-  end
-
-  defp for_parameters do
-    reversed =
-      replace(string("reversed"), :reversed)
-      |> unwrap_and_tag(:order)
-      |> ignore(Literal.whitespace())
-
-    repeat(choice([reversed, limit(), offset()]))
   end
 
   defp cols do
@@ -123,11 +55,5 @@ defmodule Liquex.Parser.Tag.Iteration do
     ignore(string("offset:"))
     |> unwrap_and_tag(integer(min: 1), :offset)
     |> ignore(Literal.whitespace())
-  end
-
-  defp else_tag do
-    ignore(Tag.tag_directive("else"))
-    |> tag(parsec(:document), :contents)
-    |> tag(:else)
   end
 end

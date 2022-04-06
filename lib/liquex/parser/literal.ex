@@ -120,8 +120,7 @@ defmodule Liquex.Parser.Literal do
     |> unwrap_and_tag(:text)
   end
 
-  @spec opening_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def opening_tag(combinator \\ empty()) do
+  defp opening_tag(combinator \\ empty()) do
     combinator
     |> choice([
       whitespace(empty(), 1) |> string("{{-"),

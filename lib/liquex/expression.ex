@@ -4,6 +4,8 @@ defmodule Liquex.Expression do
   alias Liquex.Argument
   alias Liquex.Context
 
+  alias Liquex.Collection
+
   @spec eval(maybe_improper_list | {:field, any} | {:literal, any}, Context.t()) :: any
   def eval([left: left, op: op, right: right], %Context{} = context) do
     do_eval({
@@ -49,4 +51,18 @@ defmodule Liquex.Expression do
   defp do_eval(nil), do: false
   defp do_eval(false), do: false
   defp do_eval(_), do: true
+
+  def eval_collection(collection, []), do: collection
+
+  def eval_collection(collection, [{:limit, limit} | tail]),
+    do: collection |> Collection.limit(limit) |> eval_collection(tail)
+
+  def eval_collection(collection, [{:offset, offset} | tail]),
+    do: collection |> Collection.offset(offset) |> eval_collection(tail)
+
+  def eval_collection(collection, [{:order, :reversed} | tail]),
+    do: collection |> Collection.reverse() |> eval_collection(tail)
+
+  def eval_collection(collection, [{:cols, _} | tail]),
+    do: collection |> eval_collection(tail)
 end

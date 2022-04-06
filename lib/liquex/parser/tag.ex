@@ -3,6 +3,7 @@ defmodule Liquex.Parser.Tag do
 
   import NimbleParsec
 
+  alias Liquex.Parser.Argument
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag.Iteration
 
@@ -32,24 +33,18 @@ defmodule Liquex.Parser.Tag do
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
     combinator
-    |> choice([
-      Iteration.for_expression(),
-      Iteration.cycle_tag(),
-      Iteration.break_tag(),
-      Iteration.continue_tag(),
-      Iteration.tablerow_tag()
-    ])
+    |> Iteration.tablerow_tag()
     |> tag(:iteration)
   end
 
   @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def expression_tag(combinator \\ empty(), tag_name) do
     combinator
-    |> ignore(Tag.open_tag())
+    |> ignore(open_tag())
     |> ignore(string(tag_name))
     |> ignore(Literal.whitespace())
     |> tag(boolean_expression(), :expression)
-    |> ignore(Tag.close_tag())
+    |> ignore(close_tag())
   end
 
   # Close tag that also removes the whitespace after it
