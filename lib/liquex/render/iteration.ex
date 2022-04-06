@@ -37,22 +37,6 @@ defmodule Liquex.Render.Iteration do
   defp do_render([tag], context) when tag in [:break, :continue],
     do: throw({tag, context})
 
-  defp do_render([cycle: [sequence: sequence]], %Context{} = context),
-    do: do_render([cycle: [group: sequence, sequence: sequence]], context)
-
-  defp do_render([cycle: [group: group, sequence: sequence]], %Context{cycles: cycles} = context) do
-    index = Map.get(cycles, group, 0)
-
-    next_index = rem(index + 1, length(sequence))
-
-    result =
-      sequence
-      |> Enum.at(index)
-      |> Argument.eval(context)
-
-    {result, %{context | cycles: Map.put(cycles, group, next_index)}}
-  end
-
   defp do_render(
          [
            tablerow: [
