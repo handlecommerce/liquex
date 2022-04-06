@@ -2,9 +2,9 @@ defmodule Liquex.Tag.Capture do
   @behaviour Liquex.Tag
 
   alias Liquex.Context
-  alias Liquex.Parser.Tag
-  alias Liquex.Parser.Literal
   alias Liquex.Parser.Field
+  alias Liquex.Parser.Literal
+  alias Liquex.Parser.Tag
 
   import NimbleParsec
 

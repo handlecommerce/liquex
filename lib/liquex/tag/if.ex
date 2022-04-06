@@ -4,10 +4,9 @@ defmodule Liquex.Tag.If do
 
   alias Liquex.Expression
   alias Liquex.Parser.Tag
-  alias Liquex.Parser.Tag.ControlFlow
 
   def parse do
-    ControlFlow.expression_tag("if")
+    Tag.expression_tag("if")
     |> tag(parsec(:document), :contents)
     |> repeat(elsif_tag())
     |> optional(else_tag())
@@ -15,7 +14,7 @@ defmodule Liquex.Tag.If do
   end
 
   def elsif_tag do
-    ControlFlow.expression_tag("elsif")
+    Tag.expression_tag("elsif")
     |> tag(parsec(:document), :contents)
     |> tag(:elsif)
   end

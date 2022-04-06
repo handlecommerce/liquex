@@ -7,7 +7,6 @@ defmodule Liquex.Parser.Tag.Iteration do
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
-  alias Liquex.Parser.Tag.ControlFlow
 
   @spec for_expression(NimbleParsec.t()) :: NimbleParsec.t()
   def for_expression(combinator \\ empty()) do
@@ -15,7 +14,7 @@ defmodule Liquex.Parser.Tag.Iteration do
     |> for_in_tag()
     |> tag(parsec(:document), :contents)
     |> tag(:for)
-    |> optional(ControlFlow.else_tag())
+    |> optional(else_tag())
     |> ignore(Tag.tag_directive("endfor"))
   end
 
@@ -124,5 +123,11 @@ defmodule Liquex.Parser.Tag.Iteration do
     ignore(string("offset:"))
     |> unwrap_and_tag(integer(min: 1), :offset)
     |> ignore(Literal.whitespace())
+  end
+
+  defp else_tag do
+    ignore(Tag.tag_directive("else"))
+    |> tag(parsec(:document), :contents)
+    |> tag(:else)
   end
 end

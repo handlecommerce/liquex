@@ -2,11 +2,11 @@ defmodule Liquex.Tag.Assign do
   @behaviour Liquex.Tag
 
   alias Liquex.Context
-  alias Liquex.Parser.Tag
   alias Liquex.Parser.Argument
-  alias Liquex.Parser.Object
-  alias Liquex.Parser.Literal
   alias Liquex.Parser.Field
+  alias Liquex.Parser.Literal
+  alias Liquex.Parser.Object
+  alias Liquex.Parser.Tag
 
   alias Liquex.Render.Filter
 

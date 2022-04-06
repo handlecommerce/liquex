@@ -4,12 +4,11 @@ defmodule Liquex.Tag.Unless do
 
   alias Liquex.Expression
   alias Liquex.Parser.Tag
-  alias Liquex.Parser.Tag.ControlFlow
 
   alias Liquex.Tag.If
 
   def parse do
-    ControlFlow.expression_tag("unless")
+    Tag.expression_tag("unless")
     |> tag(parsec(:document), :contents)
     |> repeat(If.elsif_tag())
     |> optional(If.else_tag())
@@ -17,10 +16,10 @@ defmodule Liquex.Tag.Unless do
   end
 
   def render([{:expression, expression}, {:contents, contents} | tail], context) do
-    unless Expression.eval(expression, context) do
-      Liquex.render(contents, context)
-    else
+    if Expression.eval(expression, context) do
       If.render(tail, context)
+    else
+      Liquex.render(contents, context)
     end
   end
 end

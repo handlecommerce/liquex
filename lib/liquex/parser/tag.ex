@@ -4,11 +4,7 @@ defmodule Liquex.Parser.Tag do
   import NimbleParsec
 
   alias Liquex.Parser.Literal
-
-  alias Liquex.Parser.Tag.{
-    ControlFlow,
-    Iteration
-  }
+  alias Liquex.Parser.Tag.Iteration
 
   @spec open_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def open_tag(combinator \\ empty()) do
@@ -35,30 +31,68 @@ defmodule Liquex.Parser.Tag do
 
   @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
   def tag(combinator \\ empty()) do
-    control_flow_tags =
-      ControlFlow.case_expression()
-      |> tag(:control_flow)
-
-    iteration_tags =
-      choice([
-        Iteration.for_expression(),
-        Iteration.cycle_tag(),
-        Iteration.break_tag(),
-        Iteration.continue_tag(),
-        Iteration.tablerow_tag()
-      ])
-      |> tag(:iteration)
-
     combinator
     |> choice([
-      control_flow_tags,
-      iteration_tags
+      Iteration.for_expression(),
+      Iteration.cycle_tag(),
+      Iteration.break_tag(),
+      Iteration.continue_tag(),
+      Iteration.tablerow_tag()
     ])
+    |> tag(:iteration)
+  end
+
+  @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
+  def expression_tag(combinator \\ empty(), tag_name) do
+    combinator
+    |> ignore(Tag.open_tag())
+    |> ignore(string(tag_name))
+    |> ignore(Literal.whitespace())
+    |> tag(boolean_expression(), :expression)
+    |> ignore(Tag.close_tag())
   end
 
   # Close tag that also removes the whitespace after it
   defp close_tag_remove_whitespace do
     string("-%}")
     |> Literal.whitespace()
+  end
+
+  defp boolean_expression(combinator \\ empty()) do
+    operator =
+      choice([
+        string("=="),
+        string("!="),
+        string(">="),
+        string("<="),
+        string(">"),
+        string("<"),
+        string("contains")
+      ])
+      |> map({String, :to_atom, []})
+
+    boolean_operator =
+      choice([
+        replace(string("and"), :and),
+        replace(string("or"), :or)
+      ])
+
+    boolean_operation =
+      tag(Argument.argument(), :left)
+      |> ignore(Literal.whitespace())
+      |> unwrap_and_tag(operator, :op)
+      |> ignore(Literal.whitespace())
+      |> tag(Argument.argument(), :right)
+      |> wrap()
+
+    combinator
+    |> choice([boolean_operation, Literal.literal(), Argument.argument()])
+    |> ignore(Literal.whitespace())
+    |> repeat(
+      boolean_operator
+      |> ignore(Literal.whitespace())
+      |> choice([boolean_operation, Literal.literal(), Argument.argument()])
+      |> ignore(Literal.whitespace())
+    )
   end
 end
