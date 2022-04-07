@@ -28,9 +28,7 @@ defmodule Liquex.Render do
       custom_module,
       Liquex.Render.Tag,
       Liquex.Render.Text,
-      Liquex.Render.Object,
-      Liquex.Render.ControlFlow,
-      Liquex.Render.Iteration
+      Liquex.Render.Object
     ]
     |> do_render(tag, context)
     |> case do
@@ -49,6 +47,8 @@ defmodule Liquex.Render do
         render([result | content], tail, context)
     end
   end
+
+  def render(document, %Context{} = context), do: render([], document, context)
 
   defp do_render(modules, tag, context) do
     modules

@@ -27,7 +27,7 @@ defmodule Liquex.Tag do
 
         @impl true
         def render(contents, context) do
-          {result, context} = Liquex.render(contents, context)
+          {result, context} = Liquex.Render.render(contents, context)
           {["Custom Tag: ", result], context}
         end
       end

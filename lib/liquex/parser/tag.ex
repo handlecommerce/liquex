@@ -5,7 +5,6 @@ defmodule Liquex.Parser.Tag do
 
   alias Liquex.Parser.Argument
   alias Liquex.Parser.Literal
-  alias Liquex.Parser.Tag.Iteration
 
   @spec open_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def open_tag(combinator \\ empty()) do
@@ -28,13 +27,6 @@ defmodule Liquex.Parser.Tag do
     |> open_tag()
     |> string(name)
     |> close_tag()
-  end
-
-  @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def tag(combinator \\ empty()) do
-    combinator
-    |> Iteration.tablerow_tag()
-    |> tag(:iteration)
   end
 
   @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()

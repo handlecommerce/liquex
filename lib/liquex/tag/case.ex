@@ -6,6 +6,7 @@ defmodule Liquex.Tag.Case do
   alias Liquex.Parser
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
+  alias Liquex.Render
 
   def parse do
     case_tag()
@@ -55,14 +56,14 @@ defmodule Liquex.Tag.Case do
     result = Enum.any?(expressions, &(match == Argument.eval(&1, context)))
 
     if result do
-      Liquex.render(contents, context)
+      Render.render(contents, context)
     else
       do_render(tail, context, match)
     end
   end
 
   defp do_render([{:else, [contents: contents]} | _tail], context, _),
-    do: Liquex.render(contents, context)
+    do: Render.render(contents, context)
 
   defp do_render([], context, _), do: {[], context}
 end

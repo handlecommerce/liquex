@@ -4,6 +4,7 @@ defmodule Liquex.Tag.Unless do
 
   alias Liquex.Expression
   alias Liquex.Parser.Tag
+  alias Liquex.Render
 
   alias Liquex.Tag.If
 
@@ -19,7 +20,7 @@ defmodule Liquex.Tag.Unless do
     if Expression.eval(expression, context) do
       If.render(tail, context)
     else
-      Liquex.render(contents, context)
+      Render.render(contents, context)
     end
   end
 end

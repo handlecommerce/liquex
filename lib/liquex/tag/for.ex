@@ -88,10 +88,10 @@ defmodule Liquex.Tag.For do
   end
 
   defp render_collection(nil, _, _, contents, context),
-    do: Liquex.render(contents, context)
+    do: Liquex.Render.render(contents, context)
 
   defp render_collection([], _, _, contents, context),
-    do: Liquex.render(contents, context)
+    do: Liquex.Render.render(contents, context)
 
   defp render_collection(results, identifier, contents, _, context) do
     forloop_init = Map.get(context.variables, "forloop")
@@ -107,7 +107,7 @@ defmodule Liquex.Tag.For do
           |> Context.assign("forloop", forloop(index, len))
           |> Context.assign(identifier, record)
 
-        case Liquex.render(contents, ctx) do
+        case Liquex.Render.render(contents, ctx) do
           {r, ctx} ->
             {[r | acc], Context.assign(ctx, "forloop", forloop_init)}
 
