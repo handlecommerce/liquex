@@ -19,19 +19,8 @@ defmodule Liquex.Render do
   def render(content, [], context),
     do: {content |> Enum.reverse(), context}
 
-  def render(content, [tag | tail], %{render_module: custom_module} = context) do
-    if !is_nil(custom_module) do
-      IO.warn("Use of render with render_module is deprecated.  Use custom tags instead.")
-    end
-
-    [
-      custom_module,
-      Liquex.Render.Tag,
-      Liquex.Render.Text,
-      Liquex.Render.Object
-    ]
-    |> do_render(tag, context)
-    |> case do
+  def render(content, [tag | tail], %Context{} = context) do
+    case do_render(tag, context) do
       # No tag renderer found
       nil ->
         raise Liquex.Error, "No tag renderer found for tag #{tag}"
@@ -50,11 +39,10 @@ defmodule Liquex.Render do
 
   def render(document, %Context{} = context), do: render([], document, context)
 
-  defp do_render(modules, tag, context) do
-    modules
-    |> Enum.reject(&is_nil/1)
-    |> Enum.find_value(& &1.render(tag, context))
-  end
+  defp do_render({:text, text}, context), do: {text, context}
+
+  defp do_render({{:tag, module}, contents}, context) when is_atom(module),
+    do: module.render(contents, context)
 
   @spec apply_filters(any, [Liquex.Filter.filter_t()], Context.t()) :: {any, Context.t()}
   def apply_filters(value, filters, %Context{} = context),
