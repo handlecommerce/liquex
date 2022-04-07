@@ -26,6 +26,7 @@ defmodule Liquex.Parser do
           Liquex.Tag.If,
           Liquex.Tag.Increment,
           Liquex.Tag.Raw,
+          Liquex.Tag.Tablerow,
           Liquex.Tag.Unless
         ]
         |> Enum.map(&tag(&1.parse(), {:tag, &1}))
@@ -37,7 +38,6 @@ defmodule Liquex.Parser do
             [
               # credo:disable-for-lines:4
               Liquex.Parser.Object.object(),
-              Liquex.Parser.Tag.tag(),
               Liquex.Parser.Literal.text(),
               Liquex.Parser.Literal.ignored_leading_whitespace()
             ]

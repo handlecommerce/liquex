@@ -1,11 +1,38 @@
-defmodule Liquex.Render.IterationTest do
-  @moduledoc false
-
+defmodule Liquex.Tag.TablerowTest do
   use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   alias Liquex.Context
 
-  describe "tablerow" do
+  describe "parse" do
+    test "parse simple tablerow" do
+      "{% tablerow product in collection %}{{ product }}{% endtablerow %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.Tablerow},
+          identifier: "product",
+          collection: [field: [key: "collection"]],
+          parameters: [],
+          contents: [object: [field: [key: "product"], filters: []]]
+        }
+      ])
+    end
+
+    test "parse tablerow with parameters" do
+      "{% tablerow product in collection cols:2 limit:3 offset:2 %}{{ product }}{% endtablerow %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.Tablerow},
+          identifier: "product",
+          collection: [field: [key: "collection"]],
+          parameters: [cols: 2, limit: 3, offset: 2],
+          contents: [object: [field: [key: "product"], filters: []]]
+        }
+      ])
+    end
+  end
+
+  describe "render" do
     test "simple tablerow" do
       {:ok, template} =
         """
