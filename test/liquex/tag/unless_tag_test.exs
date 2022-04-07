@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.UnlessTest do
+defmodule Liquex.Tag.UnlessTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true %}Hello{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [literal: true], contents: [text: "Hello"]
         }
       ])
@@ -19,7 +19,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless a == b %}Hello{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [[left: [field: [key: "a"]], op: :==, right: [field: [key: "b"]]]],
           contents: [text: "Hello"]
         }
@@ -30,7 +30,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true and false %}Hello{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [{:literal, true}, :and, {:literal, false}], contents: [text: "Hello"]
         }
       ])
@@ -38,7 +38,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true or false %}Hello{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [{:literal, true}, :or, {:literal, false}], contents: [text: "Hello"]
         }
       ])
@@ -46,7 +46,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless a > b and b > c %}Hello{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [
             [left: [field: [key: "a"]], op: :>, right: [field: [key: "b"]]],
             :and,
@@ -61,7 +61,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true %}Hello{% elsif false %}Goodbye{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [literal: true],
           contents: [text: "Hello"],
           elsif: [expression: [literal: false], contents: [text: "Goodbye"]]
@@ -71,7 +71,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true %}Hello{% elsif false %}Goodbye{% elsif 1 %}Other{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [literal: true],
           contents: [text: "Hello"],
           elsif: [expression: [literal: false], contents: [text: "Goodbye"]],
@@ -84,7 +84,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true %}Hello{% else %}Goodbye{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [literal: true],
           contents: [text: "Hello"],
           else: [contents: [text: "Goodbye"]]
@@ -96,7 +96,7 @@ defmodule Liquex.Tag.UnlessTest do
       "{% unless true %}one{% elsif false %}two{% else %}three{% endunless %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Unless},
+          {:tag, Liquex.Tag.UnlessTag},
           expression: [literal: true],
           contents: [text: "one"],
           elsif: [expression: [literal: false], contents: [text: "two"]],

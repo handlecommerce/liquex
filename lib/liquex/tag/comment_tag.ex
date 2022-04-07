@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Comment do
+defmodule Liquex.Tag.CommentTag do
   @behaviour Liquex.Tag
 
   alias Liquex.Parser.Tag

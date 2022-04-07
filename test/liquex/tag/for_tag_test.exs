@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.ForTest do
+defmodule Liquex.Tag.ForTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in x %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [field: [key: "x"]],
           parameters: [],
@@ -22,7 +22,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in x %}Hello{% else %}Goodbye{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [field: [key: "x"]],
           parameters: [],
@@ -36,7 +36,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in (1..5) %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [inclusive_range: [begin: [literal: 1], end: [literal: 5]]],
           parameters: [],
@@ -49,7 +49,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in (1..x) %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [inclusive_range: [begin: [literal: 1], end: [field: [key: "x"]]]],
           parameters: [],
@@ -62,7 +62,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in x reversed %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [field: [key: "x"]],
           parameters: [order: :reversed],
@@ -75,7 +75,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in x limit:2 %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [field: [key: "x"]],
           parameters: [limit: 2],
@@ -88,7 +88,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in x offset:1 %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [field: [key: "x"]],
           parameters: [offset: 1],
@@ -101,7 +101,7 @@ defmodule Liquex.Tag.ForTest do
       "{% for i in x reversed limit:2 offset:1 %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           identifier: "i",
           collection: [field: [key: "x"]],
           parameters: [order: :reversed, limit: 2, offset: 1],

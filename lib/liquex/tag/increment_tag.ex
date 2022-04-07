@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Increment do
+defmodule Liquex.Tag.IncrementTag do
   @behaviour Liquex.Tag
   import NimbleParsec
 

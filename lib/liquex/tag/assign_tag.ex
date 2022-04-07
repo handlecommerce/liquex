@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Assign do
+defmodule Liquex.Tag.AssignTag do
   @behaviour Liquex.Tag
 
   alias Liquex.Context

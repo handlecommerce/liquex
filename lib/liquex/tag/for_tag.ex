@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.For do
+defmodule Liquex.Tag.ForTag do
   @behaviour Liquex.Tag
   import NimbleParsec
 

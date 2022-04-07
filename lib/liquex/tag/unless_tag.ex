@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Unless do
+defmodule Liquex.Tag.UnlessTag do
   @behaviour Liquex.Tag
   import NimbleParsec
 
@@ -6,19 +6,19 @@ defmodule Liquex.Tag.Unless do
   alias Liquex.Parser.Tag
   alias Liquex.Render
 
-  alias Liquex.Tag.If
+  alias Liquex.Tag.IfTag
 
   def parse do
     Tag.expression_tag("unless")
     |> tag(parsec(:document), :contents)
-    |> repeat(If.elsif_tag())
-    |> optional(If.else_tag())
+    |> repeat(IfTag.elsif_tag())
+    |> optional(IfTag.else_tag())
     |> ignore(Tag.tag_directive("endunless"))
   end
 
   def render([{:expression, expression}, {:contents, contents} | tail], context) do
     if Expression.eval(expression, context) do
-      If.render(tail, context)
+      IfTag.render(tail, context)
     else
       Render.render(contents, context)
     end

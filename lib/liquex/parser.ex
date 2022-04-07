@@ -15,19 +15,19 @@ defmodule Liquex.Parser do
 
       tags =
         [
-          Liquex.Tag.Assign,
-          Liquex.Tag.Break,
-          Liquex.Tag.Capture,
-          Liquex.Tag.Case,
-          Liquex.Tag.Comment,
-          Liquex.Tag.Continue,
-          Liquex.Tag.Cycle,
-          Liquex.Tag.For,
-          Liquex.Tag.If,
-          Liquex.Tag.Increment,
-          Liquex.Tag.Raw,
-          Liquex.Tag.Tablerow,
-          Liquex.Tag.Unless
+          Liquex.Tag.AssignTag,
+          Liquex.Tag.BreakTag,
+          Liquex.Tag.CaptureTag,
+          Liquex.Tag.CaseTag,
+          Liquex.Tag.CommentTag,
+          Liquex.Tag.ContinueTag,
+          Liquex.Tag.CycleTag,
+          Liquex.Tag.ForTag,
+          Liquex.Tag.IfTag,
+          Liquex.Tag.IncrementTag,
+          Liquex.Tag.RawTag,
+          Liquex.Tag.TablerowTag,
+          Liquex.Tag.UnlessTag
         ]
         |> Enum.map(&tag(&1.parse(), {:tag, &1}))
 

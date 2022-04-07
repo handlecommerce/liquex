@@ -7,7 +7,7 @@ defmodule Liquex.Parser.WhitespaceTest do
       "Hello {%- comment -%}Ignored text{%- endcomment -%} World",
       [
         {:text, "Hello"},
-        {{:tag, Liquex.Tag.Comment}, []},
+        {{:tag, Liquex.Tag.CommentTag}, []},
         {:text, "World"}
       ]
     )
@@ -22,7 +22,7 @@ defmodule Liquex.Parser.WhitespaceTest do
   test "removes spaces after -%}" do
     assert_parse(
       "{% raw -%}\n  This is a test{% endraw %}",
-      [{{:tag, Liquex.Tag.Raw}, ["This is a test"]}]
+      [{{:tag, Liquex.Tag.RawTag}, ["This is a test"]}]
     )
   end
 end
