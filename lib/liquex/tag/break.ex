@@ -11,5 +11,7 @@ defmodule Liquex.Tag.Break do
   end
 
   @impl true
-  def render(_, context), do: throw({:break, context})
+  def render(_, context) do
+    {:break, [], context}
+  end
 end

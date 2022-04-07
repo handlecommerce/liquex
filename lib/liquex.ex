@@ -177,8 +177,13 @@ defmodule Liquex do
   """
   def render(document, context \\ %Context{})
 
-  def render(document, %Context{} = context),
-    do: Liquex.Render.render([], document, context)
+  def render(document, %Context{} = context) do
+    case Liquex.Render.render([], document, context) do
+      {:continue, _, _} -> raise Liquex.Error, message: "continue tag not captured within for tag"
+      {:break, _, _} -> raise Liquex.Error, message: "break tag not captured within for tag"
+      r -> r
+    end
+  end
 
   def render(document, %{} = context), do: render(document, Context.new(context))
 end

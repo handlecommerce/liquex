@@ -5,7 +5,11 @@ defmodule Liquex.Render do
 
   @callback render({atom, any}, Context.t()) :: {iodata, Context.t()} | iodata | false
 
-  @spec render(iodata(), Liquex.document_t(), Context.t()) :: {iodata(), Context.t()}
+  @spec render(iodata(), Liquex.document_t(), Context.t()) ::
+          {iodata(), Context.t()}
+          | {:break, iodata(), Context.t()}
+          | {:continue, iodata(), Context.t()}
+
   @doc """
   Renders a Liquid AST `document` into an `iodata`
 
@@ -34,12 +38,14 @@ defmodule Liquex.Render do
       nil ->
         raise Liquex.Error, "No tag renderer found for tag #{tag}"
 
+      {:break, result, context} ->
+        {:break, [result | content], context}
+
+      {:continue, result, context} ->
+        {:continue, [result | content], context}
+
       # Returned the rendered results and new context
       {result, %Context{} = context} ->
-        render([result | content], tail, context)
-
-      # Returned the rendered results without a new context
-      result ->
         render([result | content], tail, context)
     end
   end

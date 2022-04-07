@@ -38,5 +38,16 @@ defmodule Liquex.Tag.BreakTest do
              |> elem(0)
              |> to_string() == "HelloHello"
     end
+
+    test "does not throw away current buffer" do
+      {:ok, template} =
+        "{% for i in (1..5) %}{{ i }}{% if i > 2 %}{% break %}{% endif %}{% endfor %}"
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, %{})
+             |> elem(0)
+             |> to_string() == "123"
+    end
   end
 end
