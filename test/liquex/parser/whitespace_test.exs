@@ -14,8 +14,9 @@ defmodule Liquex.Parser.WhitespaceTest do
   end
 
   test "Parses with {{- and -}} properly" do
-    assert_parse("{{- 'Hello World' -}}  ",
-      object: [literal: "Hello World", filters: []]
+    assert_parse(
+      "{{- 'Hello World' -}}  ",
+      [{{:tag, Liquex.Tag.ObjectTag}, [literal: "Hello World", filters: []]}]
     )
   end
 

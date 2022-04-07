@@ -8,7 +8,7 @@ defmodule Liquex.Tag.AssignTag do
   alias Liquex.Parser.Object
   alias Liquex.Parser.Tag
 
-  alias Liquex.Render.Filter
+  alias Liquex.Render
 
   import NimbleParsec
 
@@ -33,7 +33,7 @@ defmodule Liquex.Tag.AssignTag do
     {right, context} =
       right
       |> Liquex.Argument.eval(context)
-      |> Filter.apply_filters(filters, context)
+      |> Render.apply_filters(filters, context)
 
     context = Context.assign(context, left, right)
 
