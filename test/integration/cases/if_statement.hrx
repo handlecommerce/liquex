@@ -2,4 +2,4 @@
 {}
 
 <===> if_statement.liquid
-{% if true and false  or true %}foo{% else %}bar{% endif %}
+{% if true and false or true %}foo{% else %}bar{% endif %}
