@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.TablerowTest do
+defmodule Liquex.Tag.TablerowTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.TablerowTest do
       "{% tablerow product in collection %}{{ product }}{% endtablerow %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Tablerow},
+          {:tag, Liquex.Tag.TablerowTag},
           identifier: "product",
           collection: [field: [key: "collection"]],
           parameters: [],
@@ -22,7 +22,7 @@ defmodule Liquex.Tag.TablerowTest do
       "{% tablerow product in collection cols:2 limit:3 offset:2 %}{{ product }}{% endtablerow %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Tablerow},
+          {:tag, Liquex.Tag.TablerowTag},
           identifier: "product",
           collection: [field: [key: "collection"]],
           parameters: [cols: 2, limit: 3, offset: 2],

@@ -1,23 +1,23 @@
-defmodule Liquex.Tag.BreakTest do
+defmodule Liquex.Tag.ContinueTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
   describe "parse" do
-    test "basic break" do
-      "{% for i in x %}{% if i == 2 %}{% break %}{% endif %}Hello{% endfor %}"
+    test "basic continue" do
+      "{% for i in x %}{% if i == 2 %}{% continue %}{% endif %}Hello{% endfor %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.For},
+          {:tag, Liquex.Tag.ForTag},
           [
             {:identifier, "i"},
             {:collection, [field: [key: "x"]]},
             {:parameters, []},
             {:contents,
              [
-               {{:tag, Liquex.Tag.If},
+               {{:tag, Liquex.Tag.IfTag},
                 [
                   expression: [[left: [field: [key: "i"]], op: :==, right: [literal: 2]]],
-                  contents: [{{:tag, Liquex.Tag.Break}, []}]
+                  contents: [{{:tag, Liquex.Tag.ContinueTag}, []}]
                 ]},
                {:text, "Hello"}
              ]}
@@ -28,26 +28,15 @@ defmodule Liquex.Tag.BreakTest do
   end
 
   describe "render" do
-    test "basic break" do
+    test "ignore comments in render" do
       {:ok, template} =
-        "{% for i in x %}{% if i > 2 %}{% break %}{% endif %}Hello{% endfor %}"
+        "{% for i in x %}{% if i > 2 %}{% continue %}{% endif %}Hello{% endfor %}"
         |> String.trim()
         |> Liquex.parse()
 
       assert Liquex.render(template, %{"x" => 1..40})
              |> elem(0)
              |> to_string() == "HelloHello"
-    end
-
-    test "does not throw away current buffer" do
-      {:ok, template} =
-        "{% for i in (1..5) %}{{ i }}{% if i > 2 %}{% break %}{% endif %}{% endfor %}"
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, %{})
-             |> elem(0)
-             |> to_string() == "123"
     end
   end
 end

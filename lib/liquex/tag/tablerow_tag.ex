@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Tablerow do
+defmodule Liquex.Tag.TablerowTag do
   @behaviour Liquex.Tag
 
   alias Liquex.Context

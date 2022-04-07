@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.CaseTest do
+defmodule Liquex.Tag.CaseTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.CaseTest do
       "{% case a %} {% when 1 %}test{% endcase %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Case},
+          {:tag, Liquex.Tag.CaseTag},
           field: [key: "a"], when: [expression: [literal: 1], contents: [text: "test"]]
         }
       ])
@@ -19,7 +19,7 @@ defmodule Liquex.Tag.CaseTest do
       "{% case a %} {% when 1 %}test{% when 2 %}test2{% endcase %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Case},
+          {:tag, Liquex.Tag.CaseTag},
           field: [key: "a"],
           when: [expression: [literal: 1], contents: [text: "test"]],
           when: [expression: [literal: 2], contents: [text: "test2"]]
@@ -31,7 +31,7 @@ defmodule Liquex.Tag.CaseTest do
       "{% case a %} {% when 1 %} test {% else %} test2 {% endcase %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Case},
+          {:tag, Liquex.Tag.CaseTag},
           field: [key: "a"],
           when: [expression: [literal: 1], contents: [text: " test "]],
           else: [contents: [text: " test2 "]]
@@ -52,7 +52,7 @@ defmodule Liquex.Tag.CaseTest do
       """
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Case},
+          {:tag, Liquex.Tag.CaseTag},
           field: [key: "handle"],
           when: [expression: [literal: "cake"], contents: [text: "\n    This is a cake\n  "]],
           when: [

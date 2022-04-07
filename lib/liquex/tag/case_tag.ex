@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Case do
+defmodule Liquex.Tag.CaseTag do
   @behaviour Liquex.Tag
   import NimbleParsec
 

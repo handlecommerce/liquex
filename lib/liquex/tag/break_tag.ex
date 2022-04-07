@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Break do
+defmodule Liquex.Tag.BreakTag do
   @behaviour Liquex.Tag
 
   alias Liquex.Parser.Tag

@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.CommentTest do
+defmodule Liquex.Tag.CommentTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -6,7 +6,7 @@ defmodule Liquex.Tag.CommentTest do
     test "simple parse" do
       assert_parse(
         "Hello {% comment %}Ignored text{% endcomment %} World",
-        [{:text, "Hello "}, {{:tag, Liquex.Tag.Comment}, []}, {:text, " World"}]
+        [{:text, "Hello "}, {{:tag, Liquex.Tag.CommentTag}, []}, {:text, " World"}]
       )
     end
   end

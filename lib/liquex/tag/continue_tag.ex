@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.Continue do
+defmodule Liquex.Tag.ContinueTag do
   @behaviour Liquex.Tag
 
   alias Liquex.Parser.Tag

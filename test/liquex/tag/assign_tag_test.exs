@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.AssignTest do
+defmodule Liquex.Tag.AssignTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.AssignTest do
       "{% assign a = 5 %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Assign},
+          {:tag, Liquex.Tag.AssignTag},
           [left: "a", right: [literal: 5, filters: []]]
         }
       ])
@@ -19,7 +19,7 @@ defmodule Liquex.Tag.AssignTest do
       "{% assign a = b %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Assign},
+          {:tag, Liquex.Tag.AssignTag},
           [left: "a", right: [field: [key: "b"], filters: []]]
         }
       ])
@@ -29,7 +29,7 @@ defmodule Liquex.Tag.AssignTest do
       "{% assign a = b | divided_by: 4 %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Assign},
+          {:tag, Liquex.Tag.AssignTag},
           [
             left: "a",
             right: [field: [key: "b"], filters: [filter: ["divided_by", arguments: [literal: 4]]]]

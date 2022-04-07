@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.IncrementTest do
+defmodule Liquex.Tag.IncrementTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -7,12 +7,12 @@ defmodule Liquex.Tag.IncrementTest do
   describe "parse" do
     test "parse increment" do
       "{% increment a %}"
-      |> assert_parse([{{:tag, Liquex.Tag.Increment}, [identifier: "a", by: 1]}])
+      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: 1]}])
     end
 
     test "parse decrement" do
       "{% decrement a %}"
-      |> assert_parse([{{:tag, Liquex.Tag.Increment}, [identifier: "a", by: -1]}])
+      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: -1]}])
     end
   end
 

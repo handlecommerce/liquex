@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.CaptureTest do
+defmodule Liquex.Tag.CaptureTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.CaptureTest do
       "{% capture a %}This is a test{% endcapture %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Capture},
+          {:tag, Liquex.Tag.CaptureTag},
           [identifier: "a", contents: [text: "This is a test"]]
         }
       ])

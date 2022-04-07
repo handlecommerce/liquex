@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.IfTest do
+defmodule Liquex.Tag.IfTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [literal: true], contents: [text: "Hello"]
         }
       ])
@@ -19,7 +19,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if a == b %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [[left: [field: [key: "a"]], op: :==, right: [field: [key: "b"]]]],
           contents: [text: "Hello"]
         }
@@ -30,7 +30,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true and false %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [{:literal, true}, :and, {:literal, false}], contents: [text: "Hello"]
         }
       ])
@@ -38,7 +38,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true or false %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [{:literal, true}, :or, {:literal, false}], contents: [text: "Hello"]
         }
       ])
@@ -46,7 +46,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true and false or true %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [{:literal, true}, :and, {:literal, false}, :or, {:literal, true}],
           contents: [text: "Hello"]
         }
@@ -55,7 +55,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if a > b and b > c %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [
             [left: [field: [key: "a"]], op: :>, right: [field: [key: "b"]]],
             :and,
@@ -68,7 +68,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if a and b > c %}Hello{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [
             {:field, [key: "a"]},
             :and,
@@ -83,7 +83,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true %}Hello{% elsif false %}Goodbye{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [literal: true],
           contents: [text: "Hello"],
           elsif: [expression: [literal: false], contents: [text: "Goodbye"]]
@@ -93,7 +93,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true %}Hello{% elsif false %}Goodbye{% elsif 1 %}Other{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [literal: true],
           contents: [text: "Hello"],
           elsif: [expression: [literal: false], contents: [text: "Goodbye"]],
@@ -106,7 +106,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true %}Hello{% else %}Goodbye{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           [
             expression: [literal: true],
             contents: [text: "Hello"],
@@ -120,7 +120,7 @@ defmodule Liquex.Tag.IfTest do
       "{% if true %}one{% elsif false %}two{% else %}three{% endif %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           expression: [literal: true],
           contents: [text: "one"],
           elsif: [expression: [literal: false], contents: [text: "two"]],
@@ -142,7 +142,7 @@ defmodule Liquex.Tag.IfTest do
       |> assert_parse([
         {:text, "  "},
         {
-          {:tag, Liquex.Tag.If},
+          {:tag, Liquex.Tag.IfTag},
           [
             expression: [
               [

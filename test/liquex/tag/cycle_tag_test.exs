@@ -1,4 +1,4 @@
-defmodule Liquex.Tag.CycleTest do
+defmodule Liquex.Tag.CycleTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
@@ -9,7 +9,7 @@ defmodule Liquex.Tag.CycleTest do
       "{% cycle 'a', 'b', 'c' %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Cycle},
+          {:tag, Liquex.Tag.CycleTag},
           sequence: [literal: "a", literal: "b", literal: "c"]
         }
       ])
@@ -19,7 +19,7 @@ defmodule Liquex.Tag.CycleTest do
       "{% cycle a, b, c %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Cycle},
+          {:tag, Liquex.Tag.CycleTag},
           sequence: [field: [key: "a"], field: [key: "b"], field: [key: "c"]]
         }
       ])
@@ -29,7 +29,7 @@ defmodule Liquex.Tag.CycleTest do
       "{% cycle 'group': 'a', 'b', 'c' %}"
       |> assert_parse([
         {
-          {:tag, Liquex.Tag.Cycle},
+          {:tag, Liquex.Tag.CycleTag},
           group: {:literal, "group"}, sequence: [literal: "a", literal: "b", literal: "c"]
         }
       ])
