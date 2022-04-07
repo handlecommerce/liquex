@@ -25,6 +25,7 @@ defmodule Liquex.Parser do
           Liquex.Tag.ForTag,
           Liquex.Tag.IfTag,
           Liquex.Tag.IncrementTag,
+          Liquex.Tag.ObjectTag,
           Liquex.Tag.RawTag,
           Liquex.Tag.TablerowTag,
           Liquex.Tag.UnlessTag
@@ -37,7 +38,6 @@ defmodule Liquex.Parser do
             tags ++
             [
               # credo:disable-for-lines:4
-              Liquex.Parser.Object.object(),
               Liquex.Parser.Literal.text(),
               Liquex.Parser.Literal.ignored_leading_whitespace()
             ]

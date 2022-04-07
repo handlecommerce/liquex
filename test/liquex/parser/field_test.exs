@@ -5,44 +5,59 @@ defmodule Liquex.Parser.FieldTest do
   import Liquex.TestHelpers
 
   test "simple field" do
-    assert_parse("{{ field }}", object: [field: [key: "field"], filters: []])
-    assert_parse("{{ f }}", object: [field: [key: "f"], filters: []])
+    assert_parse("{{ field }}", [
+      {{:tag, Liquex.Tag.ObjectTag}, [field: [key: "field"], filters: []]}
+    ])
   end
 
   test "nested field" do
     assert_parse(
       "{{ field.child }}",
-      object: [field: [key: "field", key: "child"], filters: []]
+      [{{:tag, Liquex.Tag.ObjectTag}, [field: [key: "field", key: "child"], filters: []]}]
     )
   end
 
   test "field with question mark at end" do
-    assert_parse("{{ field? }}", object: [field: [key: "field?"], filters: []])
+    assert_parse("{{ field? }}", [
+      {{:tag, Liquex.Tag.ObjectTag}, [field: [key: "field?"], filters: []]}
+    ])
   end
 
   test "with accessors" do
     assert_parse(
       "{{ field[1] }}",
-      object: [field: [key: "field", accessor: {:literal, 1}], filters: []]
+      [
+        {{:tag, Liquex.Tag.ObjectTag},
+         [field: [key: "field", accessor: {:literal, 1}], filters: []]}
+      ]
     )
   end
 
   test "with accessor and child" do
     assert_parse(
       "{{ field[1].child }}",
-      object: [field: [key: "field", accessor: {:literal, 1}, key: "child"], filters: []]
+      [
+        {{:tag, Liquex.Tag.ObjectTag},
+         [field: [key: "field", accessor: {:literal, 1}, key: "child"], filters: []]}
+      ]
     )
 
     assert_parse(
       "{{ field.child[0] }}",
-      object: [field: [key: "field", key: "child", accessor: {:literal, 0}], filters: []]
+      [
+        {{:tag, Liquex.Tag.ObjectTag},
+         [field: [key: "field", key: "child", accessor: {:literal, 0}], filters: []]}
+      ]
     )
 
     assert_parse(
       "{{ field[1].child[0] }}",
-      object: [
-        field: [key: "field", accessor: {:literal, 1}, key: "child", accessor: {:literal, 0}],
-        filters: []
+      [
+        {
+          {:tag, Liquex.Tag.ObjectTag},
+          field: [key: "field", accessor: {:literal, 1}, key: "child", accessor: {:literal, 0}],
+          filters: []
+        }
       ]
     )
   end

@@ -13,7 +13,7 @@ defmodule Liquex.Tag.TablerowTagTest do
           identifier: "product",
           collection: [field: [key: "collection"]],
           parameters: [],
-          contents: [object: [field: [key: "product"], filters: []]]
+          contents: [{{:tag, Liquex.Tag.ObjectTag}, [field: [key: "product"], filters: []]}]
         }
       ])
     end
@@ -26,7 +26,7 @@ defmodule Liquex.Tag.TablerowTagTest do
           identifier: "product",
           collection: [field: [key: "collection"]],
           parameters: [cols: 2, limit: 3, offset: 2],
-          contents: [object: [field: [key: "product"], filters: []]]
+          contents: [{{:tag, Liquex.Tag.ObjectTag}, [field: [key: "product"], filters: []]}]
         }
       ])
     end
