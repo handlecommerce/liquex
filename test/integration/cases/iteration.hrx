@@ -1,0 +1,19 @@
+<===> iteration.json
+{}
+
+<===> iteration.liquid
+{% for i in (1..5) %}
+  {{ i }}
+  {% if i > 2 %}
+    {% break %}
+  {% endif %}
+  {{ i }}
+{% endfor %}
+
+{% for i in (1..5) %}
+  {{ i }}
+  {% if i > 2 %}
+    {% continue %}
+  {% endif %}
+  {{ i }}
+{% endfor %}

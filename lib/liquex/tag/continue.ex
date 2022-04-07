@@ -11,5 +11,5 @@ defmodule Liquex.Tag.Continue do
   end
 
   @impl true
-  def render(_, context), do: throw({:continue, context})
+  def render(_, context), do: {:continue, [], context}
 end

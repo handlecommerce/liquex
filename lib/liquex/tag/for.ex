@@ -101,31 +101,27 @@ defmodule Liquex.Tag.For do
       results
       |> Enum.with_index(0)
       |> Enum.reduce({[], context}, fn {record, index}, {acc, ctx} ->
-        try do
-          # Assign the loop variables
-          ctx =
-            ctx
-            |> Context.assign("forloop", forloop(index, len))
-            |> Context.assign(identifier, record)
+        # Assign the loop variables
+        ctx =
+          ctx
+          |> Context.assign("forloop", forloop(index, len))
+          |> Context.assign(identifier, record)
 
-          {r, ctx} = Liquex.render(contents, ctx)
+        case Liquex.render(contents, ctx) do
+          {r, ctx} ->
+            {[r | acc], Context.assign(ctx, "forloop", forloop_init)}
 
-          {
-            [r | acc],
-            Context.assign(ctx, "forloop", forloop_init)
-          }
-        catch
-          {:continue, ctx} ->
-            {acc, Context.assign(ctx, "forloop", forloop_init)}
+          {:continue, content, ctx} ->
+            {content ++ acc, Context.assign(ctx, "forloop", forloop_init)}
 
-          {:break, ctx} ->
-            throw({:result, acc, Context.assign(ctx, "forloop", forloop_init)})
+          {:break, content, ctx} ->
+            throw({:break, content ++ acc, Context.assign(ctx, "forloop", forloop_init)})
         end
       end)
 
     {Enum.reverse(result), context}
   catch
-    {:result, result, context} ->
+    {:break, result, context} ->
       # credo:disable-for-next-line
       {Enum.reverse(result), context}
   end

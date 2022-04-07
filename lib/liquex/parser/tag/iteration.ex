@@ -8,13 +8,6 @@ defmodule Liquex.Parser.Tag.Iteration do
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
 
-  @spec break_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def break_tag(combinator \\ empty()) do
-    combinator
-    |> ignore(Tag.tag_directive("break"))
-    |> replace(:break)
-  end
-
   def tablerow_tag(combinator \\ empty()) do
     tablerow_parameters = repeat(choice([cols(), limit(), offset()]))
 
