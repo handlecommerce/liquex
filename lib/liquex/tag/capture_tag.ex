@@ -1,4 +1,6 @@
 defmodule Liquex.Tag.CaptureTag do
+  @moduledoc false
+
   @behaviour Liquex.Tag
 
   alias Liquex.Context

@@ -48,15 +48,14 @@ defmodule Liquex.Parser.Tag do
   defp boolean_expression(combinator \\ empty()) do
     operator =
       choice([
-        string("=="),
-        string("!="),
-        string(">="),
-        string("<="),
-        string(">"),
-        string("<"),
-        string("contains")
+        replace(string("=="), :==),
+        replace(string("!="), :!=),
+        replace(string(">="), :>=),
+        replace(string("<="), :<=),
+        replace(string(">"), :>),
+        replace(string("<"), :<),
+        replace(string("contains"), :contains)
       ])
-      |> map({String, :to_atom, []})
 
     boolean_operator =
       choice([

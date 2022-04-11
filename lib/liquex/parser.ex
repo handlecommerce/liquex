@@ -32,14 +32,22 @@ defmodule Liquex.Parser do
         ]
         |> Enum.map(&tag(&1.parse(), {:tag, &1}))
 
+      # Special case for leading spaces before `{%-` and `{{-`
+      leading_whitespace =
+        empty()
+        # credo:disable-for-lines:1
+        |> Liquex.Parser.Literal.whitespace(1)
+        |> lookahead(choice([string("{%-"), string("{{-")]))
+        |> ignore()
+
       base =
         choice(
           custom_tags ++
             tags ++
             [
-              # credo:disable-for-lines:4
+              # credo:disable-for-lines:2
               Liquex.Parser.Literal.text(),
-              Liquex.Parser.Literal.ignored_leading_whitespace()
+              leading_whitespace
             ]
         )
 
