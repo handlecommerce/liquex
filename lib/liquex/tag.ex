@@ -2,7 +2,7 @@ defmodule Liquex.Tag do
   @moduledoc """
   Behaviour for building a tag parser and renderer in Liquex.
 
-  To build a custom tag, create a new module and imblement the `Liquex.Tag` behaviour.
+  To build a custom tag, create a new module and implement the `Liquex.Tag` behaviour.
 
       defmodule CustomTag do
         @behaviour Liquex.Tag
