@@ -1,4 +1,6 @@
 defmodule Liquex.Tag.ObjectTag do
+  @moduledoc false
+
   @behaviour Liquex.Tag
   import NimbleParsec
 
