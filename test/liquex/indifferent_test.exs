@@ -17,6 +17,8 @@ defmodule Liquex.IndifferentTest do
     def get_and_update(container, _key, _func), do: {nil, container}
   end
 
+  defmodule TestNonAccessModule, do: defstruct([:x])
+
   doctest Liquex.Indifferent
 
   describe "access behaviour" do
