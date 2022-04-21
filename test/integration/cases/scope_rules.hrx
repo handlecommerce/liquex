@@ -1,0 +1,36 @@
+<===> scope_rules.json
+{
+  "outer": "variable"
+}
+
+<===> scope_rules.liquid
+{{ outer }}
+
+Should be blank: {{ inner }}
+
+{% if true %}
+  {% assign inner = "test" %}
+  {{ inner }}
+{% endif %}
+
+Should not be blank: {{ inner }}
+
+Should be blank: {{ inner2 }}
+
+{% for i in (0..1) %}
+  {% assign inner2 = "test" %}
+  {{ inner2 }}
+{% endfor %}
+
+Should not be blank: {{ inner2 }}
+
+{% if true %}
+  {% comment %}This clears out extra spaces for whatever reason{% endcomment %}
+  {% capture innercapture %}
+  Hello World!
+  {% endcapture %}
+
+  {{ innercapture }}
+{% endif %}
+
+{{ innercapture }}

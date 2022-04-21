@@ -96,7 +96,6 @@ defmodule Liquex.Tag.ForTag do
     do: Liquex.Render.render(contents, context)
 
   defp render_collection(results, identifier, contents, _, context) do
-    forloop_init = Map.get(context.variables, "forloop")
     len = Enum.count(results)
 
     {result, context} =
@@ -105,19 +104,20 @@ defmodule Liquex.Tag.ForTag do
       |> Enum.reduce({[], context}, fn {record, index}, {acc, ctx} ->
         # Assign the loop variables
         ctx =
-          ctx
-          |> Context.assign("forloop", forloop(index, len))
-          |> Context.assign(identifier, record)
+          Context.push_scope(ctx, %{
+            "forloop" => forloop(index, len),
+            identifier => record
+          })
 
         case Liquex.Render.render(contents, ctx) do
           {r, ctx} ->
-            {[r | acc], Context.assign(ctx, "forloop", forloop_init)}
+            {[r | acc], Context.pop_scope(ctx)}
 
           {:continue, content, ctx} ->
-            {content ++ acc, Context.assign(ctx, "forloop", forloop_init)}
+            {content ++ acc, Context.pop_scope(ctx)}
 
           {:break, content, ctx} ->
-            throw({:break, content ++ acc, Context.assign(ctx, "forloop", forloop_init)})
+            throw({:break, content ++ acc, Context.pop_scope(ctx)})
         end
       end)
 

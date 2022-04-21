@@ -13,8 +13,8 @@ defmodule Liquex.Argument do
   @spec eval(argument_t | [argument_t], Context.t()) :: field_t
   def eval([argument], context), do: eval(argument, context)
 
-  def eval({:field, accesses}, %Context{variables: variables} = context),
-    do: do_eval(variables, accesses, context)
+  def eval({:field, accesses}, %Context{} = context),
+    do: do_eval(context, accesses, context)
 
   def eval({:literal, literal}, _context), do: literal
 
@@ -79,13 +79,13 @@ defmodule Liquex.Argument do
 
   def assign(context, [argument], value), do: assign(context, argument, value)
 
-  def assign(%Context{variables: variables} = context, {:field, accesses}, value),
-    do: %{context | variables: do_assign(variables, accesses, value)}
+  def assign(%Context{} = context, {:field, accesses}, value),
+    do: do_assign(context, accesses, value)
 
   defp do_assign(variables, [{:key, key} | tail], value) do
     case tail do
-      [] -> Map.put(variables, key, value)
-      _ -> Map.update(variables, key, nil, &do_assign(&1, tail, value))
+      [] -> Indifferent.put(variables, key, value)
+      _ -> Indifferent.update(variables, key, nil, &do_assign(&1, tail, value))
     end
   end
 

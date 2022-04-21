@@ -231,7 +231,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render(template)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -273,12 +273,31 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render(template)
              |> elem(0)
              |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(true 1 0 false 3 3 2 false 2 1 false 3 2 1 false 3 2 true 3 1 0)
+    end
+
+    test "follows scoping rules" do
+      {:ok, template} =
+        """
+        {% assign x = "outer" %}
+        {% for i in (1..1) %}
+          {% assign x = "inner" %}
+        {% endfor %}
+
+        {{ x }}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template)
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "inner"
     end
   end
 

@@ -1,0 +1,16 @@
+<===> increment.json
+{
+  "x": 10
+}
+
+<===> increment.liquid
+{% assign var = 10 %}
+{% increment var %}
+{% increment var %}
+{% increment var %}
+{{ var }}
+---
+{% increment x %}
+{% increment x %}
+{% increment x %}
+{{ x }}

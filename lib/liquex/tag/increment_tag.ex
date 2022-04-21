@@ -5,6 +5,7 @@ defmodule Liquex.Tag.IncrementTag do
   import NimbleParsec
 
   alias Liquex.Context
+  alias Liquex.Indifferent
 
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
@@ -25,8 +26,20 @@ defmodule Liquex.Tag.IncrementTag do
   def reverse_tags(_rest, args, context, _line, _offset),
     do: {args |> Enum.reverse(), context}
 
-  def render([identifier: identifier, by: increment], %Context{variables: variables} = context) do
-    value = Liquex.Indifferent.get(variables, identifier, 0) + increment
-    {[], Context.assign(context, identifier, value)}
+  def render(
+        [identifier: identifier, by: increment],
+        %Context{environment: environment} = context
+      ) do
+    {value, environment} =
+      Indifferent.get_and_update(
+        environment,
+        identifier,
+        fn
+          nil -> {0, increment}
+          v -> {v, v + increment}
+        end
+      )
+
+    {[Integer.to_string(value)], %{context | environment: environment}}
   end
 end
