@@ -37,7 +37,7 @@ defmodule Liquex.Tag.AssignTag do
       |> Liquex.Argument.eval(context)
       |> Render.apply_filters(filters, context)
 
-    context = Context.assign(context, left, right)
+    context = Context.assign_global(context, left, right)
 
     {[], context}
   end

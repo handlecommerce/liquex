@@ -17,7 +17,10 @@ defmodule Liquex.TestHelpers do
     with {liquid_result, 0} <- liquid_render(liquid, object_json),
          {:ok, ast} <- Liquex.parse(liquid),
          {data, _} <- Liquex.render(ast, context) do
-      assert liquid_result == to_string(data)
+      unless liquid_result == to_string(data) do
+        IO.puts("Liquid results don't match on #{path}. Left is the Liquid gem")
+        assert liquid_result == to_string(data)
+      end
     else
       {:error, msg, _} ->
         flunk("Unable to parse: #{msg}")

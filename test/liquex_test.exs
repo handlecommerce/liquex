@@ -6,7 +6,8 @@ defmodule LiquexTest do
   describe "render" do
     test "render simple text body" do
       {:ok, template} = Liquex.parse("Hello World")
-      assert Liquex.render(template) == {["Hello World"], %Context{}}
+
+      assert Liquex.render(template) |> elem(0) == ["Hello World"]
     end
 
     test "render simple value" do

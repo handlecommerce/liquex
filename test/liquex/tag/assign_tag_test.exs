@@ -41,7 +41,7 @@ defmodule Liquex.Tag.AssignTagTest do
 
   describe "render" do
     test "assign simple value" do
-      context = %Context{}
+      context = Context.new(%{})
 
       {:ok, template} =
         """

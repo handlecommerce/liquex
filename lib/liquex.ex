@@ -175,7 +175,7 @@ defmodule Liquex do
   @doc """
   Render a Liquex AST `document` with the given `context`
   """
-  def render(document, context \\ %Context{})
+  def render(document, context \\ %{})
 
   def render(document, %Context{} = context) do
     case Liquex.Render.render(document, context) do

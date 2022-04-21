@@ -157,3 +157,14 @@ iex> {result, _} = Liquex.render(document, context)
 iex> result |> to_string()
 "Custom Tag: Hello World!"
 ```
+
+## Deviations from original Liquid gem
+
+### Whitespace is kept in empty blocks
+
+For performance reasons, whitespace is kept within empty blocks such as
+for/if/unless. The liquid gem checks for "blank" renders and throws them away.
+Instead, we continue to use IO lists to combine the output and don't check for
+blank results to avoid too many conversions to strings.  Since Liquid is mostly
+used for whitespace agnostic documents, this seemed like a decent tradeoff. If
+you need better whitespace control, use `{%-`, `{{-`, `-%}`, and `-}}`.
