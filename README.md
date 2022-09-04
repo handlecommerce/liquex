@@ -15,7 +15,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.7"}
+    {:liquex, "~> 0.8"}
   ]
 end
 ```
@@ -31,6 +31,13 @@ iex> {content, _context} = Liquex.render(template_ast, %{"name" => "World"})
 iex> content |> to_string()
 "Hello World!"
 ```
+
+## Migrating from 0.7 to 0.8
+
+As of Liquex v0.8, the library has unified how tag code is created. If you made
+any custom tags that did not follow the
+[Custom Tags](https://hexdocs.pm/liquex/Liquex.html#module-custom-tags) format,
+you will need to update them. That is because all tags now follow this standard.
 
 ## Supported features
 
@@ -114,7 +121,7 @@ iex> "HELLO WORLD!"
 ## Custom tags
 
 One of the strong points for Liquex is that the tag parser can be extended to support non-standard
-tags.  For example, Liquid used internally for the Shopify site includes a large range of tags that
+tags. For example, Liquid used internally for the Shopify site includes a large range of tags that
 are not supported by the base Ruby gem.  These tags could also be added to Liquex by extending the
 liquid parser.
 
@@ -157,3 +164,14 @@ iex> {result, _} = Liquex.render(document, context)
 iex> result |> to_string()
 "Custom Tag: Hello World!"
 ```
+
+## Deviations from original Liquid gem
+
+### Whitespace is kept in empty blocks
+
+For performance reasons, whitespace is kept within empty blocks such as
+for/if/unless. The liquid gem checks for "blank" renders and throws them away.
+Instead, we continue to use IO lists to combine the output and don't check for
+blank results to avoid too many conversions to strings.  Since Liquid is mostly
+used for whitespace agnostic documents, this seemed like a decent tradeoff. If
+you need better whitespace control, use `{%-`, `{{-`, `-%}`, and `-}}`.

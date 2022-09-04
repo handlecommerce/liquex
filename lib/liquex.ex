@@ -139,7 +139,7 @@ defmodule Liquex do
           | {:object, [...]}
           | {:text, iodata}
           | {:variable, [...]}
-          | {{:custom_tag, module()}, any}
+          | {{:tag, module()}, any}
         ]
 
   @spec parse(String.t(), module) :: {:ok, document_t} | {:error, String.t(), pos_integer()}
@@ -175,10 +175,15 @@ defmodule Liquex do
   @doc """
   Render a Liquex AST `document` with the given `context`
   """
-  def render(document, context \\ %Context{})
+  def render(document, context \\ %{})
 
-  def render(document, %Context{} = context),
-    do: Liquex.Render.render([], document, context)
+  def render(document, %Context{} = context) do
+    case Liquex.Render.render(document, context) do
+      {:break, _, _} -> raise Liquex.Error, "'break' found outside of iteration tag"
+      {:continue, _, _} -> raise Liquex.Error, "'continue' found outside of iteration tag"
+      r -> r
+    end
+  end
 
   def render(document, %{} = context), do: render(document, Context.new(context))
 end

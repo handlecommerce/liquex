@@ -1,10 +1,101 @@
-defmodule Liquex.Render.ObjectTest do
-  @moduledoc false
-
+defmodule Liquex.Tag.ObjectTagTest do
   use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   alias Liquex.Context
   alias Liquex.Parser.Base
+
+  describe "parse" do
+    test "handles simple filter" do
+      assert_parse(
+        "{{ true | not }}",
+        [
+          {{:tag, Liquex.Tag.ObjectTag},
+           [literal: true, filters: [filter: ["not", {:arguments, []}]]]}
+        ]
+      )
+    end
+
+    test "parses filter with single argument" do
+      assert_parse(
+        "{{ 123.45 | money: 'USD' }}",
+        [
+          {{:tag, Liquex.Tag.ObjectTag},
+           [literal: 123.45, filters: [filter: ["money", {:arguments, [literal: "USD"]}]]]}
+        ]
+      )
+    end
+
+    test "parses filter with multiple arguments" do
+      assert_parse(
+        "{{ 123.45 | money: 'USD', format }}",
+        [
+          {
+            {:tag, Liquex.Tag.ObjectTag},
+            [
+              literal: 123.45,
+              filters: [filter: ["money", {:arguments, [literal: "USD", field: [key: "format"]]}]]
+            ]
+          }
+        ]
+      )
+    end
+
+    test "parses filter with key/value arguments" do
+      assert_parse(
+        "{{ product | img_url: '400x400', crop: 'bottom' }}",
+        [
+          {
+            {:tag, Liquex.Tag.ObjectTag},
+            [
+              field: [key: "product"],
+              filters: [
+                filter: [
+                  "img_url",
+                  {:arguments, [literal: "400x400", keyword: ["crop", {:literal, "bottom"}]]}
+                ]
+              ]
+            ]
+          }
+        ]
+      )
+    end
+
+    test "parses filter with key/value arguments as first argument" do
+      assert_parse(
+        "{{ product | img_url: crop: 'bottom' }}",
+        [
+          {
+            {:tag, Liquex.Tag.ObjectTag},
+            [
+              field: [key: "product"],
+              filters: [
+                filter: ["img_url", {:arguments, [keyword: ["crop", {:literal, "bottom"}]]}]
+              ]
+            ]
+          }
+        ]
+      )
+    end
+
+    test "parses multiple filters" do
+      assert_parse(
+        "{{ 'adam!' | capitalize | prepend: 'Hello ' }}",
+        [
+          {
+            {:tag, Liquex.Tag.ObjectTag},
+            [
+              literal: "adam!",
+              filters: [
+                filter: ["capitalize", {:arguments, []}],
+                filter: ["prepend", {:arguments, [literal: "Hello "]}]
+              ]
+            ]
+          }
+        ]
+      )
+    end
+  end
 
   describe "render" do
     test "simple objects" do

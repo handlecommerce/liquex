@@ -26,8 +26,8 @@ defmodule Liquex.Custom.CustomTagTest do
 
     @impl true
     def render(contents, context) do
-      {result, _context} = Liquex.render(contents, context)
-      ["Custom Tag: ", result]
+      {result, _context} = Liquex.Render.render(contents, context)
+      {["Custom Tag: ", result], context}
     end
   end
 
@@ -40,7 +40,7 @@ defmodule Liquex.Custom.CustomTagTest do
       {:ok, template} = Liquex.parse("<<Hello World!>>", CustomParser)
 
       assert [
-               {{:custom_tag, CustomTag}, [text: ["Hello World!"]]}
+               {{:tag, CustomTag}, [text: ["Hello World!"]]}
              ] == template
 
       assert elem(Liquex.render(template), 0)

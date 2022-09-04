@@ -56,6 +56,14 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.put(%{a: "Hello"}, "b", "World")
       %{"b" => "World", :a => "Hello"}
   """
+  def put(map, key, value) when is_struct(map) do
+    if implements_behaviour?(map, Access) do
+      Access.get_and_update(map, key, &{&1, value}) |> elem(1)
+    else
+      put(Map.from_struct(map), key, value)
+    end
+  end
+
   def put(map, key, value), do: Map.put(map, get_key!(map, key, key), value)
 
   @spec fetch(map, any) :: {:ok, term} | :error
@@ -101,6 +109,33 @@ defmodule Liquex.Indifferent do
     end
   rescue
     ArgumentError -> :error
+  end
+
+  def get_and_update(data, key, fun) when is_function(fun) do
+    current_value =
+      case fetch(data, key) do
+        {:ok, value} -> value
+        :error -> nil
+      end
+
+    case fun.(current_value) do
+      {current_value, new_value} -> {current_value, put(data, key, new_value)}
+      :pop -> {current_value, put(data, key, nil)}
+    end
+  end
+
+  def update(data, key, default, fun) when is_function(fun) do
+    case access(data, key) do
+      {:ok, value} -> put(data, key, fun.(value))
+      :error -> put(data, key, default)
+    end
+  end
+
+  def has_key?(data, key) do
+    case fetch(data, key) do
+      {:ok, _} -> true
+      _ -> false
+    end
   end
 
   defp get_key(map, key) do

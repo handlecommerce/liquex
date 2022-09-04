@@ -1,7 +1,6 @@
 This directory contains full integration tests comparing the output from Liquex and the
 Liquid gem. Tests are stored as [HRX](https://github.com/google/hrx) files to help keep
-the JSON file and liquid file together.  One JSON file and one liquid file must be included
-in each of the integration test cases.
+the JSON file and liquid file together.
 
 All HRX files are executed automatically and any differing results will show up in the
 test suite.

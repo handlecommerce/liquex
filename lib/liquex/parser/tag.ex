@@ -3,13 +3,8 @@ defmodule Liquex.Parser.Tag do
 
   import NimbleParsec
 
+  alias Liquex.Parser.Argument
   alias Liquex.Parser.Literal
-
-  alias Liquex.Parser.Tag.{
-    ControlFlow,
-    Iteration,
-    Variable
-  }
 
   @spec open_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def open_tag(combinator \\ empty()) do
@@ -34,73 +29,56 @@ defmodule Liquex.Parser.Tag do
     |> close_tag()
   end
 
-  @spec comment_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def comment_tag(combinator \\ empty()) do
+  @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
+  def expression_tag(combinator \\ empty(), tag_name) do
     combinator
-    |> ignore(tag_directive("comment"))
-    |> ignore(parsec(:document))
-    |> ignore(tag_directive("endcomment"))
-  end
-
-  @spec raw_tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def raw_tag(combinator \\ empty()) do
-    endraw = tag_directive("endraw") |> wrap()
-
-    text =
-      lookahead_not(endraw)
-      |> utf8_char([])
-      |> times(min: 1)
-      |> reduce({Kernel, :to_string, []})
-      |> tag(:text)
-      |> label("raw content followed by {% endraw %}")
-
-    combinator
-    |> ignore(tag_directive("raw"))
-    |> optional(text)
-    |> ignore(endraw)
-  end
-
-  @spec tag(NimbleParsec.t()) :: NimbleParsec.t()
-  def tag(combinator \\ empty()) do
-    control_flow_tags =
-      choice([
-        ControlFlow.if_expression(),
-        ControlFlow.unless_expression(),
-        ControlFlow.case_expression()
-      ])
-      |> tag(:control_flow)
-
-    iteration_tags =
-      choice([
-        Iteration.for_expression(),
-        Iteration.cycle_tag(),
-        Iteration.break_tag(),
-        Iteration.continue_tag(),
-        Iteration.tablerow_tag()
-      ])
-      |> tag(:iteration)
-
-    variable_tags =
-      choice([
-        Variable.assign_tag(),
-        Variable.capture_tag(),
-        Variable.incrementer_tag()
-      ])
-      |> tag(:variable)
-
-    combinator
-    |> choice([
-      control_flow_tags,
-      iteration_tags,
-      variable_tags,
-      raw_tag(),
-      comment_tag()
-    ])
+    |> ignore(open_tag())
+    |> ignore(string(tag_name))
+    |> ignore(Literal.whitespace())
+    |> tag(boolean_expression(), :expression)
+    |> ignore(close_tag())
   end
 
   # Close tag that also removes the whitespace after it
   defp close_tag_remove_whitespace do
     string("-%}")
     |> Literal.whitespace()
+  end
+
+  defp boolean_expression(combinator \\ empty()) do
+    operator =
+      choice([
+        replace(string("=="), :==),
+        replace(string("!="), :!=),
+        replace(string(">="), :>=),
+        replace(string("<="), :<=),
+        replace(string(">"), :>),
+        replace(string("<"), :<),
+        replace(string("contains"), :contains)
+      ])
+
+    boolean_operator =
+      choice([
+        replace(string("and"), :and),
+        replace(string("or"), :or)
+      ])
+
+    boolean_operation =
+      tag(Argument.argument(), :left)
+      |> ignore(Literal.whitespace())
+      |> unwrap_and_tag(operator, :op)
+      |> ignore(Literal.whitespace())
+      |> tag(Argument.argument(), :right)
+      |> wrap()
+
+    combinator
+    |> choice([boolean_operation, Literal.literal(), Argument.argument()])
+    |> ignore(Literal.whitespace())
+    |> repeat(
+      boolean_operator
+      |> ignore(Literal.whitespace())
+      |> choice([boolean_operation, Literal.literal(), Argument.argument()])
+      |> ignore(Literal.whitespace())
+    )
   end
 end

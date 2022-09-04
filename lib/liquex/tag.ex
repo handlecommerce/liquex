@@ -2,7 +2,7 @@ defmodule Liquex.Tag do
   @moduledoc """
   Behaviour for building a tag parser and renderer in Liquex.
 
-  To build a custom tag, create a new module and imblement the `Liquex.Tag` behaviour.
+  To build a custom tag, create a new module and implement the `Liquex.Tag` behaviour.
 
       defmodule CustomTag do
         @behaviour Liquex.Tag
@@ -27,7 +27,7 @@ defmodule Liquex.Tag do
 
         @impl true
         def render(contents, context) do
-          {result, context} = Liquex.render(contents, context)
+          {result, context} = Liquex.Render.render(contents, context)
           {["Custom Tag: ", result], context}
         end
       end
@@ -53,6 +53,8 @@ defmodule Liquex.Tag do
   @doc """
   Render the tag built by the parser defined in `parse/0`
   """
-  @callback render(Liquex.document_t(), Liquex.Context.t()) ::
-              {iodata, Liquex.Context.t()} | iodata
+  @callback render(list, Liquex.Context.t()) ::
+              {iodata, Liquex.Context.t()}
+              | {:break, iodata, Liquex.Context.t()}
+              | {:continue, iodata, Liquex.Context.t()}
 end

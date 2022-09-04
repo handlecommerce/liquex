@@ -1,11 +1,117 @@
-defmodule Liquex.Render.IterationTest do
-  @moduledoc false
-
+defmodule Liquex.Tag.ForTagTest do
   use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
   alias Liquex.Context
 
-  describe "for" do
+  describe "parse" do
+    test "parse for block with field" do
+      "{% for i in x %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [field: [key: "x"]],
+          parameters: [],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+
+    test "parse for block with else" do
+      "{% for i in x %}Hello{% else %}Goodbye{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [field: [key: "x"]],
+          parameters: [],
+          contents: [text: "Hello"],
+          else: [contents: [text: "Goodbye"]]
+        }
+      ])
+    end
+
+    test "parse for block with range" do
+      "{% for i in (1..5) %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [inclusive_range: [begin: [literal: 1], end: [literal: 5]]],
+          parameters: [],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+
+    test "parse for block with variable range" do
+      "{% for i in (1..x) %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [inclusive_range: [begin: [literal: 1], end: [field: [key: "x"]]]],
+          parameters: [],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+
+    test "parse for block with reversed" do
+      "{% for i in x reversed %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [field: [key: "x"]],
+          parameters: [order: :reversed],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+
+    test "parse for block with limit" do
+      "{% for i in x limit:2 %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [field: [key: "x"]],
+          parameters: [limit: 2],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+
+    test "parse for block with offset" do
+      "{% for i in x offset:1 %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [field: [key: "x"]],
+          parameters: [offset: 1],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+
+    test "parse for block with reverse, limit, and offset" do
+      "{% for i in x reversed limit:2 offset:1 %}Hello{% endfor %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.ForTag},
+          identifier: "i",
+          collection: [field: [key: "x"]],
+          parameters: [order: :reversed, limit: 2, offset: 1],
+          contents: [text: "Hello"]
+        }
+      ])
+    end
+  end
+
+  describe "render" do
     test "render basic for loop" do
       context =
         Context.new(%{
@@ -125,7 +231,7 @@ defmodule Liquex.Render.IterationTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render(template)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -167,144 +273,31 @@ defmodule Liquex.Render.IterationTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render(template)
              |> elem(0)
              |> to_string()
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(true 1 0 false 3 3 2 false 2 1 false 3 2 1 false 3 2 true 3 1 0)
     end
-  end
 
-  describe "break" do
-    test "break out of for loop" do
+    test "follows scoping rules" do
       {:ok, template} =
         """
-        {% for i in (1..5) %}
-        {% if i == 4 %}
-          {% break %}
-        {% else %}
-          {{ i }}
-        {% endif %}
+        {% assign x = "outer" %}
+        {% for i in (1..1) %}
+          {% assign x = "inner" %}
         {% endfor %}
+
+        {{ x }}
         """
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render(template)
              |> elem(0)
              |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list() == ~w(1 2 3)
-    end
-
-    test "continue out of for loop" do
-      {:ok, template} =
-        """
-        {% for i in (1..5) %}
-        {% if i == 4 %}
-          {% continue %}
-        {% else %}
-          {{ i }}
-        {% endif %}
-        {% endfor %}
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, %Context{})
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list() == ~w(1 2 3 5)
-    end
-  end
-
-  describe "cycle" do
-    test "simple cycle" do
-      {:ok, template} =
-        """
-        {% cycle "one", "two", "three" %}
-        {% cycle "one", "two", "three" %}
-        {% cycle "one", "two", "three" %}
-        {% cycle "one", "two", "three" %}
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, %Context{})
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list() == ~w(one two three one)
-    end
-
-    test "named cycle" do
-      {:ok, template} =
-        """
-        {% cycle "first": "one", "two", "three" %}
-        {% cycle "second": "one", "two", "three" %}
-        {% cycle "second": "one", "two", "three" %}
-        {% cycle "first": "one", "two", "three" %}
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, %Context{})
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list() == ~w(one one two two)
-    end
-  end
-
-  describe "tablerow" do
-    test "simple tablerow" do
-      {:ok, template} =
-        """
-        <table>
-        {% tablerow product in collection %}
-          {{ product }}
-        {% endtablerow %}
-        </table>
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list()
-             |> Enum.join() ==
-               "<table><tr><td>1</td></tr><tr><td>2</td></tr><tr><td>3</td></tr></table>"
-    end
-
-    test "tablerow with cols" do
-      {:ok, template} =
-        """
-        <table>
-        {% tablerow product in collection cols:2 %}
-          {{ product }}
-        {% endtablerow %}
-        </table>
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
-      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list()
-             |> Enum.join() ==
-               "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
+             |> String.trim() == "inner"
     end
   end
 

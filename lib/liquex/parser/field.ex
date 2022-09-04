@@ -18,36 +18,25 @@ defmodule Liquex.Parser.Field do
     |> reduce({Enum, :join, []})
   end
 
-  @spec accessor(NimbleParsec.t()) :: NimbleParsec.t()
-  def accessor(combinator \\ empty()) do
-    combinator
-    |> ignore(string("["))
-    |> ignore(Literal.whitespace())
-    |> Argument.argument()
-    |> ignore(Literal.whitespace())
-    |> ignore(string("]"))
-    |> unwrap_and_tag(:accessor)
-  end
-
-  @spec key_access(NimbleParsec.t()) :: NimbleParsec.t()
-  def key_access(combinator \\ empty()) do
-    combinator
-    |> ignore(string("."))
-    |> identifier()
-    |> unwrap_and_tag(:key)
-  end
-
   @spec field(NimbleParsec.t()) :: NimbleParsec.t()
   def field(combinator \\ empty()) do
+    key_access =
+      ignore(string("."))
+      |> identifier()
+      |> unwrap_and_tag(:key)
+
+    accessor =
+      ignore(string("["))
+      |> ignore(Literal.whitespace())
+      |> Argument.argument()
+      |> ignore(Literal.whitespace())
+      |> ignore(string("]"))
+      |> unwrap_and_tag(:accessor)
+
     combinator
     |> identifier()
     |> unwrap_and_tag(:key)
-    |> repeat(
-      choice([
-        accessor(),
-        key_access()
-      ])
-    )
+    |> repeat(choice([accessor, key_access]))
     |> tag(:field)
   end
 end

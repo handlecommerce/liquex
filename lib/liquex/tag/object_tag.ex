@@ -1,16 +1,29 @@
-defmodule Liquex.Parser.Object do
+defmodule Liquex.Tag.ObjectTag do
   @moduledoc false
 
+  @behaviour Liquex.Tag
   import NimbleParsec
+
+  alias Liquex.Context
 
   alias Liquex.Parser.Argument
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
 
-  @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
-  defp arguments(combinator \\ empty()) do
-    combinator
-    |> choice([
+  alias Liquex.Render
+
+  def parse do
+    ignore(string("{{"))
+    |> ignore(optional(string("-")))
+    |> ignore(Literal.whitespace())
+    |> Argument.argument()
+    |> optional(tag(repeat(filter()), :filters))
+    |> ignore(Literal.whitespace())
+    |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
+  end
+
+  defp arguments do
+    choice([
       Argument.argument()
       |> lookahead_not(string(":"))
       |> repeat(
@@ -30,7 +43,6 @@ defmodule Liquex.Parser.Object do
     ])
   end
 
-  @spec keyword_fields(NimbleParsec.t()) :: NimbleParsec.t()
   defp keyword_fields(combinator \\ empty()) do
     combinator
     |> keyword_field()
@@ -51,10 +63,8 @@ defmodule Liquex.Parser.Object do
     |> tag(:keyword)
   end
 
-  @spec filter(NimbleParsec.t()) :: NimbleParsec.t()
-  def filter(combinator \\ empty()) do
-    combinator
-    |> ignore(Literal.whitespace())
+  def filter do
+    ignore(Literal.whitespace())
     |> ignore(utf8_char([?|]))
     |> ignore(Literal.whitespace())
     |> concat(Field.identifier())
@@ -69,23 +79,18 @@ defmodule Liquex.Parser.Object do
     |> tag(:filter)
   end
 
-  @spec object(NimbleParsec.t()) :: NimbleParsec.t()
-  def object(combinator \\ empty()) do
-    combinator
-    |> ignore(string("{{"))
-    |> ignore(optional(string("-")))
-    |> ignore(Literal.whitespace())
-    |> Argument.argument()
-    |> optional(tag(repeat(filter()), :filters))
-    |> ignore(Literal.whitespace())
-    |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
-    |> tag(:object)
+  def close_object_remove_whitespace do
+    string("-}}")
+    |> Literal.whitespace()
   end
 
-  @spec close_object_remove_whitespace(NimbleParsec.t()) :: NimbleParsec.t()
-  def close_object_remove_whitespace(combinator \\ empty()) do
-    combinator
-    |> string("-}}")
-    |> Literal.whitespace()
+  def render([argument, filters: filters], %Context{} = context) do
+    {result, context} =
+      argument
+      |> List.wrap()
+      |> Liquex.Argument.eval(context)
+      |> Render.apply_filters(filters, context)
+
+    {to_string(result), context}
   end
 end

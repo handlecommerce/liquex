@@ -1,9 +1,22 @@
-defmodule Liquex.TagTest do
-  @moduledoc false
-
+defmodule Liquex.Tag.RawTagTest do
   use ExUnit.Case, async: true
+  import Liquex.TestHelpers
 
-  describe "raw" do
+  describe "parse" do
+    test "parses raw" do
+      assert_parse(
+        "{% raw %} {{ test }} {% endraw %}",
+        [{{:tag, Liquex.Tag.RawTag}, [" {{ test }} "]}]
+      )
+
+      assert_parse(
+        "{% raw %} {{ test }} {% tag %} {% endraw %}",
+        [{{:tag, Liquex.Tag.RawTag}, [" {{ test }} {% tag %} "]}]
+      )
+    end
+  end
+
+  describe "render" do
     test "parse raw properly" do
       {:ok, template} =
         """
