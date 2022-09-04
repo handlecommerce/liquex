@@ -245,6 +245,8 @@ defmodule Liquex.Filter do
     end
   end
 
+  def date(nil, _, _), do: nil
+
   @doc """
   Allows you to specify a fallback in case a value doesn’t exist. default will show its value
   if the left side is nil, false, or empty.
