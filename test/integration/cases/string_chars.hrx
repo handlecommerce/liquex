@@ -1,5 +1,2 @@
-<===> string_chars.json
-{}
-
 <===> string_chars.liquid
 {% if "test123" contains 123 %}bar{% endif %}

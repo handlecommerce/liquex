@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] -
+
+- Migrate all tags into using the new tag system originally defined by custom tag handler
+- Add .last handler
+- Fix issue where `break` and `continue` would throw away prior content in same scope
+- Allow date filter to handle nil values [#34](https://github.com/markglenn/liquex/issues/34)
+  - Thank you [stevencorona](https://github.com/stevencorona)
+- Removed deprecated custom renderer code.
+
 ## [0.7.2] - 2022-04-19
 
 - Fix struct access in liquid template regression [#31](https://github.com/markglenn/liquex/issues/31)

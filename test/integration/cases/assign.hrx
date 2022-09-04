@@ -1,0 +1,22 @@
+<===> assign.json
+
+{
+  "x": 10
+}
+
+<===> assign.liquid
+
+{{ x }}
+
+{% assign x = 2 %}
+{{ x }}
+
+{% for i in (1..5) %}
+  Re-assign a variable that is from an outer scope
+  {% assign x = i %}
+  {{ x }}
+{% endfor %}
+
+---
+We expect this to be 5 now:
+{{ x }}

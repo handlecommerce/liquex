@@ -5,8 +5,6 @@ defmodule Liquex.Represent do
 
   alias Liquex.Representable
 
-  defguard is_lazy_object(value) when is_map(value) or is_list(value)
-
   @doc """
   Convert any object and deeply maps atom keys to strings
 

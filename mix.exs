@@ -6,8 +6,8 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.7.2",
-      elixir: "~> 1.6",
+      version: "0.8.0",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: description(),
@@ -35,7 +35,6 @@ defmodule Liquex.MixProject do
   defp deps do
     [
       {:nimble_parsec, "~> 1.1"},
-      {:timex, "~> 3.6"},
       {:date_time_parser, "~> 1.1"},
       {:html_entities, "~> 0.5.1"},
       {:html_sanitize_ex, "~> 1.3.0"},

@@ -3,21 +3,27 @@ defmodule Liquex.Parser.WhitespaceTest do
   import Liquex.TestHelpers
 
   test "Parses with {%- and -%} properly" do
-    assert_parse("Hello {%- comment -%}Ignored text{%- endcomment -%} World",
-      text: "Hello",
-      text: "World"
+    assert_parse(
+      "Hello {%- comment -%}Ignored text{%- endcomment -%} World",
+      [
+        {:text, "Hello"},
+        {{:tag, Liquex.Tag.CommentTag}, []},
+        {:text, "World"}
+      ]
     )
   end
 
   test "Parses with {{- and -}} properly" do
-    assert_parse("{{- 'Hello World' -}}  ",
-      object: [literal: "Hello World", filters: []]
+    assert_parse(
+      "{{- 'Hello World' -}}  ",
+      [{{:tag, Liquex.Tag.ObjectTag}, [literal: "Hello World", filters: []]}]
     )
   end
 
   test "removes spaces after -%}" do
-    assert_parse("{% raw -%}\n  This is a test{% endraw %}",
-      text: ["This is a test"]
+    assert_parse(
+      "{% raw -%}\n  This is a test{% endraw %}",
+      [{{:tag, Liquex.Tag.RawTag}, ["This is a test"]}]
     )
   end
 end

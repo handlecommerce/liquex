@@ -8,12 +8,12 @@ defmodule Liquex.ArgumentTest do
 
   describe "eval" do
     test "evaluate literal" do
-      assert 5 == Argument.eval([literal: 5], %Context{})
+      assert 5 == Argument.eval([literal: 5], Context.new(%{}))
     end
 
     test "evaluate unkown field" do
-      assert nil == Argument.eval([field: [key: "i"]], %Context{})
-      assert nil == Argument.eval([field: [key: "a", key: "b"]], %Context{})
+      assert nil == Argument.eval([field: [key: "i"]], Context.new(%{}))
+      assert nil == Argument.eval([field: [key: "a", key: "b"]], Context.new(%{}))
     end
 
     test "evaluate with known field" do
