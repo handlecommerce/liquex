@@ -27,6 +27,7 @@ defmodule Liquex.Parser do
           Liquex.Tag.IncrementTag,
           Liquex.Tag.ObjectTag,
           Liquex.Tag.RawTag,
+          Liquex.Tag.RenderTag,
           Liquex.Tag.TablerowTag,
           Liquex.Tag.UnlessTag
         ]

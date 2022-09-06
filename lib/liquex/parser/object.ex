@@ -31,7 +31,7 @@ defmodule Liquex.Parser.Object do
   end
 
   @spec keyword_fields(NimbleParsec.t()) :: NimbleParsec.t()
-  defp keyword_fields(combinator \\ empty()) do
+  def keyword_fields(combinator \\ empty()) do
     combinator
     |> keyword_field()
     |> repeat(

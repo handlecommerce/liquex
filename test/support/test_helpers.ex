@@ -46,4 +46,15 @@ defmodule Liquex.TestHelpers do
 
   def liquid_render(liquid, json),
     do: System.cmd("ruby", ["test/render.rb", liquid, json])
+
+  defmodule MockFileSystem do
+    @behaviour Liquex.FileSystem
+
+    defstruct [:values]
+
+    def new(values), do: %__MODULE__{values: values}
+
+    def read_template_file(%{values: values}, template_path) when is_map(values),
+      do: Map.get(values, template_path)
+  end
 end
