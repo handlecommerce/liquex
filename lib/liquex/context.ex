@@ -13,6 +13,7 @@ defmodule Liquex.Context do
             private: %{},
             filter_module: Liquex.Filter,
             render_module: nil,
+            file_system: nil,
             errors: []
 
   @type t :: %__MODULE__{
@@ -21,6 +22,7 @@ defmodule Liquex.Context do
           cycles: map(),
           private: map(),
           filter_module: module,
+          file_system: struct(),
           render_module: module | nil,
           errors: list(Liquex.Error.t())
         }
@@ -38,7 +40,8 @@ defmodule Liquex.Context do
       environment: environment,
       scope: Scope.new(Keyword.get(opts, :outer_scope, %{})),
       filter_module: Keyword.get(opts, :filter_module, Liquex.Filter),
-      render_module: Keyword.get(opts, :render_module)
+      render_module: Keyword.get(opts, :render_module),
+      file_system: Keyword.get(opts, :file_system, %Liquex.BlankFileSystem{})
     }
   end
 
