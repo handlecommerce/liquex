@@ -5,17 +5,17 @@ defmodule Liquex.Tag.IncrementTagTest do
   describe "parse" do
     test "parse increment" do
       "{% increment a %}"
-      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: 1]}])
+      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: {0, 1}]}])
     end
 
     test "parse decrement" do
       "{% decrement a %}"
-      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: -1]}])
+      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: {-1, -1}]}])
     end
 
     test "parse increment without variable" do
-      assert_parse("{% increment %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: 1]}])
-      assert_parse("{% decrement %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: -1]}])
+      assert_parse("{% increment %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: {0, 1}]}])
+      assert_parse("{% decrement %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: {-1, -1}]}])
     end
   end
 

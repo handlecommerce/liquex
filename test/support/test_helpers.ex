@@ -6,6 +6,8 @@ defmodule Liquex.TestHelpers do
   def assert_parse(doc, match),
     do: assert({:ok, ^match, "", _, _, _} = Liquex.Parser.Base.parse(doc))
 
+  def assert_parse_error(doc), do: assert({:error, _, _, _, _, _} = Liquex.Parser.Base.parse(doc))
+
   def assert_match_liquid(path) do
     {:ok, archive} = Hrx.load(path)
 
@@ -46,15 +48,4 @@ defmodule Liquex.TestHelpers do
 
   def liquid_render(liquid, json),
     do: System.cmd("ruby", ["test/render.rb", liquid, json])
-
-  defmodule MockFileSystem do
-    @behaviour Liquex.FileSystem
-
-    defstruct [:values]
-
-    def new(values), do: %__MODULE__{values: values}
-
-    def read_template_file(%{values: values}, template_path) when is_map(values),
-      do: Map.get(values, template_path)
-  end
 end

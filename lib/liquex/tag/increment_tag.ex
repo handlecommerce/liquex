@@ -12,8 +12,9 @@ defmodule Liquex.Tag.IncrementTag do
   alias Liquex.Parser.Tag
 
   def parse do
-    increment = replace(string("increment"), 1)
-    decrement = replace(string("decrement"), -1)
+    # Replace as {default, increment}
+    increment = replace(string("increment"), {0, 1})
+    decrement = replace(string("decrement"), {-1, -1})
 
     ignore(Tag.open_tag())
     |> unwrap_and_tag(choice([increment, decrement]), :by)
@@ -27,17 +28,15 @@ defmodule Liquex.Tag.IncrementTag do
     do: {args |> Enum.reverse(), context}
 
   def render(
-        [identifier: identifier, by: increment],
+        [identifier: identifier, by: {default, increment}],
         %Context{environment: environment} = context
       ) do
-    default_value = if increment == -1, do: -1, else: 0
-
     {value, environment} =
       Indifferent.get_and_update(
         environment,
         identifier,
         fn
-          nil -> {default_value, default_value + increment}
+          nil -> {default, default + increment}
           v -> {v, v + increment}
         end
       )

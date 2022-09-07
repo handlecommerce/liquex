@@ -89,13 +89,13 @@ defmodule Liquex.Tag.ForTag do
     |> render(context)
   end
 
-  defp render_collection(nil, _, _, contents, context),
+  def render_collection(nil, _, _, contents, context),
     do: Liquex.Render.render(contents, context)
 
-  defp render_collection([], _, _, contents, context),
+  def render_collection([], _, _, contents, context),
     do: Liquex.Render.render(contents, context)
 
-  defp render_collection(results, identifier, contents, _, context) do
+  def render_collection(results, identifier, contents, _, context) do
     len = Enum.count(results)
 
     {result, context} =
