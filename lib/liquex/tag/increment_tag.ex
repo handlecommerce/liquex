@@ -18,7 +18,7 @@ defmodule Liquex.Tag.IncrementTag do
     ignore(Tag.open_tag())
     |> unwrap_and_tag(choice([increment, decrement]), :by)
     |> ignore(Literal.whitespace(empty(), 1))
-    |> unwrap_and_tag(Field.identifier(), :identifier)
+    |> optional(unwrap_and_tag(Field.identifier(), :identifier))
     |> ignore(Tag.close_tag())
     |> post_traverse({__MODULE__, :reverse_tags, []})
   end
@@ -42,4 +42,7 @@ defmodule Liquex.Tag.IncrementTag do
 
     {[Integer.to_string(value)], %{context | environment: environment}}
   end
+
+  # Handle default identifier (nil)
+  def render([by: increment], context), do: render([identifier: nil, by: increment], context)
 end

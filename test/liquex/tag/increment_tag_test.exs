@@ -12,6 +12,11 @@ defmodule Liquex.Tag.IncrementTagTest do
       "{% decrement a %}"
       |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: -1]}])
     end
+
+    test "parse increment without variable" do
+      assert_parse("{% increment %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: 1]}])
+      assert_parse("{% decrement %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: -1]}])
+    end
   end
 
   describe "render" do
@@ -31,6 +36,18 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "10\n11\n12\n0\n1"
+    end
+
+    test "increments default value" do
+      {:ok, template} =
+        "{% increment %} {% increment %} {% increment %}"
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template)
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "0 1 2"
     end
 
     test "decrements value" do
