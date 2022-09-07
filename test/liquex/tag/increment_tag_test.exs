@@ -38,7 +38,7 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> String.trim() == "10\n11\n12\n0\n1"
     end
 
-    test "increments default value" do
+    test "increments default key" do
       {:ok, template} =
         "{% increment %} {% increment %} {% increment %}"
         |> String.trim()
@@ -48,6 +48,18 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "0 1 2"
+    end
+
+    test "decrement from default key" do
+      {:ok, template} =
+        "{% decrement %} {% decrement %} {% decrement %}"
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template)
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "-1 -2 -3"
     end
 
     test "decrements value" do
@@ -66,7 +78,7 @@ defmodule Liquex.Tag.IncrementTagTest do
       assert Liquex.render(template, %{a: 10})
              |> elem(0)
              |> to_string()
-             |> String.trim() == "10\n9\n8\n0\n-1"
+             |> String.trim() == "10\n9\n8\n-1\n-2"
     end
   end
 end

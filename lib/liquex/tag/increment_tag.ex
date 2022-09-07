@@ -30,12 +30,14 @@ defmodule Liquex.Tag.IncrementTag do
         [identifier: identifier, by: increment],
         %Context{environment: environment} = context
       ) do
+    default_value = if increment == -1, do: -1, else: 0
+
     {value, environment} =
       Indifferent.get_and_update(
         environment,
         identifier,
         fn
-          nil -> {0, increment}
+          nil -> {default_value, default_value + increment}
           v -> {v, v + increment}
         end
       )
