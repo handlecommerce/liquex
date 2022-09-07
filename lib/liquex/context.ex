@@ -22,7 +22,7 @@ defmodule Liquex.Context do
           cycles: map(),
           private: map(),
           filter_module: module,
-          file_system: struct(),
+          file_system: term() | nil,
           render_module: module | nil,
           errors: list(Liquex.Error.t())
         }

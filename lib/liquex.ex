@@ -155,7 +155,7 @@ defmodule Liquex do
     end
   end
 
-  @spec parse!(String.t(), module) :: document_t
+  @spec parse!(String.t(), module) :: document_t | no_return()
   @doc """
   Parses a liquid `template` string using the given `parser`.
 
