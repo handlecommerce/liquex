@@ -143,6 +143,23 @@ defmodule Liquex.Tag.RenderTagTest do
       assert render("{% render 'one' %}", files) == "one two"
     end
 
+    test "render allows access to static environment" do
+      files = %{"snippet" => "{{ variable }}"}
+
+      context =
+        Liquex.Context.new(%{variable: "dynamic"},
+          static_environment: %{variable: "static"},
+          file_system: MockFileSystem.new(files)
+        )
+
+      {:ok, template} = Liquex.parse("{% render 'snippet' %} {{ variable }}")
+
+      assert Liquex.render(template, context)
+             |> elem(0)
+             |> IO.chardata_to_string()
+             |> String.trim() == "static dynamic"
+    end
+
     @tag :skip
     test "recursive render does not produce endless loop"
     @tag :skip
