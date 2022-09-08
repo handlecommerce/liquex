@@ -2,6 +2,7 @@ defmodule Liquex.ContextTest do
   @moduledoc false
 
   use ExUnit.Case, async: true
+  doctest Liquex.Context
 
   alias Liquex.Context
 
@@ -110,6 +111,18 @@ defmodule Liquex.ContextTest do
       assert context.scope.stack == [%{}]
       context = Context.pop_scope(context)
       assert context.scope.stack == [%{}]
+    end
+  end
+
+  describe "static environment" do
+    test "static environments are read with lower priority than environments" do
+      context =
+        Context.new(%{shadowed: "dynamic"},
+          static_environment: %{shadowed: "static", unshadowed: "static"}
+        )
+
+      assert Access.get(context, "shadowed") == "dynamic"
+      assert Access.get(context, "unshadowed") == "static"
     end
   end
 end

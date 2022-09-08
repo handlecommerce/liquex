@@ -16,6 +16,7 @@ defmodule Liquex.Tag.RenderTag do
 
   alias Liquex.Context
 
+  @spec parse :: NimbleParsec.t()
   def parse do
     ignore(
       Tag.open_tag()
@@ -107,6 +108,8 @@ defmodule Liquex.Tag.RenderTag do
   end
 
   # Handle for loop without identifier alias
+  #
+  # {% render "template_name" for collection %}
   def render(
         [template: {:literal, template}, for: [collection: collection]],
         %Context{} = context
@@ -121,7 +124,9 @@ defmodule Liquex.Tag.RenderTag do
     )
   end
 
-  # Handle for loop
+  # Handle for loop with identifier alias
+  #
+  # {% render "template_name" for collection as identifier %}
   def render(
         [template: template, for: [collection: collection, as: identifier]],
         %Context{} = context
@@ -143,9 +148,9 @@ defmodule Liquex.Tag.RenderTag do
 
   @spec apply_keywords_to_context(Context.t(), Keyword.t()) :: Context.t()
   defp apply_keywords_to_context(%Context{} = context, keywords) do
-    environment = Map.new(keywords, fn {:keyword, [k, v]} -> {k, Argument.eval(v, context)} end)
+    scope = Map.new(keywords, fn {:keyword, [k, v]} -> {k, Argument.eval(v, context)} end)
 
-    %{context | environment: environment, scope: Liquex.Scope.new(%{})}
+    Context.new_isolated_subscope(context, scope)
   end
 
   @spec load_contents({:literal, String.t()}, Context.t()) :: Liquex.document_t() | no_return()
