@@ -12,8 +12,18 @@ defmodule Liquex do
 
   ## Supported features
 
-  Currently, all standard Liquid tags, filters, and types are fully supported.  Liquex can
-  be considered a byte for byte drop in replacement of the Liquid gem.
+  Currently, all standard Liquid tags, filters, and types are fully supported
+  for liquid prior to 5.0.0. Liquex can be considered a byte for byte drop in
+  replacement of the Liquid gem.
+
+  Work is under way to implement Liquid 5.x features. Right now, the following
+  features are now included:
+
+    * `{% render %}` tag
+
+  What is currently being worked on:
+
+    * `{% liquid %}` tag
 
   ## Lazy variables
 
@@ -50,6 +60,25 @@ defmodule Liquex do
       iex> {content, _context} = Liquex.render(template_ast, %{name: "World"})
       iex> content |> to_string()
       "Hello World!"
+
+  ## Caching
+
+  Liquex has a built in cache used specifically for the render tag currently. When
+  loading a partial/sub-template using the render tag, it will try pulling from
+  the cache associated with the context.
+
+  By default, caching is disabled, but you may use the built in ETS based cache by
+  configuring it in your context.
+
+      :ok = Liquex.Cache.SimpleCache.init()
+      context = Context.new(%{...}, cache: Liquex.Cache.SimpleCache)
+
+  The simple cache is by definition quite simple. To use a more complete caching
+  system, such as [Cachex](https://github.com/whitfin/cachex), you can create a
+  module that implements the `Liquex.Cache` behaviour.
+
+  The cache system is very early on. It is expected that it will also be used to
+  memoize some of the variables within your context.
 
   ## Custom filters
 

@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] -
+## [0.9.0] -
+
+- Add {% render %} tag to follow Liquid 5.0.0.
+- Add caching behaviour for use in {% render %} tag.
+
+## [0.8.0] - 2022-09-04
 
 - Migrate all tags into using the new tag system originally defined by custom tag handler
 - Add .last handler
