@@ -1,5 +1,66 @@
 defmodule Liquex.Tag.IncrementTag do
-  @moduledoc false
+  @moduledoc """
+
+  ## increment
+
+  Creates and outputs a new number variable with initial value 0. On subsequent
+  calls, it increases its value by one and outputs the new value.
+
+  ### Input
+
+      {% increment my_counter %}
+      {% increment my_counter %}
+      {% increment my_counter %}
+
+  ### Output
+
+    0
+    1
+    2
+
+  Variables created using increment are independent from variables created using
+  assign or capture.
+
+  In the example below, a variable named “var” is created using assign. The
+  increment tag is then used several times on a variable with the same name.
+  Note that the increment tag does not affect the value of “var” that was
+  created using assign.
+
+  ### Input
+
+      {% assign var = 10 %}
+      {% increment var %}
+      {% increment var %}
+      {% increment var %}
+      {{ var }}
+
+  ### Output
+
+      0
+      1
+      2
+      10
+
+  ## decrement
+
+  Creates and outputs a new number variable with initial value -1. On subsequent
+  calls, it decreases its value by one and outputs the new value.
+
+  ### Input
+
+      {% decrement variable %}
+      {% decrement variable %}
+      {% decrement variable %}
+
+  ### Output
+
+      -1
+      -2
+      -3
+
+  Like increment, variables declared using decrement are independent from
+  variables created using assign or capture.
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec

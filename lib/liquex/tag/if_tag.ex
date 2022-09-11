@@ -1,5 +1,17 @@
 defmodule Liquex.Tag.IfTag do
-  @moduledoc false
+  @moduledoc """
+  Executes a block of code only if a certain condition is true.
+
+  ### Input
+
+      {% if product.title == "Awesome Shoes" %}
+        These shoes are awesome!
+      {% endif %}
+
+  ### Output
+
+      These shoes are awesome!
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec

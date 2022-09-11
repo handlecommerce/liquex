@@ -1,5 +1,55 @@
 defmodule Liquex.Tag.RenderTag do
-  @moduledoc false
+  @moduledoc """
+  Insert the rendered content of another template within the current template.
+
+      {% render "template-name" %}
+
+  Note that you don’t need to write the file’s .liquid extension.
+
+  The code within the rendered template does not automatically have access to
+  the variables assigned using variable tags within the parent template.
+  Similarly, variables assigned within the rendered template cannot be accessed
+  by code in any other template.
+
+  ## render (parameters)
+
+  Variables assigned using variable tags can be passed to a template by listing
+  them as parameters on the render tag.
+
+      {% assign my_variable = "apples" %}
+      {% render "name", my_variable: my_variable, my_other_variable: "oranges" %}
+
+  One or more objects can be passed to a template.
+
+      {% assign featured_product = all_products["product_handle"] %}
+      {% render "product", product: featured_product %}
+
+  ## with
+
+  A single object can be passed to a template by using the with and optional as
+  parameters.
+
+      {% assign featured_product = all_products["product_handle"] %}
+      {% render "product" with featured_product as product %}
+
+  In the example above, the product variable in the rendered template will hold
+  the value of featured_product from the parent template.
+
+  ## for
+
+  A template can be rendered once for each value of an enumerable object by
+  using the for and optional as parameters.
+
+      {% assign variants = product.variants %}
+      {% render "product_variant" for variants as variant %}
+
+  In the example above, the template will be rendered once for each variant of
+  the product, and the variant variable will hold a different product variant
+  object for each iteration.
+
+  When using the for parameter, the forloop object is accessible within the
+  rendered template.
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec
