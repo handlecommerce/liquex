@@ -1,11 +1,21 @@
 defmodule Liquex.Parser.Tag do
-  @moduledoc false
+  @moduledoc """
+  Helper methods for parsing tags
+  """
 
   import NimbleParsec
 
   alias Liquex.Parser.Argument
   alias Liquex.Parser.Literal
 
+  @doc """
+  Parse open tags
+
+  ## Examples
+
+      * "{%"
+      * "{%-"
+  """
   @spec open_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def open_tag(combinator \\ empty()) do
     combinator
@@ -14,6 +24,14 @@ defmodule Liquex.Parser.Tag do
     |> Literal.whitespace()
   end
 
+  @doc """
+  Parse close tags
+
+  ## Examples
+
+      * "%}"
+      * "-%} "
+  """
   @spec close_tag(NimbleParsec.t()) :: NimbleParsec.t()
   def close_tag(combinator \\ empty()) do
     combinator
@@ -21,6 +39,14 @@ defmodule Liquex.Parser.Tag do
     |> choice([close_tag_remove_whitespace(), string("%}")])
   end
 
+  @doc """
+  Parse basic tag with no arguments
+
+  ## Examples
+
+      * "{% break %}"
+      * "{% endfor %}"
+  """
   @spec tag_directive(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def tag_directive(combinator \\ empty(), name) do
     combinator
@@ -29,6 +55,14 @@ defmodule Liquex.Parser.Tag do
     |> close_tag()
   end
 
+  @doc """
+  Parse tag with no expression
+
+  ## Examples
+
+      * "{% if a == 5 %}"
+      * "{% elsif b >= 10 and a < 4 %}"
+  """
   @spec expression_tag(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
   def expression_tag(combinator \\ empty(), tag_name) do
     combinator

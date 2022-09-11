@@ -75,14 +75,13 @@ defmodule Liquex.Tag.RenderTag do
   end
 
   def render(
-        [template: {:literal, template_name}, keywords: keywords],
-        %Context{file_system: file_system} = context
+        [template: template, keywords: keywords],
+        %Context{} = context
       ) do
     new_context = apply_keywords_to_context(context, keywords)
 
-    file_system
-    |> FileSystem.read_template_file(template_name)
-    |> Liquex.parse!()
+    template
+    |> load_contents(context)
     |> Liquex.Render.render(new_context)
     |> case do
       {content, _new_context} -> {content, context}
@@ -135,7 +134,7 @@ defmodule Liquex.Tag.RenderTag do
 
     new_context = apply_keywords_to_context(context, [])
 
-    # Piggy back off for tag to fully support forloop variable
+    # Piggy back off `Liquex.Tag.ForTag` to fully support forloop variable
     {result, _context} =
       collection
       |> Liquex.Argument.eval(context)
@@ -154,9 +153,11 @@ defmodule Liquex.Tag.RenderTag do
   end
 
   @spec load_contents({:literal, String.t()}, Context.t()) :: Liquex.document_t() | no_return()
-  defp load_contents({:literal, template_name}, %Context{file_system: file_system}) do
-    file_system
-    |> FileSystem.read_template_file(template_name)
-    |> Liquex.parse!()
+  defp load_contents({:literal, template_name}, %Context{file_system: file_system, cache: cache}) do
+    cache.fetch("template." <> template_name, fn ->
+      file_system
+      |> FileSystem.read_template_file(template_name)
+      |> Liquex.parse!()
+    end)
   end
 end
