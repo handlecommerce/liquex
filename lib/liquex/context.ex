@@ -58,7 +58,8 @@ defmodule Liquex.Context do
             private: %{},
             filter_module: Liquex.Filter,
             file_system: nil,
-            errors: []
+            errors: [],
+            cache: nil
 
   @type t :: %__MODULE__{
           environment: map(),
@@ -68,6 +69,7 @@ defmodule Liquex.Context do
           private: map(),
           filter_module: module,
           file_system: struct,
+          cache: term,
           errors: list(Liquex.Error.t())
         }
 
@@ -98,7 +100,8 @@ defmodule Liquex.Context do
       static_environment: Keyword.get(opts, :static_environment, %{}),
       scope: Scope.new(Keyword.get(opts, :scope, %{})),
       filter_module: Keyword.get(opts, :filter_module, Liquex.Filter),
-      file_system: Keyword.get(opts, :file_system, %Liquex.BlankFileSystem{})
+      file_system: Keyword.get(opts, :file_system, %Liquex.BlankFileSystem{}),
+      cache: Keyword.get(opts, :cache, Liquex.Cache.DisabledCache)
     }
   end
 
@@ -192,7 +195,7 @@ defmodule Liquex.Context do
   end
 
   @doc """
-  Create a new context inheriting static enviromnet and options
+  Create a new context inheriting static environment and options
   """
   @spec new_isolated_subscope(t(), map) :: t()
   def new_isolated_subscope(%__MODULE__{} = context, environment \\ %{}) do
