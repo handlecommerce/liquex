@@ -204,7 +204,7 @@ defmodule Liquex.Tag.RenderTag do
 
   @spec load_contents({:literal, String.t()}, Context.t()) :: Liquex.document_t() | no_return()
   defp load_contents({:literal, template_name}, %Context{file_system: file_system, cache: cache}) do
-    cache.fetch("template." <> template_name, fn ->
+    cache.fetch("Liquex.Tag.RenderTag:partial." <> template_name, fn ->
       file_system
       |> FileSystem.read_template_file(template_name)
       |> Liquex.parse!()
