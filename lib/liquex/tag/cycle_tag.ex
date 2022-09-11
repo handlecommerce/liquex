@@ -1,5 +1,50 @@
 defmodule Liquex.Tag.CycleTag do
-  @moduledoc false
+  @moduledoc """
+  Loops through a group of strings and prints them in the order that they were
+  passed as arguments. Each time cycle is called, the next string argument is
+  printed.
+
+  cycle must be used within a for loop block.
+
+  ### Input
+
+      {% cycle "one", "two", "three" %}
+      {% cycle "one", "two", "three" %}
+      {% cycle "one", "two", "three" %}
+      {% cycle "one", "two", "three" %}
+
+  ### Output
+
+      one
+      two
+      three
+      one
+
+  Uses for cycle include:
+
+    * applying odd/even classes to rows in a table
+    * applying a unique class to the last product thumbnail in a row
+
+  ## cycle (parameters)
+
+  cycle accepts a “cycle group” parameter in cases where you need multiple cycle
+  blocks in one template. If no name is supplied for the cycle group, then it is
+  assumed that multiple calls with the same parameters are one group.
+
+  ### Input
+
+      {% cycle "first": "one", "two", "three" %}
+      {% cycle "second": "one", "two", "three" %}
+      {% cycle "second": "one", "two", "three" %}
+      {% cycle "first": "one", "two", "three" %}
+
+  ### Output
+
+      one
+      one
+      two
+      two
+  """
 
   @behaviour Liquex.Tag
 

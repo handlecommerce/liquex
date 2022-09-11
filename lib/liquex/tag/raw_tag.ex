@@ -1,5 +1,18 @@
 defmodule Liquex.Tag.RawTag do
-  @moduledoc false
+  @moduledoc """
+  Temporarily disables tag processing. This is useful for generating certain
+  content that uses conflicting syntax, such as Mustache or Handlebars.
+
+  ### Input
+
+      {% raw %}
+      In Handlebars, {{ this }} will be HTML-escaped, but {{{ that }}} will not.
+      {% endraw %}
+
+  ### Output
+
+      In Handlebars, {{ this }} will be HTML-escaped, but {{{ that }}} will not.
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec
