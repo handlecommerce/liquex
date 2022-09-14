@@ -1,5 +1,7 @@
 defmodule Liquex.Parser.Object do
-  @moduledoc false
+  @moduledoc """
+  Helper methods for parsing object tags and arguments used by objects
+  """
 
   import NimbleParsec
 
@@ -7,8 +9,17 @@ defmodule Liquex.Parser.Object do
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
 
+  @doc """
+  Parse arguments. Arguments are key/value pairs, but a key may have multiple
+  values separated by commas.
+
+  ## Examples
+
+      * "img_url: '400x400', crop: 'bottom', filter: 'blur'"
+      * "img_size: 800, 600"
+  """
   @spec arguments(NimbleParsec.t()) :: NimbleParsec.t()
-  defp arguments(combinator \\ empty()) do
+  def arguments(combinator \\ empty()) do
     combinator
     |> choice([
       Argument.argument()
@@ -31,7 +42,7 @@ defmodule Liquex.Parser.Object do
   end
 
   @spec keyword_fields(NimbleParsec.t()) :: NimbleParsec.t()
-  defp keyword_fields(combinator \\ empty()) do
+  def keyword_fields(combinator \\ empty()) do
     combinator
     |> keyword_field()
     |> repeat(
@@ -42,7 +53,14 @@ defmodule Liquex.Parser.Object do
     )
   end
 
-  defp keyword_field(combinator) do
+  @doc """
+  Parse keyword field
+
+  ## Examples
+
+      * "key: value"
+  """
+  def keyword_field(combinator) do
     combinator
     |> concat(Field.identifier())
     |> ignore(string(":"))
@@ -51,6 +69,14 @@ defmodule Liquex.Parser.Object do
     |> tag(:keyword)
   end
 
+  @doc """
+  Parses filter that starts with a pipe
+
+  ## Examples
+
+      * "| sort"
+      * "| at_most: 5"
+  """
   @spec filter(NimbleParsec.t()) :: NimbleParsec.t()
   def filter(combinator \\ empty()) do
     combinator
@@ -69,6 +95,19 @@ defmodule Liquex.Parser.Object do
     |> tag(:filter)
   end
 
+  @doc """
+  Parses object. May contain arguments, literals, and filters.
+
+  It special cases space removing tags such as `{{-` and `-}}` to properly
+  remove any spaces leading and trailing spaces if requested.
+
+  ## Examples
+
+      * "{{ 'hello world' }}"
+      * "{{ 5 + 5 }}"
+      * "{{ variable_a | at_most: 5 }}"
+      * "{{- my_array | sort -}}"
+  """
   @spec object(NimbleParsec.t()) :: NimbleParsec.t()
   def object(combinator \\ empty()) do
     combinator
@@ -82,6 +121,13 @@ defmodule Liquex.Parser.Object do
     |> tag(:object)
   end
 
+  @doc """
+  Parses closing object tag with white space removing.
+
+  ## Examples
+
+      * "-}}  "
+  """
   @spec close_object_remove_whitespace(NimbleParsec.t()) :: NimbleParsec.t()
   def close_object_remove_whitespace(combinator \\ empty()) do
     combinator

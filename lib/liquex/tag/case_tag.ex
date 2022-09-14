@@ -1,5 +1,28 @@
 defmodule Liquex.Tag.CaseTag do
-  @moduledoc false
+  @moduledoc """
+  Creates a switch statement to execute a particular block of code when a
+  variable has a specified value. case initializes the switch statement, and
+  when statements define the various conditions.
+
+  An optional else statement at the end of the case provides code to execute if
+  none of the conditions are met.
+
+  ### Input
+
+      {% assign handle = "cake" %}
+      {% case handle %}
+        {% when "cake" %}
+          This is a cake
+        {% when "cookie", "biscuit" %}
+          This is a cookie
+        {% else %}
+          This is not a cake nor a cookie
+      {% endcase %}
+
+  ### Output
+
+      This is a cake
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec

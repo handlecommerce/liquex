@@ -6,6 +6,8 @@ defmodule Liquex.TestHelpers do
   def assert_parse(doc, match),
     do: assert({:ok, ^match, "", _, _, _} = Liquex.Parser.Base.parse(doc))
 
+  def assert_parse_error(doc), do: assert({:error, _, _, _, _, _} = Liquex.Parser.Base.parse(doc))
+
   def assert_match_liquid(path) do
     {:ok, archive} = Hrx.load(path)
 

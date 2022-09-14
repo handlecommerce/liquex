@@ -1,16 +1,34 @@
 defmodule Liquex.Parser.Literal do
-  @moduledoc false
+  @moduledoc """
+  Helper parsers for parsing literal values in Liquid
+  """
 
   import NimbleParsec
 
   alias Liquex.Parser.Argument
 
+  @doc """
+  Parses white space, given a minimum.
+
+  ## Examples
+
+      * "  "
+      * "\r\n\t"
+  """
   @spec whitespace(NimbleParsec.t(), non_neg_integer()) :: NimbleParsec.t()
   def whitespace(combinator \\ empty(), min \\ 0) do
     combinator
     |> utf8_string([?\s, ?\n, ?\r, ?\t], min: min)
   end
 
+  @doc """
+  Parses a range
+
+  ## Examples
+
+      * "(1..5)"
+      * "(1..num)"
+  """
   @spec range(NimbleParsec.t()) :: NimbleParsec.t()
   def range(combinator \\ empty()) do
     combinator
@@ -24,6 +42,19 @@ defmodule Liquex.Parser.Literal do
     |> tag(:inclusive_range)
   end
 
+  @doc """
+  Parses a literal
+
+  ## Examples
+
+      * "true"
+      * "false"
+      * "nil"
+      * "3.14"
+      * "3"
+      * "'Hello World!'"
+      * "\"Hello World!\""
+  """
   @spec literal(NimbleParsec.t()) :: NimbleParsec.t()
   def literal(combinator \\ empty()) do
     true_value = replace(string("true"), true)
@@ -43,6 +74,10 @@ defmodule Liquex.Parser.Literal do
     |> unwrap_and_tag(:literal)
   end
 
+  @doc """
+  Parses everything outside of the Liquid tags. We call this text but it's any
+  unstructed data not specifically parsed by Liquex.
+  """
   @spec text(NimbleParsec.t()) :: NimbleParsec.t()
   def text(combinator \\ empty()) do
     opening_tag =
@@ -61,7 +96,22 @@ defmodule Liquex.Parser.Literal do
     |> unwrap_and_tag(:text)
   end
 
-  defp quoted_string do
+  @doc """
+  Parses a single or double quoted string.
+
+  Strings may have escaped quotes within them.
+
+  ## Examples
+
+  Examples here include the quotes as given, as opposed to other examples.
+
+      * "Hello World"
+      * 'Hello World'
+      * "Hello \"World\""
+      * 'Hello "World"'
+      * 'Hello \'World\''
+  """
+  def quoted_string do
     single_quote_string =
       ignore(utf8_char([?']))
       |> repeat(

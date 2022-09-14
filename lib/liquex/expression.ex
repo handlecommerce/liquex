@@ -52,6 +52,8 @@ defmodule Liquex.Expression do
   defp do_eval(false), do: false
   defp do_eval(_), do: true
 
+  @spec eval_collection(Collection.t(), Keyword.t()) :: Collection.t()
+  def eval_collection(collection, parameters \\ [])
   def eval_collection(collection, []), do: collection
 
   def eval_collection(collection, [{:limit, limit} | tail]),

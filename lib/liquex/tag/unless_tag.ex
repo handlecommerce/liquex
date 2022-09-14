@@ -1,5 +1,24 @@
 defmodule Liquex.Tag.UnlessTag do
-  @moduledoc false
+  @moduledoc """
+  The opposite of if – executes a block of code only if a certain condition is
+  not met.
+
+  ### Input
+
+      {% unless product.title == "Awesome Shoes" %}
+        These shoes are not awesome.
+      {% endunless %}
+
+  ### Output
+
+      These shoes are not awesome.
+
+  This would be the equivalent of doing the following:
+
+      {% if product.title != "Awesome Shoes" %}
+        These shoes are not awesome.
+      {% endif %}
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec

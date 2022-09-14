@@ -1,5 +1,19 @@
 defmodule Liquex.Tag.ObjectTag do
-  @moduledoc false
+  @moduledoc """
+  Objects contain the content that Liquid displays on a page. Objects and
+  variables are displayed when enclosed in double curly braces: {{ and }}.
+
+  ### Input
+
+      {{ page.title }}
+
+  ### Output
+
+      Introduction
+
+  In this case, Liquid is rendering the content of the title property of the
+  page object, which contains the text Introduction.
+  """
 
   @behaviour Liquex.Tag
   import NimbleParsec
