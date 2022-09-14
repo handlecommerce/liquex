@@ -5,12 +5,17 @@ defmodule Liquex.Tag.IncrementTagTest do
   describe "parse" do
     test "parse increment" do
       "{% increment a %}"
-      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: 1]}])
+      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: {0, 1}]}])
     end
 
     test "parse decrement" do
       "{% decrement a %}"
-      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: -1]}])
+      |> assert_parse([{{:tag, Liquex.Tag.IncrementTag}, [identifier: "a", by: {-1, -1}]}])
+    end
+
+    test "parse increment without variable" do
+      assert_parse("{% increment %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: {0, 1}]}])
+      assert_parse("{% decrement %}", [{{:tag, Liquex.Tag.IncrementTag}, [by: {-1, -1}]}])
     end
   end
 
@@ -33,6 +38,30 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> String.trim() == "10\n11\n12\n0\n1"
     end
 
+    test "increments default key" do
+      {:ok, template} =
+        "{% increment %} {% increment %} {% increment %}"
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template)
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "0 1 2"
+    end
+
+    test "decrement from default key" do
+      {:ok, template} =
+        "{% decrement %} {% decrement %} {% decrement %}"
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template)
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "-1 -2 -3"
+    end
+
     test "decrements value" do
       {:ok, template} =
         """
@@ -49,7 +78,7 @@ defmodule Liquex.Tag.IncrementTagTest do
       assert Liquex.render(template, %{a: 10})
              |> elem(0)
              |> to_string()
-             |> String.trim() == "10\n9\n8\n0\n-1"
+             |> String.trim() == "10\n9\n8\n-1\n-2"
     end
   end
 end

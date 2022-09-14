@@ -1,5 +1,29 @@
 defmodule Liquex.Tag.AssignTag do
-  @moduledoc false
+  @moduledoc """
+  Creates a new named variable.
+
+  ### Input
+
+      {% assign my_variable = false %}
+      {% if my_variable != true %}
+        This statement is valid.
+      {% endif %}
+
+  ### Output
+
+      This statement is valid.
+
+  Wrap a value in quotations " to save it as a string variable.
+
+  ### Input
+
+      {% assign foo = "bar" %}
+      {{ foo }}
+
+  ### Output
+
+      bar
+  """
 
   @behaviour Liquex.Tag
 

@@ -1,5 +1,21 @@
 defmodule Liquex.Tag.BreakTag do
-  @moduledoc false
+  @moduledoc """
+  Causes the loop to stop iterating when it encounters the break tag.
+
+  ### Input
+
+      {% for i in (1..5) %}
+        {% if i == 4 %}
+          {% break %}
+        {% else %}
+          {{ i }}
+        {% endif %}
+      {% endfor %}
+
+  ### Output
+
+      1 2 3
+  """
 
   @behaviour Liquex.Tag
 

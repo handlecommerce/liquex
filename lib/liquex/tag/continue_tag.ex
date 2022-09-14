@@ -1,5 +1,22 @@
 defmodule Liquex.Tag.ContinueTag do
-  @moduledoc false
+  @moduledoc """
+  Causes the loop to skip the current iteration when it encounters the continue
+  tag.
+
+  ### Input
+
+      {% for i in (1..5) %}
+        {% if i == 4 %}
+          {% continue %}
+        {% else %}
+          {{ i }}
+        {% endif %}
+      {% endfor %}
+
+  ### Output
+
+      1 2 3   5
+  """
 
   @behaviour Liquex.Tag
 
