@@ -25,7 +25,7 @@ defmodule Liquex.TestHelpers do
       end
     else
       {:error, msg, _} ->
-        flunk("Unable to parse: #{msg}")
+        flunk("Unable to parse: #{msg} in file #{path}")
 
       {response, exit_code} when is_integer(exit_code) ->
         flunk("Unable to parse: '#{response}', exit code: #{exit_code}")

@@ -22,6 +22,7 @@ defmodule Liquex.Parser do
           Liquex.Tag.CommentTag,
           Liquex.Tag.ContinueTag,
           Liquex.Tag.CycleTag,
+          Liquex.Tag.EchoTag,
           Liquex.Tag.ForTag,
           Liquex.Tag.IfTag,
           Liquex.Tag.IncrementTag,
