@@ -31,9 +31,15 @@ defmodule Liquex.Tag.ObjectTag do
     |> ignore(optional(string("-")))
     |> ignore(Literal.whitespace())
     |> Argument.argument()
-    |> optional(tag(repeat(filter()), :filters))
+    |> optional(filters())
     |> ignore(Literal.whitespace())
     |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
+  end
+
+  @spec filters(NimbleParsec.t()) :: NimbleParsec.t()
+  def filters(combinator \\ empty()) do
+    combinator
+    |> tag(repeat(filter()), :filters)
   end
 
   defp arguments do
