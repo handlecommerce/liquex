@@ -1,18 +1,18 @@
 defmodule Liquex.Tag.EchoTag do
   @moduledoc """
-  Objects contain the content that Liquid displays on a page. Objects and
-  variables are displayed when enclosed in double curly braces: {{ and }}.
+  Outputs an expression in the rendered HTML. This is identical to wrapping an
+  expression in {{ and }}, but works inside liquid tags and supports filters.
 
   ### Input
 
-      {{ page.title }}
+      {% liquid
+      for product in collection.products
+        echo product.title | capitalize
+      endfor %}
 
   ### Output
 
-      Introduction
-
-  In this case, Liquid is rendering the content of the title property of the
-  page object, which contains the text Introduction.
+      Hat Shirt Pants
   """
 
   @behaviour Liquex.Tag
