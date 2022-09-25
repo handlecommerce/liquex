@@ -3,7 +3,6 @@ defmodule Liquex.Tag.ObjectTagTest do
   import Liquex.TestHelpers
 
   alias Liquex.Context
-  alias Liquex.Parser.Base
 
   describe "parse" do
     test "handles simple filter" do
@@ -214,13 +213,5 @@ defmodule Liquex.Tag.ObjectTagTest do
                  context
                )
     end
-  end
-
-  def render(doc, context \\ %Context{}) do
-    {:ok, parsed_doc, _, _, _, _} = Base.parse(doc)
-
-    {result, _} = Liquex.render(parsed_doc, context)
-
-    result |> to_string()
   end
 end

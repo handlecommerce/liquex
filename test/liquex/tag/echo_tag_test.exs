@@ -3,7 +3,6 @@ defmodule Liquex.Tag.EchoTagTest do
   import Liquex.TestHelpers
 
   alias Liquex.Context
-  alias Liquex.Parser.Base
 
   describe "parse" do
     test "handles simple object" do
@@ -109,6 +108,7 @@ defmodule Liquex.Tag.EchoTagTest do
   describe "render" do
     test "simple objects" do
       assert "5" == render("{% echo 5 %}")
+      assert "5" == render("{% liquid echo 5 %}")
       assert "Hello" == render("{% echo 'Hello' %}")
       assert "true" == render("{% echo true %}")
       assert "" == render("{% echo nil %}")
@@ -223,13 +223,5 @@ defmodule Liquex.Tag.EchoTagTest do
                  context
                )
     end
-  end
-
-  def render(doc, context \\ %Context{}) do
-    {:ok, parsed_doc, _, _, _, _} = Base.parse(doc)
-
-    {result, _} = Liquex.render(parsed_doc, context)
-
-    result |> to_string()
   end
 end
