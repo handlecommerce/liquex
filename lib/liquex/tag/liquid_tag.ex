@@ -1,6 +1,25 @@
 defmodule Liquex.Tag.LiquidTag do
   @moduledoc """
 
+  ## liquid
+
+  Encloses multiple tags within one set of delimiters, to allow writing Liquid
+  logic more concisely.
+
+      {% liquid
+      case section.blocks.size
+      when 1
+        assign column_size = ''
+      when 2
+        assign column_size = 'one-half'
+      when 3
+        assign column_size = 'one-third'
+      else
+        assign column_size = 'one-quarter'
+      endcase %}
+
+  Because any tag blocks opened within a liquid tag must also be closed within
+  the same tag, use echo to output data.
   """
 
   @behaviour Liquex.Tag
@@ -8,8 +27,8 @@ defmodule Liquex.Tag.LiquidTag do
 
   alias Liquex.Context
 
-  alias Liquex.Parser.Tag
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.Tag
 
   alias Liquex.Render
 
