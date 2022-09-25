@@ -110,4 +110,49 @@ defmodule Liquex.Tag.CaseTagTest do
              |> String.trim() == "Hello! Who are you?"
     end
   end
+
+  describe "render with liquid tag" do
+    test "simple case" do
+      {:ok, template} =
+        """
+        {% liquid case name
+          when "James"
+            echo "Hello, James!"
+          when "John"
+            echo "Hello, John!"
+          when "Peter", "Paul"
+            echo "Hello, Peter or Paul (cannot tell you apart)."
+          else
+            echo "Hello! Who are you?"
+        endcase %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, Context.new(%{"name" => "James"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello, James!"
+
+      assert Liquex.render(template, Context.new(%{"name" => "John"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello, John!"
+
+      assert Liquex.render(template, Context.new(%{"name" => "Peter"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
+
+      assert Liquex.render(template, Context.new(%{"name" => "Paul"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
+
+      assert Liquex.render(template, Context.new(%{"name" => "Jim"}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "Hello! Who are you?"
+    end
+  end
 end

@@ -30,22 +30,20 @@ defmodule Liquex.Tag.EchoTag do
   @impl true
   def parse do
     ignore(Tag.open_tag())
-    |> ignore(string("echo"))
-    |> ignore(Literal.whitespace(empty(), 1))
-    |> Argument.argument()
-    |> optional(ObjectTag.filters())
+    |> echo_contents()
     |> ignore(Literal.whitespace())
     |> ignore(Tag.close_tag())
   end
 
   @impl true
   def parse_liquid_tag do
-    ignore(string("echo"))
-    |> echo_contents()
+    echo_contents()
+    |> ignore(Tag.end_liquid_line())
   end
 
-  defp echo_contents(combinator) do
+  defp echo_contents(combinator \\ empty()) do
     combinator
+    |> ignore(string("echo"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> Argument.argument()
     |> optional(ObjectTag.filters())

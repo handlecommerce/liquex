@@ -14,6 +14,7 @@ defmodule Liquex.Tag.LiquidTag do
   alias Liquex.Render
 
   @impl true
+  @spec parse :: NimbleParsec.t()
   def parse do
     Tag.open_tag()
     |> string("liquid")
@@ -25,7 +26,6 @@ defmodule Liquex.Tag.LiquidTag do
   end
 
   @impl true
-  def render([contents: contents], %Context{} = context) do
-    Render.render(contents, context)
-  end
+  @spec render(list, Liquex.Context.t()) :: Render.result_t()
+  def render([contents: contents], %Context{} = context), do: Render.render(contents, context)
 end

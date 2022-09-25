@@ -41,16 +41,51 @@ defmodule Liquex.Tag.CaseTag do
     |> ignore(Tag.tag_directive("endcase"))
   end
 
+  def parse_liquid_tag do
+    case_contents()
+    |> ignore(Tag.end_liquid_line())
+    |> times(
+      tag(
+        when_contents()
+        |> ignore(Tag.end_liquid_line())
+        |> tag(parsec(:liquid_tag_contents), :contents),
+        :when
+      ),
+      min: 1
+    )
+    |> optional(
+      else_contents(empty())
+      |> ignore(Tag.end_liquid_line())
+      |> tag(parsec(:liquid_tag_contents), :contents)
+      |> tag(:else)
+    )
+    |> ignore(Literal.whitespace())
+    |> ignore(string("endcase"))
+    |> ignore(Tag.end_liquid_line())
+  end
+
   defp case_tag do
     ignore(Tag.open_tag())
+    |> case_contents()
+    |> ignore(Tag.close_tag())
+  end
+
+  defp case_contents(combinator \\ empty()) do
+    combinator
     |> ignore(string("case"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> concat(Parser.Argument.argument())
-    |> ignore(Tag.close_tag())
   end
 
   defp when_tag do
     ignore(Tag.open_tag())
+    |> when_contents()
+    |> ignore(Tag.close_tag())
+    |> tag(parsec(:document), :contents)
+  end
+
+  defp when_contents(combinator \\ empty()) do
+    combinator
     |> ignore(string("when"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(
@@ -62,16 +97,22 @@ defmodule Liquex.Tag.CaseTag do
       ),
       :expression
     )
-    |> ignore(Tag.close_tag())
-    |> tag(parsec(:document), :contents)
   end
 
   def else_tag do
-    ignore(Tag.tag_directive("else"))
+    ignore(Tag.open_tag())
+    |> else_contents()
+    |> ignore(Tag.close_tag())
     |> tag(parsec(:document), :contents)
     |> tag(:else)
   end
 
+  defp else_contents(combinator) do
+    combinator
+    |> ignore(string("else"))
+  end
+
+  @spec render(list, Liquex.Context.t()) :: Render.result_t()
   def render([argument | tail], context) do
     match = Argument.eval(argument, context)
     do_render(tail, context, match)
