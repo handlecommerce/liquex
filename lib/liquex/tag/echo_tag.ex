@@ -20,10 +20,10 @@ defmodule Liquex.Tag.EchoTag do
 
   alias Liquex.Context
 
-  alias Liquex.Parser.Tag
   alias Liquex.Parser.Argument
-  alias Liquex.Tag.ObjectTag
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.Tag
+  alias Liquex.Tag.ObjectTag
 
   alias Liquex.Render
 
