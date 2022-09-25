@@ -39,6 +39,17 @@ defmodule Liquex.Parser.Tag do
     |> choice([close_tag_remove_whitespace(), string("%}")])
   end
 
+  def end_liquid_line(combinator \\ empty()) do
+    combinator
+    |> utf8_string([?\s, ?\t], min: 0)
+    |> choice([
+      empty()
+      |> utf8_string([?\r, ?\n], 1)
+      |> Literal.whitespace(0),
+      lookahead(string("%}"))
+    ])
+  end
+
   @doc """
   Parse basic tag with no arguments
 

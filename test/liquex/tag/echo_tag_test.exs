@@ -110,8 +110,12 @@ defmodule Liquex.Tag.EchoTagTest do
       assert "5" == render("{% echo 5 %}")
       assert "5" == render("{% liquid echo 5 %}")
       assert "Hello" == render("{% echo 'Hello' %}")
+      assert "Hello" == render("{% liquid echo 'Hello' %}")
       assert "true" == render("{% echo true %}")
+      assert "true" == render("{% liquid echo true %}")
       assert "" == render("{% echo nil %}")
+      assert "" == render("{% liquid echo nil %}")
+      assert "55" == render("{% liquid echo 5\necho 5 %}")
     end
 
     test "simple fields" do
