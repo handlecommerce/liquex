@@ -27,6 +27,7 @@ defmodule Liquex.Tag.EchoTag do
 
   alias Liquex.Render
 
+  @impl true
   def parse do
     ignore(Tag.open_tag())
     |> ignore(string("echo"))
@@ -37,6 +38,20 @@ defmodule Liquex.Tag.EchoTag do
     |> ignore(Tag.close_tag())
   end
 
+  @impl true
+  def parse_liquid_tag do
+    ignore(string("echo"))
+    |> echo_contents()
+  end
+
+  defp echo_contents(combinator) do
+    combinator
+    |> ignore(Literal.whitespace(empty(), 1))
+    |> Argument.argument()
+    |> optional(ObjectTag.filters())
+  end
+
+  @impl true
   def render([argument, filters: filters], %Context{} = context) do
     {result, context} =
       argument

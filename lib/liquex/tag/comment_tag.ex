@@ -35,5 +35,10 @@ defmodule Liquex.Tag.CommentTag do
   end
 
   @impl true
+  def parse_liquid_tag do
+    string("USDFADSJFKAJDFJKASDF")
+  end
+
+  @impl true
   def render(_contents, context), do: {[], context}
 end
