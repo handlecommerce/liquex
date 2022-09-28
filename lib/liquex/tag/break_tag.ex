@@ -29,6 +29,11 @@ defmodule Liquex.Tag.BreakTag do
   end
 
   @impl true
+  def parse_liquid_tag do
+    ignore(Tag.liquid_tag_directive("break"))
+  end
+
+  @impl true
   def render(_, context) do
     {:break, [], context}
   end
