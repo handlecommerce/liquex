@@ -6,6 +6,9 @@
 }
 
 <===> liquid_tag.liquid
+
+case and echo tags
+
 {% liquid
   assign product_type = product.type | downcase
   assign message = '' | downcase
@@ -20,4 +23,13 @@
   endcase
 
   echo message
+%}
+
+if/else tags
+
+{% liquid assign name = "John"
+
+  if name == "Jane"
+    echo "Hello Jane"
+  endif
 %}

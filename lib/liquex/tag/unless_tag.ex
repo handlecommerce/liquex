@@ -29,6 +29,7 @@ defmodule Liquex.Tag.UnlessTag do
 
   alias Liquex.Tag.IfTag
 
+  @impl true
   def parse do
     Tag.expression_tag("unless")
     |> tag(parsec(:document), :contents)
@@ -37,6 +38,24 @@ defmodule Liquex.Tag.UnlessTag do
     |> ignore(Tag.tag_directive("endunless"))
   end
 
+  @impl true
+  def parse_liquid_tag do
+    Tag.liquid_tag_expression("unless")
+    |> tag(parsec(:liquid_tag_contents), :contents)
+    |> repeat(
+      Tag.liquid_tag_expression("elsif")
+      |> tag(parsec(:liquid_tag_contents), :contents)
+      |> tag(:elsif)
+    )
+    |> optional(
+      ignore(Tag.liquid_tag_directive("else"))
+      |> tag(parsec(:liquid_tag_contents), :contents)
+      |> tag(:else)
+    )
+    |> ignore(Tag.liquid_tag_directive("endunless"))
+  end
+
+  @impl true
   def render([{:expression, expression}, {:contents, contents} | tail], context) do
     if Expression.eval(expression, context) do
       IfTag.render(tail, context)

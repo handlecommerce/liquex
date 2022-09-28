@@ -39,14 +39,19 @@ defmodule Liquex.Parser.Tag do
     |> choice([close_tag_remove_whitespace(), string("%}")])
   end
 
+  @doc """
+  Read to end of a line within a liquid tag. Reads to end of line ("\\r" and/or
+  "\\n") or to a closing tag "%}".
+  """
+  @spec end_liquid_line(NimbleParsec.t()) :: NimbleParsec.t()
   def end_liquid_line(combinator \\ empty()) do
     combinator
     |> utf8_string([?\s, ?\t], min: 0)
     |> choice([
       empty()
       |> utf8_string([?\r, ?\n], 1)
-      |> Literal.whitespace(0),
-      lookahead(string("%}"))
+      |> Literal.whitespace(),
+      lookahead(choice([string("-%}"), string("%}")]))
     ])
   end
 
@@ -66,6 +71,13 @@ defmodule Liquex.Parser.Tag do
     |> close_tag()
   end
 
+  @spec liquid_tag_directive(NimbleParsec.t(), String.t()) :: NimbleParsec.t()
+  def liquid_tag_directive(combinator \\ empty(), name) do
+    combinator
+    |> string(name)
+    |> end_liquid_line()
+  end
+
   @doc """
   Parse tag with no expression
 
@@ -79,9 +91,17 @@ defmodule Liquex.Parser.Tag do
     combinator
     |> ignore(open_tag())
     |> ignore(string(tag_name))
-    |> ignore(Literal.whitespace())
+    |> ignore(Literal.whitespace(empty(), 1))
     |> tag(boolean_expression(), :expression)
     |> ignore(close_tag())
+  end
+
+  def liquid_tag_expression(combinator \\ empty(), tag_name) do
+    combinator
+    |> ignore(string(tag_name))
+    |> ignore(Literal.whitespace(empty(), 1))
+    |> tag(boolean_expression(), :expression)
+    |> ignore(end_liquid_line())
   end
 
   # Close tag that also removes the whitespace after it
@@ -102,12 +122,6 @@ defmodule Liquex.Parser.Tag do
         replace(string("contains"), :contains)
       ])
 
-    boolean_operator =
-      choice([
-        replace(string("and"), :and),
-        replace(string("or"), :or)
-      ])
-
     boolean_operation =
       tag(Argument.argument(), :left)
       |> ignore(Literal.whitespace())
@@ -118,12 +132,14 @@ defmodule Liquex.Parser.Tag do
 
     combinator
     |> choice([boolean_operation, Literal.literal(), Argument.argument()])
-    |> ignore(Literal.whitespace())
     |> repeat(
-      boolean_operator
-      |> ignore(Literal.whitespace())
+      ignore(Literal.whitespace(empty(), 1))
+      |> choice([
+        replace(string("and"), :and),
+        replace(string("or"), :or)
+      ])
+      |> ignore(Literal.whitespace(empty(), 1))
       |> choice([boolean_operation, Literal.literal(), Argument.argument()])
-      |> ignore(Literal.whitespace())
     )
   end
 end
