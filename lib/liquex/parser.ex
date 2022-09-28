@@ -42,11 +42,10 @@ defmodule Liquex.Parser do
       Enum.each(tags, &Code.ensure_loaded!/1)
 
       liquid_tags_parser =
-        choice(
-          tags
-          |> Enum.filter(&function_exported?(&1, :parse_liquid_tag, 0))
-          |> Enum.map(&tag(&1.parse_liquid_tag(), {:tag, &1}))
-        )
+        tags
+        |> Enum.filter(&function_exported?(&1, :parse_liquid_tag, 0))
+        |> Enum.map(&tag(&1.parse_liquid_tag(), {:tag, &1}))
+        |> choice()
 
       # Special case for leading spaces before `{%-` and `{{-`
       leading_whitespace =

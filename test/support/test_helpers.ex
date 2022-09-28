@@ -52,7 +52,7 @@ defmodule Liquex.TestHelpers do
   def render(doc, context \\ %Liquex.Context{}) do
     with {:ok, parsed_doc, _, _, _, _} <- Liquex.Parser.Base.parse(doc),
          {result, _} = Liquex.render(parsed_doc, context) do
-      to_string(result)
+      to_string(result) |> String.trim()
     end
   end
 end

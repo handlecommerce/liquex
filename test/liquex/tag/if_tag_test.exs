@@ -268,4 +268,80 @@ defmodule Liquex.Tag.IfTagTest do
                "It's true"
     end
   end
+
+  describe "render in liquid tag" do
+    test "failing if statement" do
+      context = Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
+
+      assert render(
+               """
+               {% liquid if product.title == "Awesome Shoes"
+                  echo "These shoes are awesome!"
+               endif %}
+               """,
+               context
+             ) == ""
+    end
+
+    test "else statement" do
+      context = Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
+
+      assert render(
+               """
+               {% liquid if product.title == "Awesome Shoes"
+                 echo "These shoes are awesome!"
+               else
+                 echo "These are Not Awesome Shoes"
+               endif %}
+               """,
+               context
+             ) ==
+               "These are Not Awesome Shoes"
+    end
+
+    test "elsif statement" do
+      context = Context.new(%{"product" => %{"id" => 2, "title" => "Not Awesome Shoes"}})
+
+      assert render(
+               """
+               {% liquid if product.title == "Awesome Shoes"
+                 echo "These shoes are awesome!"
+               elsif product.id == 2
+                 echo "These are not awesome shoes"
+               else
+                 echo "I don't know what these are"
+               endif %}
+               """,
+               context
+             ) == "These are not awesome shoes"
+    end
+
+    test "or statement" do
+      customer = %{"tags" => [], "email" => "example@mycompany.com"}
+
+      assert render(
+               """
+               {% liquid if customer.tags contains 'VIP' or customer.email contains 'mycompany.com'
+                 echo "Welcome! We're pleased to offer you a special discount of 15% on all products."
+               else
+                 echo "Welcome to our store!"
+               endif %}
+               """,
+               Context.new(%{customer: customer})
+             ) == "Welcome! We're pleased to offer you a special discount of 15% on all products."
+    end
+
+    test "mixed or/and statement" do
+      assert render(
+               """
+               {% liquid if true and false or true
+                 echo "It's true"
+               else
+                 echo "It's not true"
+               endif %}
+               """,
+               Context.new(%{})
+             ) == "It's true"
+    end
+  end
 end

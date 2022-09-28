@@ -40,7 +40,7 @@ defmodule Liquex.Tag.LiquidTag do
     |> Literal.whitespace(1)
     |> ignore()
     |> tag(parsec(:liquid_tag_contents), :contents)
-    |> ignore(Literal.whitespace(empty(), 0))
+    |> ignore(Literal.whitespace())
     |> ignore(Tag.close_tag())
   end
 
