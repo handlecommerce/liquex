@@ -49,7 +49,7 @@ defmodule Liquex.TestHelpers do
   def liquid_render(liquid, json),
     do: System.cmd("ruby", ["test/render.rb", liquid, json])
 
-  def render(doc, context \\ %Liquex.Context{}) do
+  def render(doc, context \\ Liquex.Context.new(%{})) do
     with {:ok, parsed_doc, _, _, _, _} <- Liquex.Parser.Base.parse(doc),
          {result, _} = Liquex.render(parsed_doc, context) do
       to_string(result) |> String.trim()

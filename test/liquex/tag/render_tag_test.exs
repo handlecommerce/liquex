@@ -177,6 +177,15 @@ defmodule Liquex.Tag.RenderTagTest do
 
       assert render_with_files("{% if true %}{% render 'snippet' %}{% endif %}", files) ==
                "my message"
+
+      assert render_with_files(
+               """
+               {% liquid if true
+                 render 'snippet'
+               endif %}
+               """,
+               files
+             ) == "my message"
     end
 
     test "break through render" do
