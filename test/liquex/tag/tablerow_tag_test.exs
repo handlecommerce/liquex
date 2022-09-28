@@ -45,7 +45,9 @@ defmodule Liquex.Tag.TablerowTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
+      context = Context.new(%{"collection" => [1, 2, 3]})
+
+      assert Liquex.render(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -53,6 +55,15 @@ defmodule Liquex.Tag.TablerowTagTest do
              |> trim_list()
              |> Enum.join() ==
                "<table><tr><td>1</td></tr><tr><td>2</td></tr><tr><td>3</td></tr></table>"
+
+      assert render(
+               """
+                 <table>{% liquid tablerow product in collection
+                   echo product
+                 endtablerow %}</table>
+               """,
+               context
+             ) == "<table><tr><td>1</td></tr><tr><td>2</td></tr><tr><td>3</td></tr></table>"
     end
 
     test "tablerow with cols" do
@@ -67,7 +78,9 @@ defmodule Liquex.Tag.TablerowTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"collection" => [1, 2, 3]}))
+      context = Context.new(%{"collection" => [1, 2, 3]})
+
+      assert Liquex.render(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -75,6 +88,15 @@ defmodule Liquex.Tag.TablerowTagTest do
              |> trim_list()
              |> Enum.join() ==
                "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
+
+      assert render(
+               """
+                 <table>{% liquid tablerow product in collection cols:2
+                   echo product
+                 endtablerow %}</table>
+               """,
+               context
+             ) == "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
     end
   end
 
