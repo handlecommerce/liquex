@@ -131,38 +131,50 @@ defmodule Liquex.Tag.TablerowTag do
   import NimbleParsec
 
   def parse do
+    ignore(Tag.open_tag())
+    |> do_parse_tablerow()
+    |> ignore(Tag.close_tag())
+    |> tag(parsec(:document), :contents)
+    |> ignore(Tag.tag_directive("endtablerow"))
+  end
+
+  def parse_liquid_tag do
+    do_parse_tablerow()
+    |> ignore(Tag.end_liquid_line())
+    |> tag(parsec(:liquid_tag_contents), :contents)
+    |> ignore(Tag.liquid_tag_directive("endtablerow"))
+  end
+
+  defp do_parse_tablerow(combinator \\ empty()) do
     collection = choice([Literal.range(), Argument.argument()])
 
     cols =
       ignore(string("cols:"))
       |> unwrap_and_tag(integer(min: 1), :cols)
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
     limit =
       ignore(string("limit:"))
       |> unwrap_and_tag(integer(min: 1), :limit)
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
     offset =
       ignore(string("offset:"))
       |> unwrap_and_tag(integer(min: 1), :offset)
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
     tablerow_parameters = repeat(choice([cols, limit, offset]))
 
-    ignore(Tag.open_tag())
+    combinator
     |> ignore(string("tablerow"))
-    |> ignore(Literal.whitespace(empty(), 1))
+    |> ignore(Literal.non_breaking_whitespace(empty(), 1))
     |> unwrap_and_tag(Field.identifier(), :identifier)
-    |> ignore(Literal.whitespace(empty(), 1))
+    |> ignore(Literal.non_breaking_whitespace(empty(), 1))
     |> ignore(string("in"))
-    |> ignore(Literal.whitespace(empty(), 1))
+    |> ignore(Literal.non_breaking_whitespace(empty(), 1))
     |> tag(collection, :collection)
-    |> ignore(Literal.whitespace())
+    |> ignore(Literal.non_breaking_whitespace())
     |> tag(tablerow_parameters, :parameters)
-    |> ignore(Tag.close_tag())
-    |> tag(parsec(:document), :contents)
-    |> ignore(Tag.tag_directive("endtablerow"))
   end
 
   def render(
