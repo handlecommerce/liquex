@@ -36,6 +36,19 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "10\n11\n12\n0\n1"
+
+      assert render(
+               """
+                 {% liquid
+                   increment a
+                   increment a
+                   increment a
+                   increment b
+                   increment b
+                 %}
+               """,
+               Liquex.Context.new(%{a: 10})
+             ) == "10111201"
     end
 
     test "increments default key" do
@@ -48,6 +61,13 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "0 1 2"
+
+      assert render("""
+               {% liquid
+                 increment
+                 increment
+                 increment %}
+             """) == "012"
     end
 
     test "decrement from default key" do
@@ -60,6 +80,13 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "-1 -2 -3"
+
+      assert render("""
+               {% liquid
+                 decrement
+                 decrement
+                 decrement %}
+             """) == "-1-2-3"
     end
 
     test "decrements value" do
@@ -79,6 +106,20 @@ defmodule Liquex.Tag.IncrementTagTest do
              |> elem(0)
              |> to_string()
              |> String.trim() == "10\n9\n8\n-1\n-2"
+
+      assert render(
+               """
+                {% liquid
+                  assign a = 0
+                  decrement a
+                  decrement a
+                  decrement a
+                  decrement b
+                  decrement b
+                %}
+               """,
+               Liquex.Context.new(%{a: 10})
+             ) == "1098-1-2"
     end
   end
 end

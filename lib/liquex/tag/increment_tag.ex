@@ -85,6 +85,19 @@ defmodule Liquex.Tag.IncrementTag do
     |> post_traverse({__MODULE__, :reverse_tags, []})
   end
 
+  def parse_liquid_tag do
+    # Replace as {default, increment}
+    increment = replace(string("increment"), {0, 1})
+    decrement = replace(string("decrement"), {-1, -1})
+
+    choice([increment, decrement])
+    |> unwrap_and_tag(:by)
+    |> ignore(Literal.non_breaking_whitespace(empty(), 0))
+    |> optional(unwrap_and_tag(Field.identifier(), :identifier))
+    |> ignore(Tag.end_liquid_line())
+    |> post_traverse({__MODULE__, :reverse_tags, []})
+  end
+
   def reverse_tags(_rest, args, context, _line, _offset),
     do: {args |> Enum.reverse(), context}
 
