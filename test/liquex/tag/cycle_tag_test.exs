@@ -54,6 +54,15 @@ defmodule Liquex.Tag.CycleTagTest do
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(one two three one)
+
+      assert render("""
+             {% liquid
+             cycle "one", "two", "three"
+             cycle "one", "two", "three"
+             cycle "one", "two", "three"
+             cycle "one", "two", "three"
+             %}
+             """) == "onetwothreeone"
     end
 
     test "named cycle" do
@@ -73,6 +82,15 @@ defmodule Liquex.Tag.CycleTagTest do
              |> String.trim()
              |> String.split("\n")
              |> trim_list() == ~w(one one two two)
+
+      assert render("""
+             {% liquid
+               cycle "first": "one", "two", "three"
+               cycle "second": "one", "two", "three"
+               cycle "second": "one", "two", "three"
+               cycle "first": "one", "two", "three"
+             %}
+             """) == "oneonetwotwo"
     end
   end
 

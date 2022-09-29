@@ -56,17 +56,27 @@ defmodule Liquex.Tag.CycleTag do
   import NimbleParsec
 
   def parse do
+    ignore(Tag.open_tag())
+    |> do_parse_cycle()
+    |> ignore(Tag.close_tag())
+  end
+
+  def parse_liquid_tag do
+    do_parse_cycle()
+    |> ignore(Tag.end_liquid_line())
+  end
+
+  def do_parse_cycle(combinator \\ empty()) do
     cycle_group =
       Literal.literal()
       |> ignore(string(":"))
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
-    ignore(Tag.open_tag())
+    combinator
     |> ignore(string("cycle"))
-    |> ignore(Literal.whitespace(empty(), 1))
+    |> ignore(Literal.non_breaking_whitespace(empty(), 1))
     |> optional(unwrap_and_tag(cycle_group, :group))
     |> tag(argument_sequence(), :sequence)
-    |> ignore(Tag.close_tag())
   end
 
   defp argument_sequence(combinator \\ empty()) do
@@ -74,7 +84,7 @@ defmodule Liquex.Tag.CycleTag do
     |> Argument.argument()
     |> repeat(
       ignore(string(","))
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
       |> Argument.argument()
     )
   end
