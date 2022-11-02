@@ -11,7 +11,7 @@ defmodule Liquex.ArgumentTest do
       assert 5 == Argument.eval([literal: 5], Context.new(%{}))
     end
 
-    test "evaluate unkown field" do
+    test "evaluate unknown field" do
       assert nil == Argument.eval([field: [key: "i"]], Context.new(%{}))
       assert nil == Argument.eval([field: [key: "a", key: "b"]], Context.new(%{}))
     end
@@ -37,6 +37,12 @@ defmodule Liquex.ArgumentTest do
       obj = Context.new(%{"field" => [%{"child" => 5}]})
 
       assert 5 == Argument.eval([field: [key: "field", key: "first", key: "child"]], obj)
+    end
+
+    test "evaluate with array.last" do
+      obj = Context.new(%{"field" => [1, 2, 3, 4, 5]})
+
+      assert 5 == Argument.eval([field: [key: "field", key: "last"]], obj)
     end
 
     test "evaluate with array.size" do
