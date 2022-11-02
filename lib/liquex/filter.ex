@@ -175,6 +175,7 @@ defmodule Liquex.Filter do
 
   def ceil(value, _) when is_float(value), do: Float.ceil(value) |> trunc()
   def ceil(value, _) when is_integer(value), do: value
+  def ceil(nil, _), do: 0
 
   @doc """
   Removes any nil values from an array.
@@ -842,6 +843,8 @@ defmodule Liquex.Filter do
 
   defp to_number(value, allow_conversion_to_zero \\ true)
   defp to_number(value, _) when is_number(value), do: value
+  defp to_number(nil, true), do: 0
+  defp to_number(nil, false), do: nil
 
   defp to_number(value, allow_conversion_to_zero) when is_binary(value) do
     case Integer.parse(value) do

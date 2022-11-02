@@ -1,11 +1,18 @@
 <===> auto_convert_numbers.liquid
-
+{% comment %} 'dummy' is an empty variable to compare math fns handling nil values {% endcomment %}
 {% comment %} Plus {% endcomment %}
 
 {{ '2' | plus: '7' }}
 {{ 2 | plus: '7' }}
 {{ '2' | plus: 7 }}
 {{ '2' | plus: 'a' }}
+{{ 'a' | plus: 'a' }}
+{{ dummy | plus: dummy }}
+{{ dummy | plus: 'a' }}
+{{ dummy | plus: '7' }}
+{{ 2 | plus: dummy }}
+{{ '2' | plus: dummy }}
+{{ 'a' | plus: dummy }}
 
 {% comment %} Minus {% endcomment %}
 
@@ -13,6 +20,13 @@
 {{ 2 | minus: '7' }}
 {{ '2' | minus: 7 }}
 {{ '2' | minus: 'a' }}
+{{ 'a' | minus: 'a' }}
+{{ dummy | minus: dummy }}
+{{ dummy | minus: 'a' }}
+{{ dummy | minus: '7' }}
+{{ 2 | minus: dummy }}
+{{ '2' | minus: dummy }}
+{{ 'a' | minus: dummy }}
 
 {% comment %} Times {% endcomment %}
 
@@ -20,6 +34,13 @@
 {{ 2 | times: '7' }}
 {{ '2' | times: 7 }}
 {{ '2' | times: 'a' }}
+{{ 'a' | times: 'a' }}
+{{ dummy | times: dummy }}
+{{ dummy | times: 'a' }}
+{{ dummy | times: '7' }}
+{{ 2 | times: dummy }}
+{{ '2' | times: dummy }}
+{{ 'a' | times: dummy }}
 
 {% comment %} Divided by {% endcomment %}
 
@@ -27,6 +48,13 @@
 {{ 10 | divided_by: '2' }}
 {{ '10' | divided_by: 2 }}
 {{ '10' | divided_by: 'a' }}
+{{ 'a' | divided_by: 'a' }}
+{{ dummy | divided_by: dummy }}
+{{ dummy | divided_by: 'a' }}
+{{ dummy | divided_by: '7' }}
+{{ 10 | divided_by: dummy }}
+{{ '10' | divided_by: dummy }}
+{{ 'a' | divided_by: dummy }}
 
 {% comment %} Ceil {% endcomment %}
 
@@ -34,6 +62,7 @@
 {{ 10.2 | ceil }}
 {{ '10.2' | ceil }}
 {{ 'a' | ceil }}
+{{ dummy | ceil }}
 
 {% comment %} Floor {% endcomment %}
 
@@ -41,6 +70,8 @@
 {{ 10.2 | floor }}
 {{ '10.2' | floor }}
 {{ 'a' | floor }}
+{{ dummy | floor }}
+
 
 {% comment %} Modulo {% endcomment %}
 
@@ -52,6 +83,13 @@
 {{ 10.2 | modulo: '3' }}
 {{ '10.2' | modulo: '3' }}
 {{ '10.2' | modulo: 'a' }}
+{{ 'a' | modulo: 'a' }}
+{{ dummy | modulo: dummy }}
+{{ dummy | modulo: 'a' }}
+{{ dummy | modulo: '7' }}
+{{ 10 | modulo: dummy }}
+{{ '10' | modulo: dummy }}
+{{ 'a' | modulo: dummy }}
 
 {% comment %} Round {% endcomment %}
 
@@ -64,10 +102,19 @@
 {{ 'a' | round: 1 }}
 {{ 10.201 | round: 'a' }}
 {{ 10.201 | round: -1 }}
+{{ 'a' | round: 'a' }}
+{{ dummy | round: dummy }}
+{{ dummy | round: 'a' }}
+{{ dummy | round: '-1' }}
+{{ 10 | round: dummy }}
+{{ 10.201 | round: dummy }}
+{{ '10' | round: dummy }}
+{{ 'a' | round: dummy }}
 
 {% comment %} abs {% endcomment %}
 
 {{ 10.2 | abs }}
-{{ '10.2' | abs}}
-{{ '-10.2' | abs}}
-{{ 'a' | abs}}
+{{ '10.2' | abs }}
+{{ '-10.2' | abs }}
+{{ 'a' | abs }}
+{{ dummy | abs }}
