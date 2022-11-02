@@ -45,6 +45,12 @@ defmodule Liquex.ArgumentTest do
       assert 5 == Argument.eval([field: [key: "field", key: "size"]], obj)
     end
 
+    test "evaluate with string.size" do
+      obj = Context.new(%{"field" => "String"})
+
+      assert 6 == Argument.eval([field: [key: "field", key: "size"]], obj)
+    end
+
     test "evaluate with out of bounds array field" do
       obj = Context.new(%{"field" => [%{}, %{"child" => 5}]})
 
