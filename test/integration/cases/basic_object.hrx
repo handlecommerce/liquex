@@ -8,6 +8,7 @@
   ],
   "object": {
     "field": "value",
+    "field-with-hyphens": "value2",
     "array": [
       4,
       5,
@@ -21,4 +22,4 @@ Hello {{ greeting }}
 
 Array: {{ array[1] }}
 
-Object: {{ object.field }} {{ object.array[2] }}
+Object: {{ object.field }} {{ object.array[2] }} {{ object.field-with-hyphens }}

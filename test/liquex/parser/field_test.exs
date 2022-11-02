@@ -23,6 +23,12 @@ defmodule Liquex.Parser.FieldTest do
     ])
   end
 
+  test "field with hyphens" do
+    assert_parse("{{ field-with-hyphens }}", [
+      {{:tag, Liquex.Tag.ObjectTag}, [field: [key: "field-with-hyphens"], filters: []]}
+    ])
+  end
+
   test "with accessors" do
     assert_parse(
       "{{ field[1] }}",
