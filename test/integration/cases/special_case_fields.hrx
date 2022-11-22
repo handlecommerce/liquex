@@ -5,7 +5,8 @@
     "last": 2,
     "size": 3
   },
-  "b": [1, 2, 3]
+  "b": [1, 2, 3],
+  "c": "string"
 }
 
 <===> iteration.liquid
@@ -16,3 +17,5 @@
 {{ b.first }}
 {{ b.last }}
 {{ b.size }}
+
+{{ c.size }}

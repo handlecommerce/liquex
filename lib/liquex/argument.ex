@@ -43,6 +43,12 @@ defmodule Liquex.Argument do
   end
 
   # Special case ".size"
+  defp do_eval(value, [{:key, "size"} | tail], context) when is_binary(value) do
+    value
+    |> String.length()
+    |> do_eval(tail, context)
+  end
+
   defp do_eval(value, [{:key, "size"} | tail], context) when is_list(value) do
     value
     |> length()
