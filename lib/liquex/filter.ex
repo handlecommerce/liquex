@@ -81,7 +81,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.abs("-1.1", %{})
       1.1
   """
-  @spec abs(String.t() | number, any) :: number
+  @spec abs(String.t() | number | nil, any) :: number
   def abs(value, _), do: abs(to_number(value))
 
   @doc """
@@ -165,7 +165,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.ceil("3.5", %{})
       4
   """
-  @spec ceil(number | String.t(), map()) :: number
+  @spec ceil(number | String.t() | nil, map()) :: number
   def ceil(value, _) when is_binary(value) do
     case Float.parse(value) do
       {num, ""} -> Float.ceil(num) |> trunc()
@@ -175,6 +175,7 @@ defmodule Liquex.Filter do
 
   def ceil(value, _) when is_float(value), do: Float.ceil(value) |> trunc()
   def ceil(value, _) when is_integer(value), do: value
+  def ceil(nil, _), do: 0
 
   @doc """
   Removes any nil values from an array.
@@ -359,7 +360,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.floor(2.0, %{})
       2
   """
-  @spec floor(binary | number, any) :: integer
+  @spec floor(binary | number | nil, any) :: integer
   def floor(value, _) do
     value
     |> to_number()
@@ -424,7 +425,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.minus(183.357, 12, %{})
       171.357
   """
-  @spec minus(number, number, Context.t()) :: number
+  @spec minus(number | nil, number | nil, Context.t()) :: number
   def minus(left, right, _), do: to_number(left) - to_number(right)
 
   @doc """
@@ -438,7 +439,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.modulo(183.357, 12, %{})
       3.357
   """
-  @spec modulo(number, number, Context.t()) :: number
+  @spec modulo(number | nil, number | nil, Context.t()) :: number
   def modulo(left, right, _) do
     left = to_number(left)
     right = to_number(right)
@@ -472,6 +473,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.plus(183.357, 12, %{})
       195.357
   """
+  @spec plus(number | nil, number | nil, Context.t()) :: number
   def plus(left, right, _), do: to_number(left) + to_number(right)
 
   @doc """
@@ -557,7 +559,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.round(183.357, 2, %{})
       183.36
   """
-  @spec round(binary | number, binary | number, any) :: number
+  @spec round(binary | number | nil, binary | number | nil, any) :: number
   def round(value, precision \\ 0, context),
     do: do_round(to_number(value), to_number(precision, false), context)
 
@@ -842,6 +844,8 @@ defmodule Liquex.Filter do
 
   defp to_number(value, allow_conversion_to_zero \\ true)
   defp to_number(value, _) when is_number(value), do: value
+  defp to_number(nil, true), do: 0
+  defp to_number(nil, false), do: nil
 
   defp to_number(value, allow_conversion_to_zero) when is_binary(value) do
     case Integer.parse(value) do
