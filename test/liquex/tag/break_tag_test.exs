@@ -48,6 +48,18 @@ defmodule Liquex.Tag.BreakTagTest do
       assert Liquex.render(template, %{})
              |> elem(0)
              |> to_string() == "123"
+
+      assert render("""
+               {% liquid
+                 for i in (1..5)
+                   echo i
+
+                   if i > 2
+                     break
+                   endif
+                 endfor
+               %}
+             """) == "123"
     end
   end
 end

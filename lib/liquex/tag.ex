@@ -51,10 +51,18 @@ defmodule Liquex.Tag do
   @callback parse() :: NimbleParsec.t()
 
   @doc """
+  Returns a `NimbleParsec` expression to parse a tag within a liquid expression
+  tag.
+
+  ### Example
+
+      {% liquid echo "Hello World!" %}
+  """
+  @callback parse_liquid_tag() :: NimbleParsec.t()
+  @optional_callbacks parse_liquid_tag: 0
+
+  @doc """
   Render the tag built by the parser defined in `parse/0`
   """
-  @callback render(list, Liquex.Context.t()) ::
-              {iodata, Liquex.Context.t()}
-              | {:break, iodata, Liquex.Context.t()}
-              | {:continue, iodata, Liquex.Context.t()}
+  @callback render(list, Liquex.Context.t()) :: Liquex.Render.result_t()
 end

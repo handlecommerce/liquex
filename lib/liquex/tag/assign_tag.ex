@@ -39,11 +39,22 @@ defmodule Liquex.Tag.AssignTag do
   import NimbleParsec
 
   def parse do
+    ignore(Tag.open_tag())
+    |> assign_contents()
+    |> ignore(Tag.close_tag())
+  end
+
+  def parse_liquid_tag do
+    assign_contents()
+    |> ignore(Tag.end_liquid_line())
+  end
+
+  def assign_contents(combinator \\ empty()) do
     literal_and_filters =
       Argument.argument()
       |> optional(tag(repeat(Object.filter()), :filters))
 
-    ignore(Tag.open_tag())
+    combinator
     |> ignore(string("assign"))
     |> ignore(Literal.whitespace())
     |> unwrap_and_tag(Field.identifier(), :left)
@@ -51,7 +62,6 @@ defmodule Liquex.Tag.AssignTag do
     |> ignore(string("="))
     |> ignore(Literal.whitespace())
     |> tag(literal_and_filters, :right)
-    |> ignore(Tag.close_tag())
   end
 
   def render([left: left, right: [right, filters: filters]], %Context{} = context)

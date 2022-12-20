@@ -5,10 +5,12 @@ defmodule Liquex.Render do
 
   @callback render({atom, any}, Context.t()) :: {iodata, Context.t()} | iodata | false
 
-  @spec render(iodata(), Liquex.document_t(), Context.t()) ::
+  @type result_t ::
           {iodata(), Context.t()}
           | {:break, iodata(), Context.t()}
           | {:continue, iodata(), Context.t()}
+
+  @spec render(iodata(), Liquex.document_t(), Context.t()) :: result_t
 
   @doc """
   Renders a Liquid AST `document` into an `iodata`

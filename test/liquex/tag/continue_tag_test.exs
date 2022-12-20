@@ -37,6 +37,19 @@ defmodule Liquex.Tag.ContinueTagTest do
       assert Liquex.render(template, %{"x" => 1..40})
              |> elem(0)
              |> to_string() == "HelloHello"
+
+      assert render(
+               """
+                 {% liquid for i in x
+                   if i > 2
+                     continue
+                   endif
+
+                   echo "Hello"
+                 endfor %}
+               """,
+               Liquex.Context.new(%{"x" => 1..40})
+             ) == "HelloHello"
     end
   end
 end

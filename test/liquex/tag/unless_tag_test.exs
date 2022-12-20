@@ -133,4 +133,32 @@ defmodule Liquex.Tag.UnlessTagTest do
              |> String.trim() == "These shoes are not awesome."
     end
   end
+
+  describe "render within liquid tag" do
+    test "simple unless" do
+      {:ok, template} =
+        """
+        {% liquid unless product.title == "Awesome Shoes"
+          echo "These shoes are not awesome."
+        else
+          echo "These shoes ARE awesome."
+        endunless %}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      assert Liquex.render(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "These shoes ARE awesome."
+
+      assert Liquex.render(
+               template,
+               Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
+             )
+             |> elem(0)
+             |> to_string()
+             |> String.trim() == "These shoes are not awesome."
+    end
+  end
 end

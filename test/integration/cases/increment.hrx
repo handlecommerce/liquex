@@ -14,3 +14,11 @@
 {% increment x %}
 {% increment x %}
 {{ x }}
+
+
+{% liquid
+  increment y
+  increment y
+  increment y
+  increment y
+%}

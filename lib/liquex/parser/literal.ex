@@ -22,6 +22,20 @@ defmodule Liquex.Parser.Literal do
   end
 
   @doc """
+  Parses not line breaking white space, given a minimum.
+
+  ## Examples
+
+      * "  "
+      * "\t"
+  """
+  @spec non_breaking_whitespace(NimbleParsec.t(), non_neg_integer()) :: NimbleParsec.t()
+  def non_breaking_whitespace(combinator \\ empty(), min \\ 0) do
+    combinator
+    |> utf8_string([?\s, ?\t], min: min)
+  end
+
+  @doc """
   Parses a range
 
   ## Examples

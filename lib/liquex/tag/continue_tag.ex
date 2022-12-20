@@ -25,9 +25,10 @@ defmodule Liquex.Tag.ContinueTag do
   import NimbleParsec
 
   @impl true
-  def parse do
-    ignore(Tag.tag_directive("continue"))
-  end
+  def parse, do: ignore(Tag.tag_directive("continue"))
+
+  @impl true
+  def parse_liquid_tag, do: ignore(Tag.liquid_tag_directive("continue"))
 
   @impl true
   def render(_, context), do: {:continue, [], context}

@@ -68,15 +68,24 @@ defmodule Liquex.Tag.RenderTag do
 
   @spec parse :: NimbleParsec.t()
   def parse do
-    ignore(
-      Tag.open_tag()
-      |> string("render")
-      |> Literal.whitespace()
-    )
+    Tag.open_tag()
+    |> do_parse()
+    |> ignore(Tag.close_tag())
+  end
+
+  def parse_liquid_tag do
+    do_parse()
+    |> ignore(Tag.end_liquid_line())
+  end
+
+  defp do_parse(combinator \\ empty()) do
+    combinator
+    |> string("render")
+    |> Literal.whitespace(1)
+    |> ignore()
     |> Literal.literal()
     |> unwrap_and_tag(:template)
     |> optional(choice([keyword_list(), with_clause(), for_loop()]))
-    |> ignore(Tag.close_tag())
   end
 
   defp keyword_list do
