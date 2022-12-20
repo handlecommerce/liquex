@@ -167,43 +167,52 @@ defmodule Liquex.Tag.ForTag do
   alias Liquex.Parser.Tag
 
   def parse do
-    for_in_tag()
+    ignore(Tag.open_tag())
+    |> do_for_in()
+    |> ignore(Tag.close_tag())
     |> tag(parsec(:document), :contents)
     |> optional(else_tag())
     |> ignore(Tag.tag_directive("endfor"))
   end
 
-  defp for_in_tag do
+  def parse_liquid_tag do
+    do_for_in()
+    |> ignore(Tag.end_liquid_line())
+    |> tag(parsec(:liquid_tag_contents), :contents)
+    |> ignore(Tag.liquid_tag_directive("endfor"))
+  end
+
+  defp do_for_in(combinator \\ empty()) do
     collection = choice([Literal.range(), Argument.argument()])
 
-    ignore(Tag.open_tag())
-    |> ignore(string("for"))
-    |> ignore(Literal.whitespace(empty(), 1))
+    combinator
+    |> string("for")
+    |> Literal.whitespace(1)
+    |> ignore()
     |> unwrap_and_tag(Field.identifier(), :identifier)
     |> ignore(Literal.whitespace(empty(), 1))
     |> ignore(string("in"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(collection, :collection)
-    |> ignore(Literal.whitespace())
+    |> ignore(Literal.non_breaking_whitespace())
     |> tag(for_parameters(), :parameters)
-    |> ignore(Tag.close_tag())
   end
 
   defp for_parameters do
     reversed =
       replace(string("reversed"), :reversed)
       |> unwrap_and_tag(:order)
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
     limit =
       ignore(string("limit:"))
       |> unwrap_and_tag(integer(min: 1), :limit)
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
     offset =
       ignore(string("offset:"))
       |> unwrap_and_tag(integer(min: 1), :offset)
-      |> ignore(Literal.whitespace())
+      |> ignore(Literal.non_breaking_whitespace())
 
     repeat(
       choice([

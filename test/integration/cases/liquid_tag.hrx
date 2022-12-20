@@ -1,0 +1,35 @@
+<===> liquid_tag.json
+{
+  "product": {
+    "type": "Health"
+  }
+}
+
+<===> liquid_tag.liquid
+
+case and echo tags
+
+{% liquid
+  assign product_type = product.type | downcase
+  assign message = '' | downcase
+
+  case product_type
+    when 'health'
+      assign message = 'This is a health potion!'
+    when 'love'
+      assign message = 'This is a love potion!'
+    else
+      assign message = 'This is a potion!'
+  endcase
+
+  echo message
+%}
+
+if/else tags
+
+{% liquid assign name = "John"
+
+  if name == "Jane"
+    echo "Hello Jane"
+  endif
+%}

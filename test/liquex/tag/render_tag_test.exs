@@ -82,7 +82,7 @@ defmodule Liquex.Tag.RenderTagTest do
     Liquex.Context.new(scope, file_system: MockFileSystem.new(files))
   end
 
-  def render(template, files, scope \\ %{}) do
+  def render_with_files(template, files, scope \\ %{}) do
     {:ok, template} = Liquex.parse(template)
 
     Liquex.render(template, context(files, scope))
@@ -93,14 +93,14 @@ defmodule Liquex.Tag.RenderTagTest do
 
   describe "render" do
     test "renders external template" do
-      assert render("{% render 'source' %}", %{"source" => "rendered content"}) ==
+      assert render_with_files("{% render 'source' %}", %{"source" => "rendered content"}) ==
                "rendered content"
     end
 
     test "render passes named arguments into inner scope" do
       files = %{"product" => "{{ inner_product.title }}"}
 
-      assert render("{% render 'product', inner_product: outer_product %}", files, %{
+      assert render_with_files("{% render 'product', inner_product: outer_product %}", files, %{
                "outer_product" => %{"title" => "My Product"}
              }) == "My Product"
     end
@@ -108,7 +108,7 @@ defmodule Liquex.Tag.RenderTagTest do
     test "render does not pass outer scope arguments into inner scope" do
       files = %{"snippet" => "{{ outer_variable }}"}
 
-      assert render(
+      assert render_with_files(
                "{% assign outer_variable = 'should not be visible' %}{% render 'snippet' %}",
                files
              ) == ""
@@ -117,30 +117,33 @@ defmodule Liquex.Tag.RenderTagTest do
     test "render accepts literals as arguments" do
       files = %{"snippet" => "{{ price }}"}
 
-      assert render("{% render 'snippet', price: 123 %}", files) == "123"
+      assert render_with_files("{% render 'snippet', price: 123 %}", files) == "123"
     end
 
     test "render accepts multiple named arguments" do
       files = %{"snippet" => "{{ one }} {{ two }}"}
 
-      assert render("{% render 'snippet', one: 1, two: 2 %}", files) == "1 2"
+      assert render_with_files("{% render 'snippet', one: 1, two: 2 %}", files) == "1 2"
     end
 
     test "render does not inherit variable with same name as snippet" do
       files = %{"snippet" => "{{ snippet }}"}
 
-      assert render("{% assign snippet = 'should not be visible' %}{% render 'snippet' %}", files) ==
+      assert render_with_files(
+               "{% assign snippet = 'should not be visible' %}{% render 'snippet' %}",
+               files
+             ) ==
                ""
     end
 
     test "render does not mutate parent scope" do
       files = %{"snippet" => "{% assign inner = 1 %}"}
-      assert render("{% render 'snippet' %}{{ inner }}", files) == ""
+      assert render_with_files("{% render 'snippet' %}{{ inner }}", files) == ""
     end
 
     test "render handles nested render tags" do
       files = %{"one" => "one {% render 'two' %}", "two" => "two"}
-      assert render("{% render 'one' %}", files) == "one two"
+      assert render_with_files("{% render 'one' %}", files) == "one two"
     end
 
     test "render allows access to static environment" do
@@ -171,27 +174,47 @@ defmodule Liquex.Tag.RenderTagTest do
 
     test "render tag within if statement" do
       files = %{"snippet" => "my message"}
-      assert render("{% if true %}{% render 'snippet' %}{% endif %}", files) == "my message"
+
+      assert render_with_files("{% if true %}{% render 'snippet' %}{% endif %}", files) ==
+               "my message"
+
+      assert render_with_files(
+               """
+               {% liquid if true
+                 render 'snippet'
+               endif %}
+               """,
+               files
+             ) == "my message"
     end
 
     test "break through render" do
       files = %{"break" => "{% break %}"}
-      assert render("{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}", files) == "1"
 
-      assert render("{% for i in (1..3) %}{{ i }}{% render 'break' %}{{ i }}{% endfor %}", files) ==
+      assert render_with_files(
+               "{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}",
+               files
+             ) == "1"
+
+      assert render_with_files(
+               "{% for i in (1..3) %}{{ i }}{% render 'break' %}{{ i }}{% endfor %}",
+               files
+             ) ==
                "112233"
     end
 
     test "increment is isolated between renders" do
       files = %{"incr" => "{% increment %}"}
 
-      assert render("{% increment %}{% increment %}{% render 'incr' %}", files) == "010"
+      assert render_with_files("{% increment %}{% increment %}{% render 'incr' %}", files) ==
+               "010"
     end
 
     test "decrement is isolated between renders" do
       files = %{"decr" => "{% decrement %}"}
 
-      assert render("{% decrement %}{% decrement %}{% render 'decr' %}", files) == "-1-2-1"
+      assert render_with_files("{% decrement %}{% decrement %}{% render 'decr' %}", files) ==
+               "-1-2-1"
     end
   end
 
@@ -199,7 +222,7 @@ defmodule Liquex.Tag.RenderTagTest do
     test "render tag with" do
       files = %{"product" => "Product: {{ product.title }}"}
 
-      assert render("{% render 'product' with products[0] %}", files, %{
+      assert render_with_files("{% render 'product' with products[0] %}", files, %{
                "products" => [%{"title" => "Draft 151cm"}, %{"title" => "Element 155cm"}]
              }) == "Product: Draft 151cm"
     end
@@ -207,9 +230,13 @@ defmodule Liquex.Tag.RenderTagTest do
     test "render tag with alias" do
       files = %{"product_alias" => "Product: {{ product.title }}"}
 
-      assert render("{% render 'product_alias' with products[0] as product %}", files, %{
-               "products" => [%{"title" => "Draft 151cm"}, %{"title" => "Element 155cm"}]
-             }) == "Product: Draft 151cm"
+      assert render_with_files(
+               "{% render 'product_alias' with products[0] as product %}",
+               files,
+               %{
+                 "products" => [%{"title" => "Draft 151cm"}, %{"title" => "Element 155cm"}]
+               }
+             ) == "Product: Draft 151cm"
     end
   end
 
@@ -217,7 +244,7 @@ defmodule Liquex.Tag.RenderTagTest do
     test "render tag with for" do
       files = %{"product" => "Product: {{ product.title }} "}
 
-      assert render("{% render 'product' for products %}", files, %{
+      assert render_with_files("{% render 'product' for products %}", files, %{
                "products" => [%{"title" => "Draft 151cm"}, %{"title" => "Element 155cm"}]
              }) == "Product: Draft 151cm Product: Element 155cm"
     end
@@ -225,7 +252,7 @@ defmodule Liquex.Tag.RenderTagTest do
     test "render tag with for and alias" do
       files = %{"product_alias" => "Product: {{ product.title }} "}
 
-      assert render("{% render 'product_alias' for products as product %}", files, %{
+      assert render_with_files("{% render 'product_alias' for products as product %}", files, %{
                "products" => [%{"title" => "Draft 151cm"}, %{"title" => "Element 155cm"}]
              }) == "Product: Draft 151cm Product: Element 155cm"
     end
@@ -236,7 +263,7 @@ defmodule Liquex.Tag.RenderTagTest do
           "Product: {{ product.title }} {% if forloop.first %}first{% endif %} {% if forloop.last %}last{% endif %} index:{{ forloop.index }} "
       }
 
-      assert render("{% render 'product' for products %}", files, %{
+      assert render_with_files("{% render 'product' for products %}", files, %{
                "products" => [%{"title" => "Draft 151cm"}, %{"title" => "Element 155cm"}]
              }) == "Product: Draft 151cm first  index:1 Product: Element 155cm  last index:2"
     end

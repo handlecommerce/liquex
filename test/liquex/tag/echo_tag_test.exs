@@ -1,15 +1,24 @@
-defmodule Liquex.Tag.ObjectTagTest do
+defmodule Liquex.Tag.EchoTagTest do
   use ExUnit.Case, async: true
   import Liquex.TestHelpers
 
   alias Liquex.Context
 
   describe "parse" do
+    test "handles simple object" do
+      assert_parse(
+        "{% echo true %}",
+        [
+          {{:tag, Liquex.Tag.EchoTag}, [literal: true, filters: []]}
+        ]
+      )
+    end
+
     test "handles simple filter" do
       assert_parse(
-        "{{ true | not }}",
+        "{% echo true | not %}",
         [
-          {{:tag, Liquex.Tag.ObjectTag},
+          {{:tag, Liquex.Tag.EchoTag},
            [literal: true, filters: [filter: ["not", {:arguments, []}]]]}
         ]
       )
@@ -17,9 +26,9 @@ defmodule Liquex.Tag.ObjectTagTest do
 
     test "parses filter with single argument" do
       assert_parse(
-        "{{ 123.45 | money: 'USD' }}",
+        "{% echo 123.45 | money: 'USD' %}",
         [
-          {{:tag, Liquex.Tag.ObjectTag},
+          {{:tag, Liquex.Tag.EchoTag},
            [literal: 123.45, filters: [filter: ["money", {:arguments, [literal: "USD"]}]]]}
         ]
       )
@@ -27,10 +36,10 @@ defmodule Liquex.Tag.ObjectTagTest do
 
     test "parses filter with multiple arguments" do
       assert_parse(
-        "{{ 123.45 | money: 'USD', format }}",
+        "{% echo 123.45 | money: 'USD', format %}",
         [
           {
-            {:tag, Liquex.Tag.ObjectTag},
+            {:tag, Liquex.Tag.EchoTag},
             [
               literal: 123.45,
               filters: [filter: ["money", {:arguments, [literal: "USD", field: [key: "format"]]}]]
@@ -42,10 +51,10 @@ defmodule Liquex.Tag.ObjectTagTest do
 
     test "parses filter with key/value arguments" do
       assert_parse(
-        "{{ product | img_url: '400x400', crop: 'bottom' }}",
+        "{% echo product | img_url: '400x400', crop: 'bottom' %}",
         [
           {
-            {:tag, Liquex.Tag.ObjectTag},
+            {:tag, Liquex.Tag.EchoTag},
             [
               field: [key: "product"],
               filters: [
@@ -62,10 +71,10 @@ defmodule Liquex.Tag.ObjectTagTest do
 
     test "parses filter with key/value arguments as first argument" do
       assert_parse(
-        "{{ product | img_url: crop: 'bottom' }}",
+        "{% echo product | img_url: crop: 'bottom' %}",
         [
           {
-            {:tag, Liquex.Tag.ObjectTag},
+            {:tag, Liquex.Tag.EchoTag},
             [
               field: [key: "product"],
               filters: [
@@ -79,10 +88,10 @@ defmodule Liquex.Tag.ObjectTagTest do
 
     test "parses multiple filters" do
       assert_parse(
-        "{{ 'adam!' | capitalize | prepend: 'Hello ' }}",
+        "{% echo 'adam!' | capitalize | prepend: 'Hello ' %}",
         [
           {
-            {:tag, Liquex.Tag.ObjectTag},
+            {:tag, Liquex.Tag.EchoTag},
             [
               literal: "adam!",
               filters: [
@@ -98,10 +107,15 @@ defmodule Liquex.Tag.ObjectTagTest do
 
   describe "render" do
     test "simple objects" do
-      assert "5" == render("{{ 5 }}")
-      assert "Hello" == render("{{ 'Hello' }}")
-      assert "true" == render("{{ true }}")
-      assert "" == render("{{ nil }}")
+      assert "5" == render("{% echo 5 %}")
+      assert "5" == render("{% liquid echo 5 %}")
+      assert "Hello" == render("{% echo 'Hello' %}")
+      assert "Hello" == render("{% liquid echo 'Hello' %}")
+      assert "true" == render("{% echo true %}")
+      assert "true" == render("{% liquid echo true %}")
+      assert "" == render("{% echo nil %}")
+      assert "" == render("{% liquid echo nil %}")
+      assert "55" == render("{% liquid echo 5\necho 5 %}")
     end
 
     test "simple fields" do
@@ -111,8 +125,8 @@ defmodule Liquex.Tag.ObjectTagTest do
           "b" => %{"c" => 1}
         })
 
-      assert "hello" == render("{{ a }}", context)
-      assert "1" == render("{{ b.c }}", context)
+      assert "hello" == render("{% echo a %}", context)
+      assert "1" == render("{% echo b.c %}", context)
     end
 
     test "list access to object fields" do
@@ -121,11 +135,11 @@ defmodule Liquex.Tag.ObjectTagTest do
           "a" => ["b", ["c", "d"]]
         })
 
-      assert "bcd" == render("{{ a }}", context)
-      assert "b" == render("{{ a[0] }}", context)
-      assert "cd" == render("{{ a[1] }}", context)
-      assert "c" == render("{{ a[1][0] }}", context)
-      assert "" == render("{{ a[2] }}", context)
+      assert "bcd" == render("{% echo a %}", context)
+      assert "b" == render("{% echo a[0] %}", context)
+      assert "cd" == render("{% echo a[1] %}", context)
+      assert "c" == render("{% echo a[1][0] %}", context)
+      assert "" == render("{% echo a[2] %}", context)
     end
 
     test "wrong access to object and list fields" do
@@ -134,33 +148,33 @@ defmodule Liquex.Tag.ObjectTagTest do
           "b" => %{"c" => 1}
         })
 
-      assert "" == render("{{ b[0] }}", context)
+      assert "" == render("{% echo b[0] %}", context)
     end
 
     test "removes tail whitespace" do
-      assert "Hello" == render("{{ 'Hello' -}} ")
+      assert "Hello" == render("{% echo 'Hello' -%} ")
     end
 
     test "removes leading whitespace" do
-      assert "Hello" == render(" {{- 'Hello' }}")
+      assert "Hello" == render(" {%- echo 'Hello' %}")
     end
   end
 
   describe "render with filter" do
     test "abs" do
-      assert "5" == render("{{ -5 | abs }}")
-      assert "5" == render("{{ -5 | abs | abs }}")
+      assert "5" == render("{% echo -5 | abs %}")
+      assert "5" == render("{% echo -5 | abs | abs %}")
     end
 
     test "invalid filter" do
-      assert "-5" == render("{{ -5 | bad_filter }}")
+      assert "-5" == render("{% echo -5 | bad_filter %}")
     end
   end
 
   describe "dynamic fields" do
     test "simple new field" do
       context = Context.new(%{"message" => fn _ -> "hello world" end})
-      assert "hello world" == render("{{ message }}", context)
+      assert "hello world" == render("{% echo message %}", context)
     end
 
     test "dynamic field on parent object" do
@@ -172,7 +186,7 @@ defmodule Liquex.Tag.ObjectTagTest do
           }
         })
 
-      assert "Hello World" == render("{{ message.calculated_value }}", context)
+      assert "Hello World" == render("{% echo message.calculated_value %}", context)
     end
   end
 
@@ -183,8 +197,8 @@ defmodule Liquex.Tag.ObjectTagTest do
           "message" => %{"key" => "Hello World"}
         })
 
-      assert "Hello World" == render("{{ message['key'] }}", context)
-      assert "Hello World" == render("{{ message[\"key\"] }}", context)
+      assert "Hello World" == render("{% echo message['key'] %}", context)
+      assert "Hello World" == render("{% echo message[\"key\"] %}", context)
     end
 
     test "field name from context" do
@@ -196,7 +210,7 @@ defmodule Liquex.Tag.ObjectTagTest do
           }
         })
 
-      assert "Hello World" == render("{{ message[keyvar] }}", context)
+      assert "Hello World" == render("{% echo message[keyvar] %}", context)
     end
 
     test "field name from variable" do
@@ -209,7 +223,7 @@ defmodule Liquex.Tag.ObjectTagTest do
 
       assert "Hello World" ==
                render(
-                 "{% assign mapvar = \"map\" %}{% assign keyvar = \"key\" %}{{ message[mapvar][keyvar] }}",
+                 "{% assign mapvar = \"map\" %}{% assign keyvar = \"key\" %}{% echo message[mapvar][keyvar] %}",
                  context
                )
     end
