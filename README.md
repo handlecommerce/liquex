@@ -42,18 +42,13 @@ you will need to update them. That is because all tags now follow this standard.
 ## Supported features
 
 Currently, all standard Liquid tags, filters, and types are fully supported
-for liquid prior to 5.0.0. Liquex can be considered a byte for byte drop in
-replacement of the Liquid gem.
+for liquid up to and include Liquid 5. Liquex can be considered a byte for byte
+drop in replacement of the Liquid gem.
 
-Work is under way to implement Liquid 5.x features. Right now, the following
-features are now included:
+Starting with version 0.9.0, Liquex now supports the following featues:
 
   * `{% render %}` tag
-
-What is currently being worked on:
-
   * `{% liquid %}` tag
-
 
 ## Lazy variables
 
