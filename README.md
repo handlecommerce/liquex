@@ -15,7 +15,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.9"}
+    {:liquex, "~> 0.10.0"}
   ]
 end
 ```
@@ -45,7 +45,7 @@ Currently, all standard Liquid tags, filters, and types are fully supported
 for liquid up to and include Liquid 5. Liquex can be considered a byte for byte
 drop in replacement of the Liquid gem.
 
-Starting with version 0.9.0, Liquex now supports the following featues:
+Starting with version 0.10.0, Liquex now supports the following features:
 
   * `{% render %}` tag
   * `{% liquid %}` tag
