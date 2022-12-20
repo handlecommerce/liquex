@@ -559,14 +559,14 @@ defmodule Liquex.Filter do
   """
   @spec round(binary | number, binary | number, any) :: number
   def round(value, precision \\ 0, context),
-    do: do_round(to_number(value), to_number(precision, false), context)
+    do: do_round(to_number(value), to_number(precision, true), context)
 
   defp do_round(value, _, _) when is_integer(value), do: value
-  defp do_round(value, 0, _), do: Float.round(value) |> trunc()
+  defp do_round(value, precision, _) when precision <= 0, do: Float.round(value) |> trunc()
 
   defp do_round(value, precision, _) do
     # Special case negative and invalid precisions
-    precision = Enum.max([0, precision || 0])
+    precision = Enum.max([0, precision])
     Float.round(value, precision)
   end
 
