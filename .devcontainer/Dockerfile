@@ -11,4 +11,4 @@ RUN mix local.rebar --force \
   && mix local.hex --force
 
 RUN gem install --no-document --version ${LIQUID_VERSION} liquid
-WORKDIR /workspace
+WORKDIR /workspaces/liquex
