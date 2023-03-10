@@ -10,7 +10,7 @@ defmodule Liquex.Render do
           | {:break, iodata(), Context.t()}
           | {:continue, iodata(), Context.t()}
 
-  @spec render(iodata(), Liquex.document_t(), Context.t()) :: result_t
+  @spec render!(iodata(), Liquex.document_t(), Context.t()) :: result_t
 
   @doc """
   Renders a Liquid AST `document` into an `iodata`
@@ -18,10 +18,10 @@ defmodule Liquex.Render do
   A `context` is given to handle temporary contextual information for
   this render.
   """
-  def render(content, [], context),
+  def render!(content, [], context),
     do: {content |> Enum.reverse(), context}
 
-  def render(content, [tag | tail], %Context{} = context) do
+  def render!(content, [tag | tail], %Context{} = context) do
     case do_render(tag, context) do
       # No tag renderer found
       nil ->
@@ -35,11 +35,11 @@ defmodule Liquex.Render do
 
       # Returned the rendered results and new context
       {result, %Context{} = context} ->
-        render([result | content], tail, context)
+        render!([result | content], tail, context)
     end
   end
 
-  def render(document, %Context{} = context), do: render([], document, context)
+  def render!(document, %Context{} = context), do: render!([], document, context)
 
   defp do_render({:text, text}, context), do: {text, context}
 

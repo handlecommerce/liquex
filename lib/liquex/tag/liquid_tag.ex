@@ -46,5 +46,5 @@ defmodule Liquex.Tag.LiquidTag do
 
   @impl true
   @spec render(list, Liquex.Context.t()) :: Render.result_t()
-  def render([contents: contents], %Context{} = context), do: Render.render(contents, context)
+  def render([contents: contents], %Context{} = context), do: Render.render!(contents, context)
 end
