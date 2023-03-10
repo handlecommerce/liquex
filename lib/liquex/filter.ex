@@ -566,7 +566,7 @@ defmodule Liquex.Filter do
   defp do_round(value, _, _) when is_integer(value), do: value
   defp do_round(value, precision, _) when precision == 0, do: Float.round(value) |> trunc()
   defp do_round(value, precision, _) when precision < 0, do: Float.round(value)
-  defp do_round(value, nil, _), do: Float.round(value) |> trunc()
+  defp do_round(value, nil, _), do: Float.round(value)
 
   defp do_round(value, precision, _) do
     # Special case negative and invalid precisions
