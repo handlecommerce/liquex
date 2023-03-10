@@ -28,7 +28,7 @@ defmodule Liquex.Tag.CaptureTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello World!"
@@ -45,7 +45,7 @@ defmodule Liquex.Tag.CaptureTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      {_, context} = Liquex.render(template)
+      {_, context} = Liquex.render!(template)
 
       assert Context.fetch(context, "a") |> elem(1) |> String.trim() == "Hello World!"
     end

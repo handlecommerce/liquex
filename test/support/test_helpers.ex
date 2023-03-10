@@ -18,7 +18,7 @@ defmodule Liquex.TestHelpers do
 
     with {liquid_result, 0} <- liquid_render(liquid, object_json),
          {:ok, ast} <- Liquex.parse(liquid),
-         {data, _} <- Liquex.render(ast, context) do
+         {data, _} <- Liquex.render!(ast, context) do
       unless liquid_result == to_string(data) do
         output_diff(liquid_result, to_string(data))
 
@@ -52,7 +52,7 @@ defmodule Liquex.TestHelpers do
 
   def render(doc, context \\ Liquex.Context.new(%{})) do
     with {:ok, parsed_doc, _, _, _, _} <- Liquex.Parser.Base.parse(doc),
-         {result, _} = Liquex.render(parsed_doc, context) do
+         {result, _} = Liquex.render!(parsed_doc, context) do
       to_string(result) |> String.trim()
     end
   end

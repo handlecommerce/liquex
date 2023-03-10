@@ -43,7 +43,7 @@ defmodule Liquex.Custom.CustomTagTest do
                {{:tag, CustomTag}, [text: ["Hello World!"]]}
              ] == template
 
-      assert elem(Liquex.render(template), 0)
+      assert elem(Liquex.render!(template), 0)
              |> to_string()
              |> String.trim() == "Custom Tag: Hello World!"
     end

@@ -84,27 +84,27 @@ defmodule Liquex.Tag.CaseTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"name" => "James"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "James"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, James!"
 
-      assert Liquex.render(template, Context.new(%{"name" => "John"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "John"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, John!"
 
-      assert Liquex.render(template, Context.new(%{"name" => "Peter"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "Peter"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
 
-      assert Liquex.render(template, Context.new(%{"name" => "Paul"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "Paul"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
 
-      assert Liquex.render(template, Context.new(%{"name" => "Jim"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "Jim"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello! Who are you?"
@@ -129,27 +129,27 @@ defmodule Liquex.Tag.CaseTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"name" => "James"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "James"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, James!"
 
-      assert Liquex.render(template, Context.new(%{"name" => "John"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "John"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, John!"
 
-      assert Liquex.render(template, Context.new(%{"name" => "Peter"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "Peter"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
 
-      assert Liquex.render(template, Context.new(%{"name" => "Paul"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "Paul"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello, Peter or Paul (cannot tell you apart)."
 
-      assert Liquex.render(template, Context.new(%{"name" => "Jim"}))
+      assert Liquex.render!(template, Context.new(%{"name" => "Jim"}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello! Who are you?"

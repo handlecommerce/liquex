@@ -183,7 +183,7 @@ defmodule Liquex.Tag.IfTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert elem(Liquex.render(template, context), 0)
+      assert elem(Liquex.render!(template, context), 0)
              |> to_string()
              |> String.trim() == ""
     end
@@ -202,7 +202,7 @@ defmodule Liquex.Tag.IfTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert elem(Liquex.render(template, context), 0)
+      assert elem(Liquex.render!(template, context), 0)
              |> to_string()
              |> String.trim() == "These are Not Awesome Shoes"
     end
@@ -223,7 +223,7 @@ defmodule Liquex.Tag.IfTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert elem(Liquex.render(template, context), 0)
+      assert elem(Liquex.render!(template, context), 0)
              |> to_string()
              |> String.trim() == "These are not awesome shoes"
     end
@@ -242,7 +242,7 @@ defmodule Liquex.Tag.IfTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"customer" => customer}))
+      assert Liquex.render!(template, Context.new(%{"customer" => customer}))
              |> elem(0)
              |> to_string()
              |> String.trim() ==
@@ -261,7 +261,7 @@ defmodule Liquex.Tag.IfTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{}))
+      assert Liquex.render!(template, Context.new(%{}))
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() ==

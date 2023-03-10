@@ -32,7 +32,7 @@ defmodule Liquex.Tag.IncrementTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{a: 10})
+      assert Liquex.render!(template, %{a: 10})
              |> elem(0)
              |> to_string()
              |> String.trim() == "10\n11\n12\n0\n1"
@@ -57,7 +57,7 @@ defmodule Liquex.Tag.IncrementTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim() == "0 1 2"
@@ -76,7 +76,7 @@ defmodule Liquex.Tag.IncrementTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim() == "-1 -2 -3"
@@ -102,7 +102,7 @@ defmodule Liquex.Tag.IncrementTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{a: 10})
+      assert Liquex.render!(template, %{a: 10})
              |> elem(0)
              |> to_string()
              |> String.trim() == "10\n9\n8\n-1\n-2"

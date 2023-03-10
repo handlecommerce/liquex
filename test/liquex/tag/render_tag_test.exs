@@ -85,7 +85,7 @@ defmodule Liquex.Tag.RenderTagTest do
   def render_with_files(template, files, scope \\ %{}) do
     {:ok, template} = Liquex.parse(template)
 
-    Liquex.render(template, context(files, scope))
+    Liquex.render!(template, context(files, scope))
     |> elem(0)
     |> IO.chardata_to_string()
     |> String.trim()
@@ -157,7 +157,7 @@ defmodule Liquex.Tag.RenderTagTest do
 
       {:ok, template} = Liquex.parse("{% render 'snippet' %} {{ variable }}")
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> IO.chardata_to_string()
              |> String.trim() == "static dynamic"

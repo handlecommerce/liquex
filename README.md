@@ -26,7 +26,7 @@ Documentation can be found at [https://hexdocs.pm/liquex](https://hexdocs.pm/liq
 
 ```elixir
 iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-iex> {content, _context} = Liquex.render(template_ast, %{"name" => "World"})
+iex> {content, _context} = Liquex.render!(template_ast, %{"name" => "World"})
 
 iex> content |> to_string()
 "Hello World!"
@@ -66,7 +66,7 @@ map, it is executed.
 products_resolver = fn _parent -> Product.all() end
 
 with {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
-    {result, _} <- Liquex.render(document, %{products: products_resolver}) do
+    {result, _} <- Liquex.render!(document, %{products: products_resolver}) do
   result
 end
 
@@ -85,7 +85,7 @@ keys with string keys.
 
 ```elixir
 iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-iex> {content, _context} = Liquex.render(template_ast, %{name: "World"})
+iex> {content, _context} = Liquex.render!(template_ast, %{name: "World"})
 iex> content |> to_string()
 "Hello World!"
 ```
@@ -130,7 +130,7 @@ end
 context = Liquex.Context.new(%{}, filter_module: CustomFilter)
 {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}"
 
-{result, _} = Liquex.render(template_ast, context)
+{result, _} = Liquex.render!(template_ast, context)
 result |> to_string()
 
 iex> "HELLO WORLD!"
@@ -168,7 +168,7 @@ defmodule CustomTag do
 
   @impl true
   def render(contents, context) do
-    {result, context} = Liquex.render(contents, context)
+    {result, context} = Liquex.render!(contents, context)
     {["Custom Tag: ", result], context}
   end
 end
@@ -178,7 +178,7 @@ defmodule CustomParser do
 end
 
 iex> document = Liquex.parse!("<<Hello World!>>", CustomParser)
-iex> {result, _} = Liquex.render(document, context)
+iex> {result, _} = Liquex.render!(document, context)
 iex> result |> to_string()
 "Custom Tag: Hello World!"
 ```

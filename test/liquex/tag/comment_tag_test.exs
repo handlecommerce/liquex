@@ -18,7 +18,7 @@ defmodule Liquex.Tag.CommentTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{})
+      assert Liquex.render!(template, %{})
              |> elem(0)
              |> to_string() == "Hello  World"
     end

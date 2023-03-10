@@ -48,7 +48,7 @@ defmodule Liquex.Tag.CycleTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render!(template, %Context{})
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -76,7 +76,7 @@ defmodule Liquex.Tag.CycleTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %Context{})
+      assert Liquex.render!(template, %Context{})
              |> elem(0)
              |> to_string()
              |> String.trim()

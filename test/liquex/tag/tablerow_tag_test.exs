@@ -47,7 +47,7 @@ defmodule Liquex.Tag.TablerowTagTest do
 
       context = Context.new(%{"collection" => [1, 2, 3]})
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -80,7 +80,7 @@ defmodule Liquex.Tag.TablerowTagTest do
 
       context = Context.new(%{"collection" => [1, 2, 3]})
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()

@@ -26,7 +26,7 @@ defmodule Liquex.Tag.RawTagTest do
         """
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim() ==

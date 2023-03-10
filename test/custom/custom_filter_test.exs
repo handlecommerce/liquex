@@ -22,7 +22,7 @@ defmodule Liquex.Custom.CustomFilterTest do
       {:ok, template} = Liquex.parse("{{'Hello World' | scream}}")
 
       assert template
-             |> Liquex.render(context)
+             |> Liquex.render!(context)
              |> elem(0)
              |> to_string() == "HELLO WORLD!"
     end
@@ -34,7 +34,7 @@ defmodule Liquex.Custom.CustomFilterTest do
         Liquex.parse("{{'image.jpg' | img_url: '400x400', crop: 'bottom', filter: 'blur'}}")
 
       assert template
-             |> Liquex.render(context)
+             |> Liquex.render!(context)
              |> elem(0)
              |> to_string() ==
                "https://example.com/image.jpg?size=400x400&crop=bottom&filter=blur"
@@ -46,7 +46,7 @@ defmodule Liquex.Custom.CustomFilterTest do
       {:ok, template} = Liquex.parse("{{ 300 | money: currency: '$' }}")
 
       assert template
-             |> Liquex.render(context)
+             |> Liquex.render!(context)
              |> elem(0)
              |> to_string() == "$300"
     end

@@ -34,7 +34,7 @@ defmodule Liquex.Tag.ContinueTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{"x" => 1..40})
+      assert Liquex.render!(template, %{"x" => 1..40})
              |> elem(0)
              |> to_string() == "HelloHello"
 

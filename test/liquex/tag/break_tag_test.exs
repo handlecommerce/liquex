@@ -34,7 +34,7 @@ defmodule Liquex.Tag.BreakTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{"x" => 1..40})
+      assert Liquex.render!(template, %{"x" => 1..40})
              |> elem(0)
              |> to_string() == "HelloHello"
     end
@@ -45,7 +45,7 @@ defmodule Liquex.Tag.BreakTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{})
+      assert Liquex.render!(template, %{})
              |> elem(0)
              |> to_string() == "123"
 

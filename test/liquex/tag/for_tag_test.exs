@@ -157,7 +157,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -186,7 +186,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -215,7 +215,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -244,7 +244,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -271,7 +271,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -300,7 +300,7 @@ defmodule Liquex.Tag.ForTagTest do
 
       context = Context.new(%{"num" => 4})
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -333,7 +333,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim()
@@ -369,7 +369,7 @@ defmodule Liquex.Tag.ForTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template)
+      assert Liquex.render!(template)
              |> elem(0)
              |> to_string()
              |> String.trim() == "inner"

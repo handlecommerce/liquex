@@ -51,7 +51,7 @@ defmodule Liquex.Tag.AssignTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello World!"
@@ -68,7 +68,7 @@ defmodule Liquex.Tag.AssignTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello World!"
@@ -85,7 +85,7 @@ defmodule Liquex.Tag.AssignTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim() == "5"
@@ -104,7 +104,7 @@ defmodule Liquex.Tag.AssignTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello World!"
@@ -121,7 +121,7 @@ defmodule Liquex.Tag.AssignTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim() == "Hello World!"
@@ -139,7 +139,7 @@ defmodule Liquex.Tag.AssignTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, context)
+      assert Liquex.render!(template, context)
              |> elem(0)
              |> to_string()
              |> String.trim() == "5"
