@@ -141,7 +141,7 @@ defmodule Liquex.Tag.RenderTag do
 
     template
     |> load_contents(context)
-    |> Liquex.Render.render(new_context)
+    |> Liquex.Render.render!(new_context)
     |> case do
       {content, _new_context} -> {content, context}
       # break/continue do not get propagated to parent context

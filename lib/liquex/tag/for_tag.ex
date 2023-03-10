@@ -252,10 +252,10 @@ defmodule Liquex.Tag.ForTag do
   end
 
   def render_collection(nil, _, _, contents, context),
-    do: Liquex.Render.render(contents, context)
+    do: Liquex.Render.render!(contents, context)
 
   def render_collection([], _, _, contents, context),
-    do: Liquex.Render.render(contents, context)
+    do: Liquex.Render.render!(contents, context)
 
   def render_collection(results, identifier, contents, _, context) do
     len = Enum.count(results)
@@ -271,7 +271,7 @@ defmodule Liquex.Tag.ForTag do
             identifier => record
           })
 
-        case Liquex.Render.render(contents, ctx) do
+        case Liquex.Render.render!(contents, ctx) do
           {r, ctx} ->
             {[r | acc], Context.pop_scope(ctx)}
 

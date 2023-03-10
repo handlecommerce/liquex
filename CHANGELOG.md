@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2023-03-10
+
+- Deprecated Liquex.render/2 for Liquex.render!/2
+    Liquex.render/2 will be replaced with a function that returns an error tuple
+    instead of raising an error in 0.11
+- Add devcontainer
+
 ## [0.10.0] - 2022-12-19
 
 - Add {% liquid %} tag to follow Liquid 5.0.0.
@@ -62,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This release is now 100% compatible with the
 [Liquid](https://github.com/Shopify/liquid) gem for ruby.
 
-### Added 
+### Added
 
 - Whitespace control using `{%-` and `{{-`
 

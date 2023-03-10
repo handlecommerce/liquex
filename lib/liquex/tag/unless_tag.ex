@@ -60,7 +60,7 @@ defmodule Liquex.Tag.UnlessTag do
     if Expression.eval(expression, context) do
       IfTag.render(tail, context)
     else
-      Render.render(contents, context)
+      Render.render!(contents, context)
     end
   end
 end

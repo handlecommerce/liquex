@@ -61,7 +61,7 @@ defmodule Liquex.Tag.IfTag do
   @impl true
   def render([{:expression, expression}, {:contents, contents} | tail], context) do
     if Expression.eval(expression, context) do
-      Liquex.Render.render(contents, context)
+      Liquex.Render.render!(contents, context)
     else
       render(tail, context)
     end
@@ -69,12 +69,12 @@ defmodule Liquex.Tag.IfTag do
 
   def render([{:elsif, [expression: expression, contents: contents]} | tail], context) do
     if Expression.eval(expression, context) do
-      Liquex.Render.render(contents, context)
+      Liquex.Render.render!(contents, context)
     else
       render(tail, context)
     end
   end
 
-  def render([else: [contents: contents]], context), do: Liquex.Render.render(contents, context)
+  def render([else: [contents: contents]], context), do: Liquex.Render.render!(contents, context)
   def render([], context), do: {[], context}
 end

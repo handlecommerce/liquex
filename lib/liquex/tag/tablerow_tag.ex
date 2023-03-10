@@ -202,7 +202,7 @@ defmodule Liquex.Tag.TablerowTag do
       |> Enum.reduce({[], context}, fn {record, idx}, {acc, ctx} ->
         ctx = Context.assign(ctx, identifier, record)
 
-        {result, ctx} = Render.render(contents, ctx)
+        {result, ctx} = Render.render!(contents, ctx)
 
         result =
           cond do

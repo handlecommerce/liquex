@@ -122,14 +122,14 @@ defmodule Liquex.Tag.CaseTag do
     result = Enum.any?(expressions, &(match == Argument.eval(&1, context)))
 
     if result do
-      Render.render(contents, context)
+      Render.render!(contents, context)
     else
       do_render(tail, context, match)
     end
   end
 
   defp do_render([{:else, [contents: contents]} | _tail], context, _),
-    do: Render.render(contents, context)
+    do: Render.render!(contents, context)
 
   defp do_render([], context, _), do: {[], context}
 end
