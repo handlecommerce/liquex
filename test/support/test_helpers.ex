@@ -20,7 +20,8 @@ defmodule Liquex.TestHelpers do
          {:ok, ast} <- Liquex.parse(liquid),
          {data, _} <- Liquex.render(ast, context) do
       unless liquid_result == to_string(data) do
-        IO.puts("Liquid results don't match on #{path}. Left is the Liquid gem")
+        output_diff(liquid_result, to_string(data))
+
         assert liquid_result == to_string(data)
       end
     else
@@ -54,5 +55,15 @@ defmodule Liquex.TestHelpers do
          {result, _} = Liquex.render(parsed_doc, context) do
       to_string(result) |> String.trim()
     end
+  end
+
+  defp output_diff(left, right) do
+    IO.puts("\nOutput does not match. Left is Liquid. Right is Liquex\n")
+
+    Enum.zip(String.split(left, "\n"), String.split(right, "\n"))
+    |> Enum.with_index()
+    |> Enum.each(fn {{l, r}, i} ->
+      if l != r, do: IO.puts("#{i}: \"#{l}\" => \"#{r}\"")
+    end)
   end
 end

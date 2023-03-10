@@ -1,0 +1,14 @@
+{
+  "name": "Elixir 1.14 and Ruby ???",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+"workspaceFolder": "/workspaces/liquex",
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"JakeBecker.elixir-ls"
+		]
+	}
+}
+}
