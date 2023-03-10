@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     Liquex.render/2 will be replaced with a function that returns an error tuple
     instead of raising an error in 0.11
 - Add devcontainer
+- Fix regression on round filter with invalid inputs
 
 ## [0.10.0] - 2022-12-19
 
