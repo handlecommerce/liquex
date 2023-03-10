@@ -31,7 +31,7 @@ defmodule Liquex.IndifferentTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, %{test: %TestAccessModule{}})
+      assert Liquex.render!(template, %{test: %TestAccessModule{}})
              |> elem(0)
              |> to_string()
              |> String.trim() == "Atom Test!\nString Test!"

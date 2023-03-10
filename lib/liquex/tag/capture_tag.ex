@@ -50,7 +50,7 @@ defmodule Liquex.Tag.CaptureTag do
   end
 
   def render([identifier: identifier, contents: contents], %Context{} = context) do
-    {rendered_contents, context} = Liquex.render(contents, context)
+    {rendered_contents, context} = Liquex.render!(contents, context)
     {[], Context.assign(context, identifier, to_string(rendered_contents))}
   end
 end

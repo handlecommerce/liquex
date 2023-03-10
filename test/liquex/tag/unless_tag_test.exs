@@ -119,12 +119,12 @@ defmodule Liquex.Tag.UnlessTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
+      assert Liquex.render!(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "These shoes ARE awesome."
 
-      assert Liquex.render(
+      assert Liquex.render!(
                template,
                Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
              )
@@ -147,12 +147,12 @@ defmodule Liquex.Tag.UnlessTagTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
+      assert Liquex.render!(template, Context.new(%{"product" => %{"title" => "Awesome Shoes"}}))
              |> elem(0)
              |> to_string()
              |> String.trim() == "These shoes ARE awesome."
 
-      assert Liquex.render(
+      assert Liquex.render!(
                template,
                Context.new(%{"product" => %{"title" => "Not Awesome Shoes"}})
              )

@@ -41,7 +41,7 @@ defmodule Liquex.Tag do
   From there, you can parse and render your liquid content.
 
       {:ok, document} = Liquex.parse("<<Hello World!>>", CustomParser)
-      {result, _} = Liquex.render(document, context)
+      {result, _} = Liquex.render!(document, context)
 
   """
 

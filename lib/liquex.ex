@@ -6,7 +6,7 @@ defmodule Liquex do
   ## Basic Usage
 
       iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-      iex> {content, _context} = Liquex.render(template_ast, %{"name" => "World"})
+      iex> {content, _context} = Liquex.render!(template_ast, %{"name" => "World"})
       iex> content |> to_string()
       "Hello World!"
 
@@ -40,7 +40,7 @@ defmodule Liquex do
       products_resolver = fn _parent -> Product.all() end
 
       with {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
-          {result, _} <- Liquex.render(document, %{products: products_resolver}) do
+          {result, _} <- Liquex.render!(document, %{products: products_resolver}) do
         result
       end
 
@@ -57,7 +57,7 @@ defmodule Liquex do
   keys with string keys.
 
       iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-      iex> {content, _context} = Liquex.render(template_ast, %{name: "World"})
+      iex> {content, _context} = Liquex.render!(template_ast, %{name: "World"})
       iex> content |> to_string()
       "Hello World!"
 
@@ -98,7 +98,7 @@ defmodule Liquex do
       context = Liquex.Context.new(%{}, filter_module: CustomFilter)
       {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}"
 
-      {result, _} = Liquex.render(template_ast, context)
+      {result, _} = Liquex.render!(template_ast, context)
       result |> to_string()
 
       iex> "HELLO WORLD!"
@@ -135,7 +135,7 @@ defmodule Liquex do
 
        @impl true
        def render(contents, context) do
-        {result, context} = Liquex.render(contents, context)
+        {result, context} = Liquex.render!(contents, context)
         {["Custom Tag: ", result], context}
        end
       end
@@ -145,7 +145,7 @@ defmodule Liquex do
       end
 
       iex> document = Liquex.parse!("<<Hello World!>>", CustomParser)
-      iex> {result, _} = Liquex.render(document, context)
+      iex> {result, _} = Liquex.render!(document, context)
       iex> result |> to_string()
       "Custom Tag: Hello World
 
@@ -200,13 +200,16 @@ defmodule Liquex do
     end
   end
 
-  @spec render(document_t, Context.t() | map) :: {iodata, Context.t()}
+  @deprecated "Use Liquex.render!/2 instead"
+  def render(document, context \\ %{}), do: render!(document, context)
+
+  @spec render!(document_t, Context.t() | map) :: {iodata, Context.t()}
   @doc """
   Render a Liquex AST `document` with the given `context`
   """
-  def render(document, context \\ %{})
+  def render!(document, context \\ %{})
 
-  def render(document, %Context{} = context) do
+  def render!(document, %Context{} = context) do
     case Liquex.Render.render(document, context) do
       {:break, _, _} -> raise Liquex.Error, "'break' found outside of iteration tag"
       {:continue, _, _} -> raise Liquex.Error, "'continue' found outside of iteration tag"
@@ -214,5 +217,5 @@ defmodule Liquex do
     end
   end
 
-  def render(document, %{} = context), do: render(document, Context.new(context))
+  def render!(document, %{} = context), do: render(document, Context.new(context))
 end
