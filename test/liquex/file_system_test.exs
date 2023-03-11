@@ -10,7 +10,7 @@ defmodule Liquex.FileSystemTest do
   describe "BlankFileSystem" do
     test "read_template_file throws an error" do
       fs = %BlankFileSystem{}
-      assert_raise(File.Error, fn -> Liquex.FileSystem.read_template_file(fs, "test") end)
+      assert_raise(Liquex.Error, fn -> Liquex.FileSystem.read_template_file(fs, "test") end)
     end
   end
 end

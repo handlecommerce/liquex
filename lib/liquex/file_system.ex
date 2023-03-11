@@ -19,7 +19,7 @@ end
 
 defimpl Liquex.FileSystem, for: Liquex.BlankFileSystem do
   def read_template_file(_file_system, _template_path),
-    do: raise(File.Error, reason: "This liquid context does not allow includes.")
+    do: raise(Liquex.Error, message: "This liquid context does not allow includes.")
 end
 
 defmodule Liquex.LocalFileSystem do
@@ -65,7 +65,7 @@ defmodule Liquex.LocalFileSystem do
   def full_path(%__MODULE__{root_path: root_path, pattern: pattern}, template_path) do
     # Force check that template path is legal
     unless Regex.match?(~r{\A[^./][a-zA-Z0-9_/]+\z}, template_path) do
-      raise File.Error, reason: "Illegal template path '#{template_path}'"
+      raise Liquex.Error, message: "Illegal template path '#{template_path}'"
     end
 
     # Replace the template name with the pattern
@@ -93,7 +93,7 @@ defimpl Liquex.FileSystem, for: Liquex.LocalFileSystem do
     |> File.read()
     |> case do
       {:ok, contents} -> contents
-      _ -> raise File.Error, reason: "No such template '#{template_path}'"
+      _ -> raise Liquex.Error, message: "No such template '#{template_path}'"
     end
   end
 end
