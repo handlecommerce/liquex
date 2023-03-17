@@ -172,14 +172,29 @@ defmodule Liquex.Indifferent do
   defp access(data, key) when is_struct(data) do
     # Structs don't allow Access.fetch/2 access without implementing Access so
     # fallback to Map.fetch/2
-    if implements_behaviour?(data, Access) do
-      Access.fetch(data, key)
-    else
-      Map.fetch(data, key)
+    cond do
+      implements_behaviour?(data, Liquex.Drop) -> load_from_drop(data, key)
+      implements_behaviour?(data, Access) -> Access.fetch(data, key)
+      true -> Map.fetch(data, key)
     end
   end
 
-  defp access(data, key), do: Access.fetch(data, key)
+  defp access(data, key) do
+    if implements_behaviour?(data, Liquex.Drop) do
+      load_from_drop(data, key)
+    else
+      Access.fetch(data, key)
+    end
+  end
+
+  defp load_from_drop(data, key) when is_binary(key),
+    do: load_from_drop(data, String.to_existing_atom(key))
+
+  defp load_from_drop(%mod{} = data, key) when is_atom(key) do
+    {:ok, apply(mod, key, [data])}
+  end
+
+  defp load_from_drop(_, _), do: nil
 
   defp implements_behaviour?(map, behaviour) when is_struct(map) do
     map.__struct__.module_info[:attributes]

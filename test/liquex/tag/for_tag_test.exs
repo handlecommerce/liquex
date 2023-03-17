@@ -317,7 +317,7 @@ defmodule Liquex.Tag.ForTagTest do
              ) == "1234"
     end
 
-    test "render for loop with forloop variable" do
+    test "render for loop with forloop drop" do
       {:ok, template} =
         """
         {% for i in (1..3) %}

@@ -166,6 +166,8 @@ defmodule Liquex.Tag.ForTag do
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
 
+  alias Liquex.Drop.ForloopDrop
+
   def parse do
     ignore(Tag.open_tag())
     |> do_for_in()
@@ -267,7 +269,7 @@ defmodule Liquex.Tag.ForTag do
         # Assign the loop variables
         ctx =
           Context.push_scope(ctx, %{
-            "forloop" => forloop(index, len),
+            "forloop" => ForloopDrop.new(index, len),
             identifier => record
           })
 
@@ -288,17 +290,5 @@ defmodule Liquex.Tag.ForTag do
     {:break, result, context} ->
       # credo:disable-for-next-line
       {Enum.reverse(result), context}
-  end
-
-  defp forloop(index, length) do
-    %{
-      "index" => index + 1,
-      "index0" => index,
-      "rindex" => length - index,
-      "rindex0" => length - index - 1,
-      "first" => index == 0,
-      "last" => index == length - 1,
-      "length" => length
-    }
   end
 end

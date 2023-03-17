@@ -68,6 +68,11 @@ defmodule Liquex.ArgumentTest do
       obj = Context.new(%{"field" => fn -> 5 end})
       assert 5 == Argument.eval([field: [key: "field"]], obj)
     end
+
+    test "drop" do
+      context = Context.new(%{"forloop" => Liquex.Drop.ForloopDrop.new(0, 1)})
+      assert true == Argument.eval([field: [key: "forloop", key: "first"]], context)
+    end
   end
 
   describe "assign" do
