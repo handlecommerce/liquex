@@ -127,7 +127,9 @@ defmodule Liquex.Tag.TablerowTag do
   alias Liquex.Parser.Literal
   alias Liquex.Parser.Tag
 
+  alias Liquex.Drop.TablerowloopDrop
   alias Liquex.Expression
+
   import NimbleParsec
 
   def parse do
@@ -150,16 +152,19 @@ defmodule Liquex.Tag.TablerowTag do
 
     cols =
       ignore(string("cols:"))
+      |> ignore(Literal.non_breaking_whitespace())
       |> unwrap_and_tag(integer(min: 1), :cols)
       |> ignore(Literal.non_breaking_whitespace())
 
     limit =
       ignore(string("limit:"))
+      |> ignore(Literal.non_breaking_whitespace())
       |> unwrap_and_tag(integer(min: 1), :limit)
       |> ignore(Literal.non_breaking_whitespace())
 
     offset =
       ignore(string("offset:"))
+      |> ignore(Literal.non_breaking_whitespace())
       |> unwrap_and_tag(integer(min: 1), :offset)
       |> ignore(Literal.non_breaking_whitespace())
 
@@ -186,52 +191,63 @@ defmodule Liquex.Tag.TablerowTag do
         ],
         context
       ) do
-    cols = Keyword.get(parameters, :cols, 1)
+    collection =
+      collection
+      |> Liquex.Argument.eval(context)
+      |> Expression.eval_collection(parameters)
+      |> Liquex.Collection.to_enumerable()
 
-    collection
-    |> Liquex.Argument.eval(context)
-    |> Expression.eval_collection(parameters)
-    |> Liquex.Collection.to_enumerable()
-    |> render_row(identifier, contents, cols, context)
+    cols = Keyword.get(parameters, :cols, length(collection))
+
+    render_row(collection, identifier, contents, cols, context)
   end
 
   defp render_row(collection, identifier, contents, cols, context) do
+    collection_length = length(collection)
+
     {results, context} =
       collection
       |> Enum.with_index()
       |> Enum.reduce({[], context}, fn {record, idx}, {acc, ctx} ->
-        ctx = Context.assign(ctx, identifier, record)
+        drop = TablerowloopDrop.new(collection_length, cols, idx)
+
+        ctx =
+          ctx
+          |> Context.assign(identifier, record)
+          |> Context.assign("tablerowloop", drop)
 
         {result, ctx} = Render.render!(contents, ctx)
 
         result =
-          cond do
-            cols == 1 ->
-              ["<tr><td>", result, "</td></tr>"]
-
-            rem(idx, cols) == 0 ->
-              ["<tr><td>", result, "</td>"]
-
-            rem(idx, cols) == cols - 1 ->
-              ["<td>", result, "</td></tr>"]
-
-            true ->
-              ["<td>", result, "</td>"]
-          end
+          []
+          |> maybe_open_tr(drop)
+          |> add_td(drop, result)
+          |> maybe_close_tr(drop)
+          |> Enum.reverse()
 
         {[result | acc], ctx}
       end)
 
-    # Close out the table
-    closing =
-      0..rem(length(collection), cols)
-      |> Enum.drop(1)
-      |> Enum.map(fn _ -> "<td></td>" end)
-      |> case do
-        [] -> []
-        tags -> ["</tr>" | tags]
-      end
+    {Enum.reverse(results), context}
+  end
 
-    {Enum.reverse(closing ++ results), context}
+  defp maybe_open_tr(contents, %TablerowloopDrop{col: 0, row: 0}),
+    do: [~s(<tr class="row1">\n) | contents]
+
+  defp maybe_open_tr(contents, %TablerowloopDrop{col: 0, row: row}),
+    do: [~s(<tr class="row#{row + 1}">) | contents]
+
+  defp maybe_open_tr(contents, _), do: contents
+
+  defp add_td(contents, %TablerowloopDrop{col: col}, inner) do
+    [[~s(<td class="col#{col + 1}">), inner, "</td>"] | contents]
+  end
+
+  defp maybe_close_tr(contents, %TablerowloopDrop{} = drop) do
+    if drop.col == drop.cols - 1 || drop.index == drop.length - 1 do
+      ["</tr>\n" | contents]
+    else
+      contents
+    end
   end
 end

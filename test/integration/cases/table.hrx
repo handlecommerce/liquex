@@ -1,0 +1,40 @@
+<===> table.json
+
+{
+  "collection": [1, 2, 3, 4, 5]
+}
+
+<===> table.liquid
+### Standard table row
+
+<table>
+{% tablerow i in collection %}
+  {{ i }}
+{% endtablerow %}
+</table>
+
+### Table row with set cols
+
+<table>
+{% tablerow i in collection cols: 2 %}
+  {{ i }}
+{% endtablerow %}
+</table>
+
+
+#####
+
+{% tablerow product in collection cols:2 %}
+  {{ tablerowloop.col }}
+  {{ tablerowloop.col0 }}
+  {{ tablerowloop.col_first }}
+  {{ tablerowloop.col_last }}
+  {{ tablerowloop.first }}
+  {{ tablerowloop.index }}
+  {{ tablerowloop.index0 }}
+  {{ tablerowloop.last }}
+  {{ tablerowloop.length }}
+  {{ tablerowloop.rindex }}
+  {{ tablerowloop.rindex0 }}
+  {{ tablerowloop.row }}
+{% endtablerow %}

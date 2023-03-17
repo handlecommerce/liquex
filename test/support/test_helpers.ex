@@ -65,5 +65,11 @@ defmodule Liquex.TestHelpers do
     |> Enum.each(fn {{l, r}, i} ->
       if l != r, do: IO.puts("#{i}: \"#{l}\" => \"#{r}\"")
     end)
+
+    IO.puts("== LIQUID ==")
+    IO.puts(left)
+
+    IO.puts("\n\n== Liquex ==")
+    IO.puts(right)
   end
 end

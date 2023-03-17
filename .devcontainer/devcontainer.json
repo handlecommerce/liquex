@@ -7,7 +7,8 @@
 "customizations": {
 	"vscode": {
 		"extensions": [
-			"JakeBecker.elixir-ls"
+			"JakeBecker.elixir-ls",
+			"monasticpanic.hrx-syntax"
 		]
 	}
 }
