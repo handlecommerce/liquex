@@ -21,7 +21,6 @@
 {% endtablerow %}
 </table>
 
-
 #####
 
 {% tablerow product in collection cols:2 %}

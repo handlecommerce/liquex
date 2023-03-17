@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] -
+
+- Add Liquid.Drop support
+    Migrated forloop values to drop
+- Fully compatible with Liquid 5.4.0
+  - Added support for inline comments using `#`
+- Fixed tablerow rendering to include class attributes
+- Added tablerowloop drop
+- Replaced use of File.Error with Liquex.Error
+
 ## [0.10.1] - 2023-03-10
 
 - Deprecated Liquex.render/2 for Liquex.render!/2
