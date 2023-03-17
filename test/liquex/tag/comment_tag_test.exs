@@ -9,6 +9,48 @@ defmodule Liquex.Tag.CommentTagTest do
         [{:text, "Hello "}, {{:tag, Liquex.Tag.CommentTag}, []}, {:text, " World"}]
       )
     end
+
+    test "inline comment" do
+      assert_parse(
+        "Hello {{ # Comment }} World",
+        [{:text, "Hello "}, {{:tag, Liquex.Tag.ObjectTag}, []}, {:text, " World"}]
+      )
+
+      assert_parse(
+        "Hello {% # Comment %} World",
+        [{:text, "Hello "}, {{:tag, Liquex.Tag.CommentTag}, []}, {:text, " World"}]
+      )
+    end
+
+    test "inline multiline comment" do
+      assert_parse(
+        """
+        Hello
+        {%
+          ###############################
+          # This is a comment
+          # across multiple lines
+          ###############################
+        %}
+        World
+        """,
+        [{:text, "Hello\n"}, {{:tag, Liquex.Tag.CommentTag}, []}, {:text, "\nWorld\n"}]
+      )
+
+      assert_parse(
+        """
+        Hello
+        {{
+          ###############################
+          # This is a comment
+          # across multiple lines
+          ###############################
+        }}
+        World
+        """,
+        [{:text, "Hello\n"}, {{:tag, Liquex.Tag.ObjectTag}, []}, {:text, "\nWorld\n"}]
+      )
+    end
   end
 
   describe "render" do

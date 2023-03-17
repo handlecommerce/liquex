@@ -23,19 +23,31 @@ defmodule Liquex.Tag.CommentTag do
   @behaviour Liquex.Tag
 
   alias Liquex.Parser.Tag
-
+  alias Liquex.Parser.Literal
   import NimbleParsec
 
   @impl true
   # Parse {% comment %}...{% endcomment %}
   def parse do
-    ignore(Tag.tag_directive("comment"))
-    |> ignore(parsec(:document))
-    |> ignore(Tag.tag_directive("endcomment"))
+    comment =
+      Tag.tag_directive("comment")
+      |> parsec(:document)
+      |> Tag.tag_directive("endcomment")
+
+    inline_comment =
+      string("{%")
+      |> optional(string("-"))
+      |> utf8_string([?\s, ?\n, ?\r, ?\t], min: 0)
+      |> Literal.inline_comment()
+      |> Literal.whitespace()
+      |> Tag.close_tag()
+
+    choice([comment, inline_comment]) |> ignore()
   end
 
   @impl true
   def parse_liquid_tag do
+    # Unsupported, so just try to match on anything so it fails
     string("USDFADSJFKAJDFJKASDF")
   end
 

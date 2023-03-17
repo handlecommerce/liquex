@@ -8,7 +8,7 @@ defmodule Liquex.Parser.Literal do
   alias Liquex.Parser.Argument
 
   @doc """
-  Parses white space, given a minimum.
+  Parses white space, given a minimum. White space includes spaces, tabs, newlines, and comments.
 
   ## Examples
 
@@ -18,11 +18,17 @@ defmodule Liquex.Parser.Literal do
   @spec whitespace(NimbleParsec.t(), non_neg_integer()) :: NimbleParsec.t()
   def whitespace(combinator \\ empty(), min \\ 0) do
     combinator
-    |> utf8_string([?\s, ?\n, ?\r, ?\t], min: min)
+    |> times(
+      choice([
+        utf8_char([?\s, ?\n, ?\r, ?\t]),
+        inline_comment()
+      ]),
+      min: min
+    )
   end
 
   @doc """
-  Parses not line breaking white space, given a minimum.
+  Parses non line breaking white space, given a minimum.
 
   ## Examples
 
@@ -167,5 +173,23 @@ defmodule Liquex.Parser.Literal do
     |> optional(exponent)
     |> reduce({Enum, :join, []})
     |> map({String, :to_float, []})
+  end
+
+  def inline_comment(combinator \\ empty()) do
+    end_comment =
+      choice([
+        string("-}}"),
+        string("-%}"),
+        string("}}"),
+        string("%}"),
+        utf8_string([?\n, ?\r], min: 1)
+      ])
+
+    combinator
+    |> string("#")
+    |> repeat(
+      lookahead_not(end_comment)
+      |> utf8_char([])
+    )
   end
 end

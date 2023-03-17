@@ -104,6 +104,10 @@ defmodule Liquex.Tag.ObjectTagTest do
       assert "" == render("{{ nil }}")
     end
 
+    test "empty object" do
+      assert "" == render("{{ }}")
+    end
+
     test "simple fields" do
       context =
         Context.new(%{

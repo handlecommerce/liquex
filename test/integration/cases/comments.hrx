@@ -1,0 +1,41 @@
+<===> comments.liquid
+{% assign verb = "turned" %}
+{% comment %}
+{% assign verb = "converted" %}
+{% endcomment %}
+Anything you put between {% comment %} and {% endcomment %} tags
+is {{ verb }} into a comment.
+
+{% assign i = 0 %}
+
+Putting in `-%}` here because Liquid will strip the whitespace by default while Liquex will not.
+
+{% comment %}{{ i }}{% endcomment %}
+{% for i in (1..5) -%}
+  {% comment %}{{ i }}{% endcomment %}
+{%- endfor %}
+
+{% comment %}{{ i }}{% endcomment %}
+
+### Inline Comments
+
+{% # inline comment %}
+
+{{ # inline comment }}
+
+{% # for i in (1..3) -%}
+  {{ i }}
+{% # endfor %}
+
+{%
+  ###############################
+  # This is a comment
+  # across multiple lines
+  ###############################
+%}
+
+{% liquid
+  # this is a comment
+  assign topic = 'Learning about comments!'
+  echo topic
+%}

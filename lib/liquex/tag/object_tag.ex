@@ -30,8 +30,10 @@ defmodule Liquex.Tag.ObjectTag do
     ignore(string("{{"))
     |> ignore(optional(string("-")))
     |> ignore(Literal.whitespace())
-    |> Argument.argument()
-    |> optional(filters())
+    |> optional(
+      Argument.argument()
+      |> optional(filters())
+    )
     |> ignore(Literal.whitespace())
     |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
   end
@@ -113,4 +115,6 @@ defmodule Liquex.Tag.ObjectTag do
 
     {to_string(result), context}
   end
+
+  def render([], context), do: {"", context}
 end

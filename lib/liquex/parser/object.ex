@@ -94,44 +94,4 @@ defmodule Liquex.Parser.Object do
     )
     |> tag(:filter)
   end
-
-  @doc """
-  Parses object. May contain arguments, literals, and filters.
-
-  It special cases space removing tags such as `{{-` and `-}}` to properly
-  remove any spaces leading and trailing spaces if requested.
-
-  ## Examples
-
-      * "{{ 'hello world' }}"
-      * "{{ 5 + 5 }}"
-      * "{{ variable_a | at_most: 5 }}"
-      * "{{- my_array | sort -}}"
-  """
-  @spec object(NimbleParsec.t()) :: NimbleParsec.t()
-  def object(combinator \\ empty()) do
-    combinator
-    |> ignore(string("{{"))
-    |> ignore(optional(string("-")))
-    |> ignore(Literal.whitespace())
-    |> Argument.argument()
-    |> optional(tag(repeat(filter()), :filters))
-    |> ignore(Literal.whitespace())
-    |> ignore(choice([close_object_remove_whitespace(), string("}}")]))
-    |> tag(:object)
-  end
-
-  @doc """
-  Parses closing object tag with white space removing.
-
-  ## Examples
-
-      * "-}}  "
-  """
-  @spec close_object_remove_whitespace(NimbleParsec.t()) :: NimbleParsec.t()
-  def close_object_remove_whitespace(combinator \\ empty()) do
-    combinator
-    |> string("-}}")
-    |> Literal.whitespace()
-  end
 end
