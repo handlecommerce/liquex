@@ -188,8 +188,11 @@ defmodule Liquex.Tag.TablerowTag do
       ) do
     cols = Keyword.get(parameters, :cols, 1)
 
-    collection
-    |> Liquex.Argument.eval(context)
+    {value, context} =
+      collection
+      |> Liquex.Argument.eval(context)
+
+    value
     |> Expression.eval_collection(parameters)
     |> Liquex.Collection.to_enumerable()
     |> render_row(identifier, contents, cols, context)

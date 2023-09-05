@@ -99,7 +99,7 @@ defmodule Liquex.Tag.CycleTag do
 
     next_index = rem(index + 1, length(sequence))
 
-    result =
+    {result, context} =
       sequence
       |> Enum.at(index)
       |> Liquex.Argument.eval(context)

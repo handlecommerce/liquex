@@ -109,7 +109,7 @@ defmodule Liquex.Tag.ObjectTag do
       argument
       |> List.wrap()
       |> Liquex.Argument.eval(context)
-      |> Render.apply_filters(filters, context)
+      |> then(fn {value, context} -> Render.apply_filters(value, filters, context) end)
 
     {to_string(result), context}
   end

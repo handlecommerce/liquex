@@ -239,8 +239,11 @@ defmodule Liquex.Tag.ForTag do
         ],
         %Context{} = context
       ) do
-    collection
-    |> Liquex.Argument.eval(context)
+    {value, context} =
+      collection
+      |> Liquex.Argument.eval(context)
+
+    value
     |> Expression.eval_collection(parameters)
     |> Collection.to_enumerable()
     |> render_collection(identifier, contents, else_contents, context)

@@ -57,7 +57,9 @@ defmodule Liquex.Tag.UnlessTag do
 
   @impl true
   def render([{:expression, expression}, {:contents, contents} | tail], context) do
-    if Expression.eval(expression, context) do
+    {evaluated, context} = Expression.eval(expression, context)
+
+    if evaluated do
       IfTag.render(tail, context)
     else
       Render.render!(contents, context)

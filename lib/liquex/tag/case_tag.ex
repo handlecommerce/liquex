@@ -114,12 +114,21 @@ defmodule Liquex.Tag.CaseTag do
 
   @spec render(list, Liquex.Context.t()) :: Render.result_t()
   def render([argument | tail], context) do
-    match = Argument.eval(argument, context)
+    {match, context} = Argument.eval(argument, context)
     do_render(tail, context, match)
   end
 
   defp do_render([{:when, [expression: expressions, contents: contents]} | tail], context, match) do
-    result = Enum.any?(expressions, &(match == Argument.eval(&1, context)))
+    {result, context} =
+      Enum.reduce_while(expressions, {false, context}, fn expr, {_, ctx} ->
+        case Argument.eval(expr, ctx) do
+          {value, new_ctx} when value == match ->
+            {:halt, {true, new_ctx}}
+
+          {_, new_ctx} ->
+            {:cont, {false, new_ctx}}
+        end
+      end)
 
     if result do
       Render.render!(contents, context)

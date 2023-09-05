@@ -59,6 +59,7 @@ defmodule Liquex.Context do
             filter_module: Liquex.Filter,
             file_system: nil,
             errors: [],
+            render_state: %{},
             cache: nil
 
   @type t :: %__MODULE__{
@@ -69,6 +70,7 @@ defmodule Liquex.Context do
           private: map(),
           filter_module: module,
           file_system: struct,
+          render_state: map(),
           cache: term,
           errors: list(Liquex.Error.t())
         }

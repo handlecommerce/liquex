@@ -7,16 +7,21 @@ defmodule Liquex.ExpressionTest do
   alias Liquex.Expression
 
   describe "eval truthy" do
+    def expression_value({value, _context}), do: value
+
     test "literal" do
-      assert Expression.eval([literal: 123], %Context{})
-      assert Expression.eval([literal: true], %Context{})
-      refute Expression.eval([literal: false], %Context{})
-      refute Expression.eval([literal: nil], %Context{})
+      assert Expression.eval([literal: 123], %Context{}) |> expression_value()
+      assert Expression.eval([literal: true], %Context{}) |> expression_value()
+      refute Expression.eval([literal: false], %Context{}) |> expression_value()
+      refute Expression.eval([literal: nil], %Context{}) |> expression_value()
     end
 
     test "field" do
       assert Expression.eval([field: [key: "field"]], Context.new(%{"field" => 1}))
+             |> expression_value()
+
       refute Expression.eval([field: [key: "field"]], Context.new(%{"field" => nil}))
+             |> expression_value()
     end
 
     test "standard expression operators" do
@@ -51,13 +56,21 @@ defmodule Liquex.ExpressionTest do
   describe "eval boolean logic" do
     test "and" do
       assert Expression.eval([{:literal, true}, :and, {:literal, true}], %Context{})
+             |> expression_value()
+
       refute Expression.eval([{:literal, true}, :and, {:literal, false}], %Context{})
+             |> expression_value()
     end
 
     test "or" do
       assert Expression.eval([{:literal, true}, :or, {:literal, true}], %Context{})
+             |> expression_value()
+
       assert Expression.eval([{:literal, true}, :or, {:literal, false}], %Context{})
+             |> expression_value()
+
       refute Expression.eval([{:literal, false}, :or, {:literal, false}], %Context{})
+             |> expression_value()
     end
 
     test "eval boolean logic in reverse" do
@@ -65,6 +78,7 @@ defmodule Liquex.ExpressionTest do
                [[literal: true], :or, [literal: true], :and, [literal: false]],
                %Context{}
              )
+             |> expression_value()
     end
 
     test "eval boolean logic with fields" do
@@ -76,9 +90,12 @@ defmodule Liquex.ExpressionTest do
                ],
                Context.new(%{"field1" => true, "field2" => nil})
              )
+             |> expression_value()
     end
   end
 
   def eval(left, op, right),
-    do: Expression.eval([left: [literal: left], op: op, right: [literal: right]], %Context{})
+    do:
+      Expression.eval([left: [literal: left], op: op, right: [literal: right]], %Context{})
+      |> expression_value()
 end

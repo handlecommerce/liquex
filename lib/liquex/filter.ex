@@ -30,12 +30,14 @@ defmodule Liquex.Filter do
       ) do
     func = String.to_existing_atom(function)
 
-    function_args =
-      Enum.map(
-        arguments,
-        &Liquex.Argument.eval(&1, context)
-      )
-      |> merge_keywords()
+    {function_args, context} =
+      Enum.reduce(arguments, {[], context}, fn arg, {acc, context} ->
+        {value, context} = Liquex.Argument.eval(arg, context)
+
+        {acc ++ [value], context}
+      end)
+
+    function_args = function_args |> merge_keywords()
 
     mod =
       if mod != __MODULE__ and Kernel.function_exported?(mod, func, length(function_args) + 2) do
@@ -44,7 +46,7 @@ defmodule Liquex.Filter do
         __MODULE__
       end
 
-    Kernel.apply(mod, func, [value | function_args] ++ [context])
+    {Kernel.apply(mod, func, [value | function_args] ++ [context]), context}
   rescue
     # credo:disable-for-next-line
     ArgumentError -> raise Liquex.Error, "Invalid filter #{function}"

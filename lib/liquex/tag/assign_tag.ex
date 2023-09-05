@@ -69,7 +69,7 @@ defmodule Liquex.Tag.AssignTag do
     {right, context} =
       right
       |> Liquex.Argument.eval(context)
-      |> Render.apply_filters(filters, context)
+      |> then(fn {value, context} -> Render.apply_filters(value, filters, context) end)
 
     context = Context.assign_global(context, left, right)
 

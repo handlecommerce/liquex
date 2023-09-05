@@ -73,6 +73,69 @@ end
 "There are 5 products"
 ```
 
+## Lazy variable caching
+
+By default, lazy variables will be evaluated every time they are referenced.
+So if you have a template with `{{ products }} {{ products }}`, your resolver
+function will be called twice.
+
+For resolvers where this is not desirable, Liquex provides a value cache to
+cache executions of your resolvers. To use the cache, define your resolver
+functions to accept two parameters - "parent" and "context", and import the
+functions from Liquex.ValueCache.
+
+Your resolver function should return a tuple that has the result and the
+(updated) context. You can also just return the value (with no context),
+in which case the context won't be updated.
+
+Here's how:
+
+```elixir
+import Liquex.ValueCache
+
+products_resolver = fn _parent, context ->
+  products = Product.all()
+  {products, context |> cache_result(products)}
+end
+```
+
+Now your function will only be called one time. You can simplify this further
+using the `return_cached_result` helper:
+
+```elixir
+import Liquex.ValueCache
+
+products_resolver = fn _parent, context ->
+  return_cached_result(context, Product.all())
+end
+```
+
+If you need to store things in the cache manually for more complex scenarios,
+use `cache` and `get_cache`:
+
+```elixir
+import Liquex.ValueCache
+
+products_resolver = fn _parent, context ->
+  products = get_cache(context, :products)
+  if products do
+    {products, context}
+  else
+    products = Product.all()
+    {products, context |> cache(:products, products)}
+  end
+end
+```
+
+In this case, `products_resolver` will be called each time, but you can use the
+caching mechanism to do custom caching of any expensive calls. This is useful
+for more complex scenarios (for example `user.first_name` and `user.last_name`
+might be two separate resolver functions, both of which pull the name from the
+DB, but this should only be done one time).
+
+For more details on variable caching options and advanced cache usage, see the
+[Liquex.ValueCache](https://hexdocs.pm/liquex/Liquex.ValueCache.html) docs.
+
 ## Indifferent access
 
 By default, Liquex accesses your maps and structs that may have atom or
@@ -90,10 +153,10 @@ iex> content |> to_string()
 "Hello World!"
 ```
 
-## Caching
+## Partials caching
 
-Liquex has a built in cache used specifically for the render tag currently. When
-loading a partial/sub-template using the render tag, it will try pulling from
+Liquex has a built in cache used for the render tag. When loading a
+partial/sub-template using the render tag, it will try pulling from
 the cache associated with the context.
 
 By default, caching is disabled, but you may use the built in ETS based cache by
@@ -107,9 +170,6 @@ context = Context.new(%{...}, cache: Liquex.Cache.SimpleCache)
 The simple cache is by definition quite simple. To use a more complete caching
 system, such as [Cachex](https://github.com/whitfin/cachex), you can create a
 module that implements the `Liquex.Cache` behaviour.
-
-The cache system is very early on. It is expected that it will also be used to
-memoize some of the variables within your context.
 
 ## Custom filters
 

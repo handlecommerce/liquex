@@ -8,28 +8,35 @@ defmodule Liquex.Expression do
 
   @spec eval(maybe_improper_list | {:field, any} | {:literal, any}, Context.t()) :: any
   def eval([left: left, op: op, right: right], %Context{} = context) do
-    do_eval({
-      left |> Argument.eval(context),
-      op,
-      right |> Argument.eval(context)
-    })
+    {left_evaled, context} = Argument.eval(left, context)
+    {right_evaled, context} = Argument.eval(right, context)
+
+    {do_eval({
+       left_evaled,
+       op,
+       right_evaled
+     }), context}
   end
 
-  def eval({type, _} = argument, context) when type in [:field, :literal],
-    do: [argument] |> Argument.eval(context) |> do_eval()
+  def eval({type, _} = argument, context) when type in [:field, :literal] do
+    {evaled, context} = Argument.eval([argument], context)
+    {do_eval(evaled), context}
+  end
 
   def eval(expressions, context) when is_list(expressions) do
     expressions
     |> Enum.chunk_every(2)
     |> Enum.reverse()
-    |> Enum.reduce(nil, fn
-      [exp, :and], acc ->
-        eval(exp, context) and acc
+    |> Enum.reduce({nil, context}, fn
+      [exp, :and], {acc, context} ->
+        {evaled, context} = eval(exp, context)
+        {evaled and acc, context}
 
-      [exp, :or], acc ->
-        eval(exp, context) or acc
+      [exp, :or], {acc, context} ->
+        {evaled, context} = eval(exp, context)
+        {evaled or acc, context}
 
-      [exp], nil ->
+      [exp], {nil, context} ->
         eval(exp, context)
     end)
   end
