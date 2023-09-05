@@ -141,23 +141,33 @@ defmodule Liquex.ValueCache do
 
   @manual_cache_key :__manual_cache
 
-  @spec cache_result(Liquex.Context.t(), any) :: any
+  @spec cache_result(Liquex.Context.t(), any) :: Liquex.Context.t()
   @doc """
   Caches the result of the current lazy resolver in the context.
 
   Returns the updated context.
   """
   def cache_result(context, value) do
+    if context.render_state[:in_child_resolver] do
+      raise Liquex.Error,
+            "cannot use result cache when in a dynamic resolver, use manual cache instead"
+    end
+
     Liquex.Argument.assign(context, {:field, context.render_state.cache_key}, value)
   end
 
-  @spec return_cached_result(Liquex.Context.t(), any) :: {any, any}
+  @spec return_cached_result(Liquex.Context.t(), any) :: {any, Liquex.Context.t()}
   @doc """
   Helper function to return the result and the updated context with the cached result.
 
   Returns {value, updated_context}.
   """
   def return_cached_result(context, value) do
+    if context.render_state[:in_child_resolver] do
+      raise Liquex.Error,
+            "cannot use result cache when in a dynamic resolver, use manual cache instead"
+    end
+
     {value, cache_result(context, value)}
   end
 

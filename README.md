@@ -136,6 +136,51 @@ DB, but this should only be done one time).
 For more details on variable caching options and advanced cache usage, see the
 [Liquex.ValueCache](https://hexdocs.pm/liquex/Liquex.ValueCache.html) docs.
 
+## Dynamic lazy functions
+
+If you want to support syntax like product['xyz'], product.xyz, etc. with a
+dynamic key, you can define a special lazy function which acts as a resolver.
+
+This function needs to take 3 arguments - the parent, context, and the parameter
+that follows. For product['xyz'] or product.xyz the parameter is "xyz". For
+product.xyz.a, the parameter is still `xyz`, and your function can return a map
+containing an `a` key, or another function to further resolve nested parameters.
+
+For something like product[a] where `a` is defined elsewhere, `a` will be resolved
+and the parameter will be passed in. So if `a` is defined as 1 somewhere in your
+scope, your resolver function will receive `1` as the parameter.
+
+Here is what the function should look like:
+
+```elixir
+products_resolver = fn _parent, context, product_id ->
+  Product.fetch(product_id)
+end
+```
+
+Note that you cannot use the results cache here, because the results cache
+depends on being able to *replace* the element in your variables map, but
+you're keeping the resolver function around, not a map. So functions like
+`return_cached_result` and `cache_result` are off-limits.
+
+But all is not lost! Just use the manual cache:
+
+```elixir
+products_resolver = fn _parent, context, product_id ->
+  cached = get_cached(context, param)
+  if cached do
+    {cached, context}
+  else
+    fetched_product = Product.fetch(product_id)
+    {fetched_product, cache(context, product_id, fetched_product)}
+  end
+end
+```
+
+The manual cache will be correctly scoped to the specific param, so
+your cache will be on the level of `product.xyz`, not `product`, even though
+the resolver is on the level of `product`.
+
 ## Indifferent access
 
 By default, Liquex accesses your maps and structs that may have atom or

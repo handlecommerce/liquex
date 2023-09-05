@@ -30,7 +30,7 @@ defmodule Liquex.Argument do
     {{key, evaled_value}, context}
   end
 
-  defp do_eval(value, [], context), do: apply_lazy(value, nil, context)
+  defp do_eval(value, [], context), do: apply_lazy(value, nil, context, [])
   defp do_eval(nil, _, context), do: {nil, context}
 
   # Special case ".first"
@@ -39,7 +39,7 @@ defmodule Liquex.Argument do
 
     value
     |> Enum.at(0)
-    |> apply_lazy(value, context)
+    |> apply_lazy(value, context, tail)
     |> then(fn {value, context} -> do_eval(value, tail, context) end)
   end
 
@@ -49,7 +49,7 @@ defmodule Liquex.Argument do
 
     value
     |> List.last()
-    |> apply_lazy(value, context)
+    |> apply_lazy(value, context, tail)
     |> then(fn {value, context} -> do_eval(value, tail, context) end)
   end
 
@@ -69,10 +69,15 @@ defmodule Liquex.Argument do
   defp do_eval(value, [{:key, key} = cache_key | tail], context) do
     context = add_to_cache_key(context, cache_key)
 
-    value
-    |> Indifferent.get(key)
-    |> apply_lazy(value, context)
-    |> then(fn {value, context} -> do_eval(value, tail, context) end)
+    if is_map(value) or is_struct(value) do
+      value
+      |> Indifferent.get(key)
+      |> apply_lazy(value, context, tail)
+      |> then(fn {value, context} -> do_eval(value, tail, context) end)
+    else
+      # TODO: with strict_variables later, this will raise an error
+      {nil, context}
+    end
   end
 
   defp do_eval(value, [{:accessor, accessor} = cache_key | tail], context) do
@@ -80,7 +85,7 @@ defmodule Liquex.Argument do
 
     value
     |> value_at(accessor, context)
-    |> then(fn {child_value, context} -> apply_lazy(child_value, value, context) end)
+    |> then(fn {child_value, context} -> apply_lazy(child_value, value, context, tail) end)
     |> then(fn {value, context} -> do_eval(value, tail, context) end)
   end
 
@@ -99,10 +104,12 @@ defmodule Liquex.Argument do
   defp value_at(_value, _index, context), do: {[], context}
 
   # Apply a lazy function if needed
-  defp apply_lazy(fun, _parent, context) when is_function(fun, 0), do: {fun.(), context}
-  defp apply_lazy(fun, parent, context) when is_function(fun, 1), do: {fun.(parent), context}
+  defp apply_lazy(fun, _parent, context, _tail) when is_function(fun, 0), do: {fun.(), context}
 
-  defp apply_lazy(fun, parent, context) when is_function(fun, 2) do
+  defp apply_lazy(fun, parent, context, _tail) when is_function(fun, 1),
+    do: {fun.(parent), context}
+
+  defp apply_lazy(fun, parent, context, _tail) when is_function(fun, 2) do
     fun.(parent, context)
     |> case do
       {value, %Context{} = context} ->
@@ -113,7 +120,47 @@ defmodule Liquex.Argument do
     end
   end
 
-  defp apply_lazy(value, _, context), do: {value, context}
+  defp apply_lazy(fun, parent, context, tail) when is_function(fun, 3) do
+    {access_element, context} =
+      case tail do
+        [{:key, key} = accessor | _] ->
+          context = add_to_cache_key(context, accessor)
+
+          {key, context}
+
+        [{:accessor, {:field, _} = field} = accessor | _] ->
+          context = add_to_cache_key(context, accessor)
+
+          eval(field, context)
+
+        [{:accessor, {:literal, key} = accessor} | _] ->
+          context = add_to_cache_key(context, accessor)
+
+          {key, context}
+
+        _ ->
+          raise Liquex.Error, "unknown lazy function resolver argument"
+      end
+
+    context = set_child_resolver_key(context)
+
+    fun.(parent, context, access_element)
+    |> case do
+      {value, %Context{} = context} ->
+        # We need to remove the last element from the cache key here because we
+        # artificially added it to make the cache key work correctly for the dynamic
+        # access. If we don't remove it here, it could be added twice to the cache key
+        # on the next level.
+        {%{access_element => value},
+         context |> remove_last_element_from_cache_key() |> strip_child_resolver_key()}
+
+      value ->
+        {%{access_element => value},
+         context |> remove_last_element_from_cache_key() |> strip_child_resolver_key}
+    end
+  end
+
+  defp apply_lazy(value, _, context, _tail), do: {value, context}
 
   defp strip_cache_key({value, context}),
     do:
@@ -131,6 +178,34 @@ defmodule Liquex.Argument do
       context,
       :render_state,
       Map.put(context.render_state, :cache_key, (context.render_state[:cache_key] || []) ++ [key])
+    )
+  end
+
+  defp remove_last_element_from_cache_key(context) do
+    Map.put(
+      context,
+      :render_state,
+      Map.put(
+        context.render_state,
+        :cache_key,
+        List.delete_at(context.render_state[:cache_key], -1)
+      )
+    )
+  end
+
+  defp strip_child_resolver_key(context),
+    do:
+      Map.put(
+        context,
+        :render_state,
+        Map.put(context.render_state, :in_child_resolver, false)
+      )
+
+  defp set_child_resolver_key(context) do
+    Map.put(
+      context,
+      :render_state,
+      Map.put(context.render_state, :in_child_resolver, true)
     )
   end
 

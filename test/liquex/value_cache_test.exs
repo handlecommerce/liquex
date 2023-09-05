@@ -185,5 +185,33 @@ defmodule Liquex.ValueCacheTest do
       assert_received :called
       refute_received :called
     end
+
+    test "can access cache from within a dynamic resolver" do
+      resolver = fn _, ctx, param ->
+        cached = ValueCache.get_cached(ctx, param)
+
+        if cached do
+          {cached, ctx}
+        else
+          send(self(), :called)
+          {"John", ValueCache.cache(ctx, param, "John")}
+        end
+      end
+
+      {:ok, template_ast} = Liquex.parse("Hello {{ name.a }} {{ name.a }}")
+
+      {content, _context} =
+        Liquex.render!(
+          template_ast,
+          Liquex.Context.new(%{
+            "name" => resolver
+          })
+        )
+
+      assert Enum.join(content, "") == "Hello John John"
+
+      assert_received :called
+      refute_received :called
+    end
   end
 end
