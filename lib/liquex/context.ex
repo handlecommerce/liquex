@@ -60,6 +60,7 @@ defmodule Liquex.Context do
             file_system: nil,
             errors: [],
             cache: nil
+            cache_prefix: nil
 
   @type t :: %__MODULE__{
           environment: map(),
@@ -70,6 +71,7 @@ defmodule Liquex.Context do
           filter_module: module,
           file_system: struct,
           cache: term,
+          cache_prefix: String.t(),
           errors: list(Liquex.Error.t())
         }
 
@@ -92,6 +94,9 @@ defmodule Liquex.Context do
     * :filter_module - Module that will be used for filtering
 
     * :file_system - File loading module
+
+    * :cache_prefix - Prefix for cache keys, if you need separate partial caches
+      for multitenancy or otherwise
   """
   @spec new(map(), Keyword.t()) :: t()
   def new(environment, opts \\ []) do
@@ -101,7 +106,8 @@ defmodule Liquex.Context do
       scope: Scope.new(Keyword.get(opts, :scope, %{})),
       filter_module: Keyword.get(opts, :filter_module, Liquex.Filter),
       file_system: Keyword.get(opts, :file_system, %Liquex.BlankFileSystem{}),
-      cache: Keyword.get(opts, :cache, Liquex.Cache.DisabledCache)
+      cache: Keyword.get(opts, :cache, Liquex.Cache.DisabledCache),
+      cache_prefix: Keyword.get(opts, :cache_prefix, nil)
     }
   end
 
