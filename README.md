@@ -167,7 +167,7 @@ But all is not lost! Just use the manual cache:
 
 ```elixir
 products_resolver = fn _parent, context, product_id ->
-  cached = get_cached(context, param)
+  cached = get_cached(context, product_id)
   if cached do
     {cached, context}
   else
