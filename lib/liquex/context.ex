@@ -59,7 +59,7 @@ defmodule Liquex.Context do
             filter_module: Liquex.Filter,
             file_system: nil,
             errors: [],
-            cache: nil
+            cache: nil,
             cache_prefix: nil
 
   @type t :: %__MODULE__{
