@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.2] - 2023-09-19
+
+- Add cache prefix for multitenancy [#44](https://github.com/handlecommerce/liquex/pull/44)
+  - Thank you [dkulchenko](https://github.com/dkulchenko)
+    Allow the cache to have a prefix to support multiple caches in case Liquex
+    is used in a multitenant environment
+
 ## [0.10.1] - 2023-03-10
 
 - Deprecated Liquex.render/2 for Liquex.render!/2
