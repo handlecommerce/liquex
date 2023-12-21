@@ -20,10 +20,11 @@ defmodule Liquex do
   features are now included:
 
     * `{% render %}` tag
+    * `{% liquid %}` tag
 
   What is currently being worked on:
 
-    * `{% liquid %}` tag
+    * Inline comments
 
   ## Lazy variables
 
