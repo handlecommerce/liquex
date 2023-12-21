@@ -313,7 +313,7 @@ defmodule Liquex.Filter do
   ## Examples
 
       iex> Liquex.Filter.escape("Have you read 'James & the Giant Peach'?", %{})
-      "Have you read &apos;James &amp; the Giant Peach&apos;?"
+      "Have you read &#39;James &amp; the Giant Peach&#39;?"
 
       iex> Liquex.Filter.escape("Tetsuro Takara", %{})
       "Tetsuro Takara"

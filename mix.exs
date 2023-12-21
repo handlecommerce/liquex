@@ -35,14 +35,14 @@ defmodule Liquex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nimble_parsec, "~> 1.1"},
-      {:date_time_parser, "~> 1.1"},
-      {:html_entities, "~> 0.5.1"},
-      {:html_sanitize_ex, "~> 1.3.0"},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
-      {:jason, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:nimble_parsec, "~> 1.4"},
+      {:date_time_parser, "~> 1.2"},
+      {:html_entities, "~> 0.5.2"},
+      {:html_sanitize_ex, "~> 1.4.3"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4.2", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:jason, "~> 1.4", only: [:dev, :test], runtime: false},
       {:hrx, "~> 0.1.0", only: [:test], runtime: false}
     ]
   end
