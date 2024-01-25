@@ -1,0 +1,23 @@
+<===> inline_comments.json
+{}
+<===> inline_comments.liquid
+
+{% # for i in (1..3) -%}
+  Test
+  {{ i }}
+{% # endfor %}
+
+{%
+  ###############################
+  # This is a comment
+  # across multiple lines
+  ###############################
+%}
+
+{% liquid
+  # this is a comment within a liquid tag
+  assign topic = 'Learning about comments!'
+  echo topic
+
+  # Close out with another comment
+%}

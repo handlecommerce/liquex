@@ -8,8 +8,10 @@ defmodule Liquex.TestHelpers do
 
   def assert_parse_error(doc), do: assert({:error, _, _, _, _, _} = Liquex.Parser.Base.parse(doc))
 
-  def assert_match_liquid(path) do
+  def assert_match_liquid(path, opts \\ []) do
     {:ok, archive} = Hrx.load(path)
+
+    debug = Keyword.get(opts, :debug, false)
 
     object_json = get_file_contents(archive, ".json") || "{}"
     liquid = get_file_contents(archive, ".liquid")
@@ -23,6 +25,14 @@ defmodule Liquex.TestHelpers do
         output_diff(liquid_result, to_string(data))
 
         assert liquid_result == to_string(data)
+      else
+        if debug do
+          IO.puts("Liquid Gem Output:")
+          IO.puts(liquid_result)
+
+          IO.puts("\n\nLiquex Output:")
+          IO.puts(to_string(data))
+        end
       end
     else
       {:error, msg, _} ->
