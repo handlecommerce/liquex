@@ -1,30 +1,42 @@
 defmodule Liquex do
   @moduledoc """
+  # Liquex
+
+  A [Liquid](https://shopify.github.io/liquid/) template parser for Elixir.
+
   Liquid template renderer for Elixir with 100% compatibility with the
   [Liquid](https://shopify.github.io/liquid/) gem by [Shopify](https://www.shopify.com/).
+  If you find that this library is not byte for byte equivalent to liquid, please
+  [open an issue](https://github.com/markglenn/liquex/issues).
+
+  ## Installation
+
+  The package is [available in Hex](https://hex.pm/packages/liquex) and can be installed
+  by adding `liquex` to your list of dependencies in `mix.exs`:
+
+  ```elixir
+  def deps do
+    [
+      {:liquex, "~> 0.12.0"}
+    ]
+  end
+  ```
+
+  Documentation can be found at [https://hexdocs.pm/liquex](https://hexdocs.pm/liquex).
 
   ## Basic Usage
 
-      iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-      iex> {content, _context} = Liquex.render!(template_ast, %{"name" => "World"})
-      iex> content |> to_string()
-      "Hello World!"
+  ```elixir
+  iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
+  iex> {content, _context} = Liquex.render!(template_ast, %{"name" => "World"})
+
+  iex> content |> to_string()
+  "Hello World!"
+  ```
 
   ## Supported features
 
-  Currently, all standard Liquid tags, filters, and types are fully supported
-  for liquid prior to 5.0.0. Liquex can be considered a byte for byte drop in
-  replacement of the Liquid gem.
-
-  Work is under way to implement Liquid 5.x features. Right now, the following
-  features are now included:
-
-    * `{% render %}` tag
-    * `{% liquid %}` tag
-
-  What is currently being worked on:
-
-    * Inline comments
+  Liquex is byte for byte, 100% compatible with the latest Liquid gem.
 
   ## Lazy variables
 
@@ -38,14 +50,16 @@ defmodule Liquex do
   a function to the variable map. If a function is accessed in the variable
   map, it is executed.
 
-      products_resolver = fn _parent -> Product.all() end
+  ```elixir
+  products_resolver = fn _parent -> Product.all() end
 
-      with {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
-          {result, _} <- Liquex.render!(document, %{products: products_resolver}) do
-        result
-      end
+  with {:ok, document} <- Liquex.parse("There are {{ products.size }} products"),
+      {result, _} <- Liquex.render!(document, %{products: products_resolver}) do
+    result
+  end
 
-      iex> "There are 5 products"
+  "There are 5 products"
+  ```
 
   ## Indifferent access
 
@@ -57,10 +71,12 @@ defmodule Liquex do
   This allows you to pass in your structs without having to replace all your
   keys with string keys.
 
-      iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
-      iex> {content, _context} = Liquex.render!(template_ast, %{name: "World"})
-      iex> content |> to_string()
-      "Hello World!"
+  ```elixir
+  iex> {:ok, template_ast} = Liquex.parse("Hello {{ name }}!")
+  iex> {content, _context} = Liquex.render!(template_ast, %{name: "World"})
+  iex> content |> to_string()
+  "Hello World!"
+  ```
 
   ## Caching
 
@@ -71,8 +87,10 @@ defmodule Liquex do
   By default, caching is disabled, but you may use the built in ETS based cache by
   configuring it in your context.
 
-      :ok = Liquex.Cache.SimpleCache.init()
-      context = Context.new(%{...}, cache: Liquex.Cache.SimpleCache)
+  ```elixir
+  :ok = Liquex.Cache.SimpleCache.init()
+  context = Context.new(%{...}, cache: Liquex.Cache.SimpleCache)
+  ```
 
   The simple cache is by definition quite simple. To use a more complete caching
   system, such as [Cachex](https://github.com/whitfin/cachex), you can create a
@@ -89,75 +107,80 @@ defmodule Liquex do
   Liquex supports adding your own custom filters to the render pipeline.  When creating the context
   for the renderer, set the filter module to your own module.
 
-      defmodule CustomFilter do
-        # Import all the standard liquid filters
-        use Liquex.Filter
+  ```elixir
+  defmodule CustomFilter do
+    # Import all the standard liquid filters
+    use Liquex.Filter
 
-        def scream(value, _), do: String.upcase(value) <> "!"
-      end
+    def scream(value, _), do: String.upcase(value) <> "!"
+  end
 
-      context = Liquex.Context.new(%{}, filter_module: CustomFilter)
-      {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}"
+  context = Liquex.Context.new(%{}, filter_module: CustomFilter)
+  {:ok, template_ast} = Liquex.parse("{{'Hello World' | scream}}"
 
-      {result, _} = Liquex.render!(template_ast, context)
-      result |> to_string()
+  {result, _} = Liquex.render!(template_ast, context)
+  result |> to_string()
 
-      iex> "HELLO WORLD!"
+  iex> "HELLO WORLD!"
+  ```
 
   ## Custom tags
 
   One of the strong points for Liquex is that the tag parser can be extended to support non-standard
-  tags.  For example, Liquid used internally for the Shopify site includes a large range of tags that
+  tags. For example, Liquid used internally for the Shopify site includes a large range of tags that
   are not supported by the base Ruby gem.  These tags could also be added to Liquex by extending the
   liquid parser.
 
+  ```elixir
+  defmodule CustomTag do
+    @moduledoc false
 
-      defmodule CustomTag do
-       @moduledoc false
+    @behaviour Liquex.Tag
 
-       @behaviour Liquex.Tag
+    import NimbleParsec
 
-       import NimbleParsec
+    @impl true
+    # Parse <<Custom Tag>>
+    def parse() do
+      text =
+        lookahead_not(string(">>"))
+        |> utf8_char([])
+        |> times(min: 1)
+        |> reduce({Kernel, :to_string, []})
+        |> tag(:text)
 
-       @impl true
-       # Parse <<Custom Tag>>
-       def parse() do
-        text =
-  	      lookahead_not(string(">>"))
-  	      |> utf8_char([])
-  	      |> times(min: 1)
-  	      |> reduce({Kernel, :to_string, []})
-  	      |> tag(:text)
+      ignore(string("<<"))
+      |> optional(text)
+      |> ignore(string(">>"))
+    end
 
-        ignore(string("<<"))
-        |> optional(text)
-        |> ignore(string(">>"))
-       end
+    @impl true
+    def render(contents, context) do
+      {result, context} = Liquex.render!(contents, context)
+      {["Custom Tag: ", result], context}
+    end
+  end
 
-       @impl true
-       def render(contents, context) do
-        {result, context} = Liquex.render!(contents, context)
-        {["Custom Tag: ", result], context}
-       end
-      end
+  defmodule CustomParser do
+    use Liquex.Parser, tags: [CustomTag]
+  end
 
-      defmodule CustomParser do
-       use Liquex.Parser, tags: [CustomTag]
-      end
+  iex> document = Liquex.parse!("<<Hello World!>>", CustomParser)
+  iex> {result, _} = Liquex.render!(document, context)
+  iex> result |> to_string()
+  "Custom Tag: Hello World!"
+  ```
 
-      iex> document = Liquex.parse!("<<Hello World!>>", CustomParser)
-      iex> {result, _} = Liquex.render!(document, context)
-      iex> result |> to_string()
-      "Custom Tag: Hello World
+  ## Deviations from original Liquid gem
 
+  ### Whitespace is kept in empty blocks
 
-  ## Installation
-
-  Add the package to your `mix.exs` file.
-
-      def deps do
-        [{:liquex, "~> 0.7"}]
-      end
+  For performance reasons, whitespace is kept within empty blocks such as
+  for/if/unless. The liquid gem checks for "blank" renders and throws them away.
+  Instead, we continue to use IO lists to combine the output and don't check for
+  blank results to avoid too many conversions to strings.  Since Liquid is mostly
+  used for whitespace agnostic documents, this seemed like a decent tradeoff. If
+  you need better whitespace control, use `{%-`, `{{-`, `-%}`, and `-}}`.
 
   """
 
