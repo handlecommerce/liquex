@@ -14,7 +14,6 @@ defmodule Liquex.Parser.Literal do
 
       * "  "
       * "\r\n\t"
-      * "# comment"
   """
   @spec whitespace(NimbleParsec.t(), non_neg_integer()) :: NimbleParsec.t()
   def whitespace(combinator \\ empty(), min \\ 0) do
