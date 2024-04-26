@@ -558,19 +558,23 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.round(183.357, 2, %{})
       183.36
+
+      iex> Liquex.Filter.round(183.357, "invalid", %{})
+      183
+
+      iex> Liquex.Filter.round(183.357, 0, %{})
+      183
+
+      iex> Liquex.Filter.round(183.357, -1, %{})
+      183
   """
-  @spec round(binary | number | nil, binary | number | nil, any) :: number
-  def round(value, precision \\ 0, context),
-    do: do_round(to_number(value), to_number(precision), context)
+  @spec round(binary | number | nil, binary | number | nil, Context.t()) :: number
+  def round(value, precision \\ 0, _context),
+    do: do_round(to_number(value), to_number(precision))
 
-  defp do_round(value, _, _) when is_integer(value), do: value
-  defp do_round(value, precision, _) when precision <= 0, do: Float.round(value) |> trunc()
-
-  defp do_round(value, precision, _) do
-    # Special case negative and invalid precisions
-    precision = Enum.max([0, precision])
-    Float.round(value, precision)
-  end
+  defp do_round(value, _) when is_integer(value), do: value
+  defp do_round(value, precision) when precision <= 0, do: Float.round(value) |> trunc()
+  defp do_round(value, precision), do: Float.round(value, precision)
 
   @doc """
   Removes all whitespace (tabs, spaces, and newlines) from the right side of a string.

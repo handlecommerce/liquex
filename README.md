@@ -15,7 +15,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.12.0"}
+    {:liquex, "~> 0.13.0"}
   ]
 end
 ```

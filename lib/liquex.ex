@@ -17,7 +17,7 @@ defmodule Liquex do
   ```elixir
   def deps do
     [
-      {:liquex, "~> 0.12.0"}
+      {:liquex, "~> 0.13.0"}
     ]
   end
   ```
