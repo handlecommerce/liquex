@@ -11,5 +11,5 @@ defmodule Liquex.Cache do
   Fetch a value from cache. If the value doesn't exist, run the given function
   and store the results within the cache.
   """
-  @callback fetch(key, (-> value())) :: value()
+  @callback fetch(key, (() -> value())) :: value()
 end

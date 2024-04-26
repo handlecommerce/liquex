@@ -561,12 +561,10 @@ defmodule Liquex.Filter do
   """
   @spec round(binary | number | nil, binary | number | nil, any) :: number
   def round(value, precision \\ 0, context),
-    do: do_round(to_number(value), to_number(precision, false), context)
+    do: do_round(to_number(value), to_number(precision), context)
 
   defp do_round(value, _, _) when is_integer(value), do: value
-  defp do_round(value, precision, _) when precision == 0, do: Float.round(value) |> trunc()
-  defp do_round(value, precision, _) when precision < 0, do: Float.round(value)
-  defp do_round(value, nil, _), do: Float.round(value)
+  defp do_round(value, precision, _) when precision <= 0, do: Float.round(value) |> trunc()
 
   defp do_round(value, precision, _) do
     # Special case negative and invalid precisions
@@ -844,12 +842,10 @@ defmodule Liquex.Filter do
   """
   def where(list, key, _), do: Liquex.Collection.where(list, key)
 
-  defp to_number(value, allow_conversion_to_zero \\ true)
-  defp to_number(value, _) when is_number(value), do: value
-  defp to_number(nil, true), do: 0
-  defp to_number(nil, false), do: nil
+  defp to_number(nil), do: 0
+  defp to_number(value) when is_number(value), do: value
 
-  defp to_number(value, allow_conversion_to_zero) when is_binary(value) do
+  defp to_number(value) when is_binary(value) do
     case Integer.parse(value) do
       # Integer value
       {int_val, ""} ->
@@ -864,7 +860,7 @@ defmodule Liquex.Filter do
 
       # Unknown, so use Ruby's style of "Convert to 0 instead"
       _ ->
-        if allow_conversion_to_zero == true, do: 0, else: nil
+        0
     end
   end
 end

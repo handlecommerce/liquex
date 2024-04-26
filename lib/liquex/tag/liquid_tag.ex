@@ -36,12 +36,30 @@ defmodule Liquex.Tag.LiquidTag do
   @spec parse :: NimbleParsec.t()
   def parse do
     Tag.open_tag()
+    |> liquid_contents()
+    |> ignore(Literal.whitespace())
+    |> ignore(Tag.close_tag())
+  end
+
+  @impl true
+  @spec parse_liquid_tag :: NimbleParsec.t()
+  def parse_liquid_tag do
+    # Yo dawg! I heard you like liquid tags, so I put a liquid tag in your
+    # liquid tag so you can tag while you tag.
+
+    # This was added in reference to pull request 1731
+    # https://github.com/Shopify/liquid/pull/1731
+
+    liquid_contents()
+    |> ignore(Tag.end_liquid_line())
+  end
+
+  defp liquid_contents(combinator \\ empty()) do
+    combinator
     |> string("liquid")
     |> Literal.whitespace(1)
     |> ignore()
     |> tag(parsec(:liquid_tag_contents), :contents)
-    |> ignore(Literal.whitespace())
-    |> ignore(Tag.close_tag())
   end
 
   @impl true

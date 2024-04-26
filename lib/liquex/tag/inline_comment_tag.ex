@@ -1,11 +1,24 @@
 defmodule Liquex.Tag.InlineCommentTag do
   @moduledoc """
+  A tag that allows for inline comments using the # character.
+
+  ## liquid
+      Nothing in the comments will be rendered.
+      {% # This is a comment and won't be rendered %}
+
+      {% liquid # This is also a comment and won't be rendered %}
+
+
+  ### Output
+      Nothing in the comments will be rendered.
+
+
   """
 
   @behaviour Liquex.Tag
 
-  alias Liquex.Parser.Tag
   alias Liquex.Parser.Literal
+  alias Liquex.Parser.Tag
 
   import NimbleParsec
 

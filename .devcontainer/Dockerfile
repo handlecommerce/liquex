@@ -1,6 +1,6 @@
 FROM elixir:1.14
 
-ENV LIQUID_VERSION 5.4.0
+ENV LIQUID_VERSION 5.5.0
 
 # Install ruby. Since we are only using this to install Liquid,
 # we don't really care which version
