@@ -182,7 +182,7 @@ defmodule Liquex.Indifferent do
   defp access(data, key), do: Access.fetch(data, key)
 
   defp implements_behaviour?(map, behaviour) when is_struct(map) do
-    map.__struct__.module_info[:attributes]
+    map.__struct__.module_info()[:attributes]
     |> Keyword.get(:behaviour, [])
     |> Enum.member?(behaviour)
   end
