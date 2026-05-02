@@ -98,8 +98,8 @@ defmodule Liquex.Tag.IncrementTag do
     |> post_traverse({__MODULE__, :reverse_tags, []})
   end
 
-  def reverse_tags(_rest, args, context, _line, _offset),
-    do: {args |> Enum.reverse(), context}
+  def reverse_tags(rest, args, context, _line, _offset),
+    do: {rest, args |> Enum.reverse(), context}
 
   def render(
         [identifier: identifier, by: {default, increment}],
