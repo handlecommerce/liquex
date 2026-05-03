@@ -1,0 +1,15 @@
+<===> cycle.json
+{"g": "first", "h": "second"}
+
+<===> cycle.liquid
+== Bare cycle (anonymous group via args) ==
+{% cycle "a", "b", "c" %}{% cycle "a", "b", "c" %}{% cycle "a", "b", "c" %}{% cycle "a", "b", "c" %}
+
+== Literal-named groups have independent state ==
+{% cycle "x": 1, 2 %}{% cycle "y": 1, 2 %}{% cycle "x": 1, 2 %}{% cycle "y": 1, 2 %}
+
+== Variable group: same variable cycles together ==
+{% cycle g: 1, 2, 3 %}{% cycle g: 1, 2, 3 %}{% cycle g: 1, 2, 3 %}{% cycle g: 1, 2, 3 %}
+
+== Different variables resolving to different keys keep state separate ==
+{% cycle g: 1, 2 %}{% cycle h: 1, 2 %}{% cycle g: 1, 2 %}{% cycle h: 1, 2 %}

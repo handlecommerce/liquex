@@ -68,7 +68,7 @@ defmodule Liquex.Tag.CycleTag do
 
   def do_parse_cycle(combinator \\ empty()) do
     cycle_group =
-      Literal.literal()
+      Argument.argument()
       |> ignore(string(":"))
       |> ignore(Literal.non_breaking_whitespace())
 
@@ -92,18 +92,23 @@ defmodule Liquex.Tag.CycleTag do
   def render([], context), do: {[], context}
 
   def render([sequence: sequence], %Context{} = context),
-    do: render([group: sequence, sequence: sequence], context)
+    do: do_render(sequence, sequence, context)
 
-  def render([group: group, sequence: sequence], %Context{cycles: cycles} = context) do
-    index = Map.get(cycles, group, 0)
+  def render([group: group_ast, sequence: sequence], %Context{} = context) do
+    group_key = Liquex.Argument.eval(group_ast, context)
+    do_render(group_key, sequence, context)
+  end
 
+  defp do_render(group_key, sequence, %Context{cycles: cycles} = context) do
+    index = Map.get(cycles, group_key, 0)
     next_index = rem(index + 1, length(sequence))
 
     result =
       sequence
       |> Enum.at(index)
       |> Liquex.Argument.eval(context)
+      |> Liquex.Render.to_output_string()
 
-    {result, %{context | cycles: Map.put(cycles, group, next_index)}}
+    {result, %{context | cycles: Map.put(cycles, group_key, next_index)}}
   end
 end

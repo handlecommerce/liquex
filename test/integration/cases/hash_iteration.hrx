@@ -1,0 +1,14 @@
+<===> hash_iteration.json
+{"h": {"only": 1}}
+
+<===> hash_iteration.liquid
+{% for pair in h %}{{ pair[0] }}={{ pair[1] }} {% endfor %}
+{% for pair in h %}{{ pair }}|{% endfor %}
+{% for pair in h %}{{ pair.first }}-{{ pair.last }} {% endfor %}
+{% for pair in h %}{{ pair.size }} {% endfor %}
+{% for pair in h %}{{ forloop.index }}:{{ pair[0] }} {% endfor %}
+
+== List rendering with no separator ==
+{% assign arr = "1,2,3" | split: "," %}
+[{{ arr }}]
+{{ "a,b,c" | split: "," }}

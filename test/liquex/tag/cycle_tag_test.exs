@@ -65,6 +65,26 @@ defmodule Liquex.Tag.CycleTagTest do
              """) == "onetwothreeone"
     end
 
+    test "cycle group can be a variable" do
+      ctx = Context.new(%{"g" => "first", "h" => "second"})
+
+      # Same variable, three calls cycle through.
+      assert render(~s({% cycle g: 1, 2, 3 %}{% cycle g: 1, 2, 3 %}{% cycle g: 1, 2, 3 %}), ctx) ==
+               "123"
+
+      # Different group keys (different variable values) keep independent state.
+      assert render(
+               ~s({% cycle g: 1, 2 %}{% cycle h: 1, 2 %}{% cycle g: 1, 2 %}{% cycle h: 1, 2 %}),
+               ctx
+             ) == "1122"
+    end
+
+    test "different variables resolving to the same key share cycle state" do
+      ctx = Context.new(%{"a" => "shared", "b" => "shared"})
+
+      assert render(~s({% cycle a: 1, 2 %}{% cycle b: 1, 2 %}), ctx) == "12"
+    end
+
     test "named cycle" do
       {:ok, template} =
         """

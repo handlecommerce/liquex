@@ -46,6 +46,18 @@ defmodule Liquex.Render do
   defp do_render({{:tag, module}, contents}, context) when is_atom(module),
     do: module.render(contents, context)
 
+  @doc """
+  Renders a Liquid value as a string for `{{ }}` / `echo` output. Matches
+  Liquid's behavior of stringifying list elements and concatenating with no
+  separator (`[1, 2, 3]` -> `"123"`).
+  """
+  @spec to_output_string(any) :: binary
+  def to_output_string(value) when is_list(value),
+    do: Enum.map_join(value, "", &to_output_string/1)
+
+  def to_output_string(nil), do: ""
+  def to_output_string(value), do: to_string(value)
+
   @spec apply_filters(any, [Liquex.Filter.filter_t()], Context.t()) :: {any, Context.t()}
   def apply_filters(value, filters, %Context{} = context),
     do: Enum.reduce(filters, {value, context}, &apply_filter/2)

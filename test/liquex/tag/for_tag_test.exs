@@ -385,6 +385,39 @@ defmodule Liquex.Tag.ForTagTest do
              """) == "inner"
     end
 
+    test "for over a hash yields [key, value] pairs (single entry; deterministic)" do
+      ctx = Context.new(%{"h" => %{"a" => 1}})
+
+      assert render(~s({% for pair in h %}{{ pair[0] }}={{ pair[1] }} {% endfor %}), ctx) ==
+               "a=1"
+
+      assert render(~s({% for pair in h %}{{ pair.first }}-{{ pair.last }} {% endfor %}), ctx) ==
+               "a-1"
+
+      assert render(~s({% for pair in h %}{{ pair.size }} {% endfor %}), ctx) == "2"
+
+      # Bare {{ pair }} stringifies the [k, v] list with no separator (matches Liquid).
+      assert render(~s({% for pair in h %}{{ pair }} {% endfor %}), ctx) == "a1"
+    end
+
+    test "for over a hash exposes forloop.index across pairs" do
+      ctx = Context.new(%{"h" => %{"only" => 1}})
+
+      assert render(~s({% for p in h %}{{ forloop.index }}:{{ p[0] }} {% endfor %}), ctx) ==
+               "1:only"
+    end
+
+    test "{{ list }} renders elements joined with no separator" do
+      ctx = Context.new(%{"arr" => [1, 2, 3]})
+      assert render("{{ arr }}", ctx) == "123"
+
+      ctx = Context.new(%{"arr" => ["a", "b", "c"]})
+      assert render("{{ arr }}", ctx) == "abc"
+
+      ctx = Context.new(%{"arr" => [1, "a", 2.5]})
+      assert render("{{ arr }}", ctx) == "1a2.5"
+    end
+
     test "offset: continue resumes from where the previous loop on the same collection left off" do
       ctx = Context.new(%{"arr" => [1, 2, 3, 4, 5, 6, 7]})
 

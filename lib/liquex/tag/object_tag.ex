@@ -111,6 +111,6 @@ defmodule Liquex.Tag.ObjectTag do
       |> Liquex.Argument.eval(context)
       |> Render.apply_filters(filters, context)
 
-    {to_string(result), context}
+    {Render.to_output_string(result), context}
   end
 end
