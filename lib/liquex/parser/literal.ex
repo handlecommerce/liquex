@@ -155,15 +155,19 @@ defmodule Liquex.Parser.Literal do
   end
 
   defp float do
+    # Fractional digits use a digit-string (not `integer/1`) so leading zeros
+    # are preserved -- otherwise `0.02` would parse as `0.2`.
+    digits = ascii_string([?0..?9], min: 1)
+
     exponent =
       utf8_string([?e, ?E], 1)
       |> optional(utf8_string([?+, ?-], 1))
-      |> integer(min: 1)
+      |> concat(digits)
 
     optional(string("-"))
-    |> concat(integer(min: 1))
+    |> concat(digits)
     |> string(".")
-    |> concat(integer(min: 1))
+    |> concat(digits)
     |> optional(exponent)
     |> reduce({Enum, :join, []})
     |> map({String, :to_float, []})

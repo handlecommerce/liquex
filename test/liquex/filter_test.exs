@@ -111,9 +111,13 @@ defmodule Liquex.FilterTest do
   end
 
   describe "sum" do
-    test "sums numeric items" do
+    test "sums integer items" do
       assert Filter.sum([1, 2, 3], %{}) == 6
-      assert Filter.sum([1.5, 2.5], %{}) == 4.0
+    end
+
+    test "sums float items via Decimal precision" do
+      assert Decimal.equal?(Filter.sum([1.5, 2.5], %{}), Decimal.new("4.0"))
+      assert Decimal.equal?(Filter.sum([0.1, 0.2], %{}), Decimal.new("0.3"))
     end
 
     test "sums by property" do
@@ -127,6 +131,61 @@ defmodule Liquex.FilterTest do
 
     test "non-numeric items coerce to 0" do
       assert Filter.sum(["a", "b", 1], %{}) == 1
+    end
+  end
+
+  describe "decimal-precision arithmetic" do
+    # Liquid wraps native floats in BigDecimal for arithmetic, then converts the
+    # result back to Float for rendering. Liquex mirrors that with the Decimal
+    # library so `9.99 + 14.5` renders as `"24.49"` rather than the IEEE-noise
+    # `"24.490000000000002"` that raw Float arithmetic would produce.
+    defp render(template, ctx \\ %{}) do
+      {:ok, parsed} = Liquex.parse(template)
+      {result, _} = Liquex.render!(parsed, Liquex.Context.new(ctx))
+      to_string(result)
+    end
+
+    test "plus / minus / times / divided_by render Liquid's clean form" do
+      assert render("{{ 9.99 | plus: 14.5 }}") == "24.49"
+      assert render("{{ 0.1 | plus: 0.2 }}") == "0.3"
+      assert render("{{ 5 | minus: 0.5 }}") == "4.5"
+      assert render("{{ 100 | times: 3.5 }}") == "350.0"
+      assert render("{{ 9.99 | times: 2 }}") == "19.98"
+    end
+
+    test "integer/integer division floors (Ruby-style)" do
+      assert render("{{ 7 | divided_by: 4 }}") == "1"
+      assert render("{{ -7 | divided_by: 4 }}") == "-2"
+      assert render("{{ 7 | divided_by: -4 }}") == "-2"
+    end
+
+    test "any-float division renders with shortest-round-trip precision" do
+      # 16-digit precision matches Liquid's BigDecimal -> Float -> Float#to_s.
+      assert render("{{ 1 | divided_by: 3.0 }}") == "0.3333333333333333"
+      assert render("{{ 1.0 | divided_by: 3 }}") == "0.3333333333333333"
+    end
+
+    test "modulo handles floats and Ruby-style negative wrapping" do
+      assert render("{{ 10.5 | modulo: 3 }}") == "1.5"
+      assert render("{{ 10 | modulo: -3 }}") == "-2"
+      assert render("{{ -10 | modulo: 3 }}") == "2"
+    end
+
+    test "filter chains preserve Decimal precision" do
+      assert render("{{ 9.99 | times: 2 | plus: 0.02 }}") == "20.0"
+      assert render("{{ 1.5 | plus: 0.5 | times: 4 }}") == "8.0"
+    end
+
+    test "string operands coerce via Liquid's int/float dispatch" do
+      assert render(~s({{ "9.99" | plus: 14.5 }})) == "24.49"
+      assert render(~s({{ "5.5" | plus: 3 }})) == "8.5"
+      assert render(~s({{ "5" | plus: 3 }})) == "8"
+    end
+
+    test "Filter.plus returns Decimal when any operand is non-integer" do
+      assert Decimal.equal?(Filter.plus(9.99, 14.5, %{}), Decimal.new("24.49"))
+      assert Decimal.equal?(Filter.plus(5, 3.0, %{}), Decimal.new("8.0"))
+      assert Filter.plus(5, 3, %{}) == 8
     end
   end
 end

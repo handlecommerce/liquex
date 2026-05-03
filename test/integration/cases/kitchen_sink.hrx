@@ -140,8 +140,8 @@ tablerowloop fields:
 == Liquid tag (multi-statement) ==
 {% liquid
   assign label = "Total"
-  assign total = products | map: "id" | sum
+  assign total = products | map: "price" | sum
   echo label
-  echo ": "
+  echo ": $"
   echo total
 %}

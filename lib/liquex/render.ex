@@ -49,13 +49,19 @@ defmodule Liquex.Render do
   @doc """
   Renders a Liquid value as a string for `{{ }}` / `echo` output. Matches
   Liquid's behavior of stringifying list elements and concatenating with no
-  separator (`[1, 2, 3]` -> `"123"`).
+  separator (`[1, 2, 3]` -> `"123"`). Decimals are rendered via the float
+  shortest-round-trip form so `Decimal.new("24.49")` renders as `"24.49"`,
+  matching Ruby's `BigDecimal#to_f` -> `Float#to_s`.
   """
   @spec to_output_string(any) :: binary
   def to_output_string(value) when is_list(value),
     do: Enum.map_join(value, "", &to_output_string/1)
 
   def to_output_string(nil), do: ""
+
+  def to_output_string(%Decimal{} = d),
+    do: d |> Decimal.to_float() |> Float.to_string()
+
   def to_output_string(value), do: to_string(value)
 
   @spec apply_filters(any, [Liquex.Filter.filter_t()], Context.t()) :: {any, Context.t()}

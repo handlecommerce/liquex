@@ -1,0 +1,43 @@
+<===> decimal_arithmetic.json
+{"price": 9.99, "qty": 3, "rate": 0.0825}
+
+<===> decimal_arithmetic.liquid
+== Float arithmetic preserves human-readable values ==
+{{ 9.99 | plus: 14.5 }}
+{{ 0.1 | plus: 0.2 }}
+{{ 9.99 | times: 2 }}
+{{ 9.99 | minus: 0.99 }}
+
+== Integer arithmetic stays integer ==
+{{ 5 | plus: 3 }}
+{{ 7 | divided_by: 4 }}
+{{ -7 | divided_by: 4 }}
+{{ 10 | modulo: 3 }}
+
+== Mixed int/float promotes to float ==
+{{ 5 | plus: 3.0 }}
+{{ 5.0 | plus: 3 }}
+
+== Division precision matches Liquid (Float#to_s round-trip) ==
+{{ 1 | divided_by: 3.0 }}
+{{ 1.0 | divided_by: 3 }}
+{{ 100 | times: 3.5 }}
+
+== String coercion ==
+{{ "9.99" | plus: 14.5 }}
+{{ "5.5" | plus: 3 }}
+
+== Realistic chain: subtotal + tax ==
+{% assign subtotal = price | times: qty %}
+Subtotal: ${{ subtotal }}
+Tax: ${{ subtotal | times: rate | round: 2 }}
+
+== Modulo with floats and negatives ==
+{{ 10.5 | modulo: 3 }}
+{{ 10 | modulo: -3 }}
+{{ -10 | modulo: 3 }}
+
+== Comparisons via assigned variables ==
+{% if 9.99 == 9.99 %}eq{% endif %}
+{% assign sum1 = 0.1 | plus: 0.2 %}{% if sum1 == 0.3 %}sum-eq{% endif %}
+{% assign sum2 = 9.99 | plus: 14.5 %}{% if sum2 > 24 %}sum-gt{% endif %}

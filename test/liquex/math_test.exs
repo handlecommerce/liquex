@@ -63,9 +63,14 @@ defmodule Liquex.MathTest do
   end
 
   describe "add (IEEE 754 propagation)" do
-    test "regular numbers" do
+    test "integer + integer stays integer" do
       assert Math.add(2, 3) == 5
-      assert Math.add(2.5, 0.5) == 3.0
+    end
+
+    test "float arithmetic goes through Decimal" do
+      assert Decimal.equal?(Math.add(2.5, 0.5), Decimal.new("3.0"))
+      assert Decimal.equal?(Math.add(0.1, 0.2), Decimal.new("0.3"))
+      assert Decimal.equal?(Math.add(9.99, 14.5), Decimal.new("24.49"))
     end
 
     test "infinity dominates finite" do
@@ -145,9 +150,15 @@ defmodule Liquex.MathTest do
   end
 
   describe "divide" do
-    test "regular division" do
-      assert Math.divide(6, 2) == 3.0
-      assert Math.divide(7, 2) == 3.5
+    test "integer division floors (matches Ruby/Liquid)" do
+      assert Math.divide(6, 2) == 3
+      assert Math.divide(7, 2) == 3
+      assert Math.divide(-7, 4) == -2
+    end
+
+    test "float division returns Decimal" do
+      assert Decimal.equal?(Math.divide(7, 2.0), Decimal.new("3.5"))
+      assert Decimal.equal?(Math.divide(7.0, 2), Decimal.new("3.5"))
     end
 
     test "integer divisor zero returns sentinel for filter to convert" do
@@ -190,9 +201,14 @@ defmodule Liquex.MathTest do
   end
 
   describe "modulo" do
-    test "regular operands" do
+    test "integer modulo follows divisor sign (Ruby-style)" do
       assert Math.modulo(10, 3) == 1
-      assert_in_delta Math.modulo(10.5, 3), 1.5, 1.0e-9
+      assert Math.modulo(10, -3) == -2
+      assert Math.modulo(-10, 3) == 2
+    end
+
+    test "float modulo returns Decimal" do
+      assert Decimal.equal?(Math.modulo(10.5, 3), Decimal.new("1.5"))
     end
 
     test "modulo by float zero is NaN" do

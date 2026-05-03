@@ -259,6 +259,9 @@ defmodule Liquex.Filter do
   def ceil(nil, _), do: 0
   def ceil(%Special{} = s, _), do: Math.computation_error(s)
 
+  def ceil(%Decimal{} = d, _),
+    do: d |> Decimal.round(0, :ceiling) |> Decimal.to_integer()
+
   @doc """
   Removes any nil values from an array.
 
@@ -388,8 +391,11 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.divided_by(5, 3, %{})
       1
 
-      iex> Liquex.Filter.divided_by(20, 7.0, %{})
-      2.857142857142857
+      iex> Liquex.Filter.divided_by(20, 5, %{})
+      4
+
+      iex> Decimal.equal?(Liquex.Filter.divided_by(20, 7.0, %{}), Decimal.new("2.857142857142857142857142857"))
+      true
   """
   def divided_by(value, divisor, _) do
     value = to_number(value)
@@ -540,10 +546,11 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.floor(2.0, %{})
       2
   """
-  @spec floor(binary | number | Special.t() | nil, any) :: integer | binary
+  @spec floor(binary | number | Special.t() | Decimal.t() | nil, any) :: integer | binary
   def floor(value, _) do
     case to_number(value) do
       %Special{} = s -> Math.computation_error(s)
+      %Decimal{} = d -> d |> Decimal.round(0, :floor) |> Decimal.to_integer()
       n -> trunc(n)
     end
   end
@@ -625,8 +632,11 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.minus(4, 2, %{})
       2
 
-      iex> Liquex.Filter.minus(183.357, 12, %{})
-      171.357
+      iex> Liquex.Filter.minus(183, 12, %{})
+      171
+
+      iex> Decimal.equal?(Liquex.Filter.minus(183.357, 12, %{}), Decimal.new("171.357"))
+      true
   """
   @spec minus(number | nil, number | nil, Context.t()) :: number
   def minus(left, right, _), do: Math.sub(to_number(left), to_number(right))
@@ -639,8 +649,11 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.modulo(3, 2, %{})
       1
 
-      iex> Liquex.Filter.modulo(183.357, 12, %{})
-      3.357
+      iex> Liquex.Filter.modulo(183, 12, %{})
+      3
+
+      iex> Decimal.equal?(Liquex.Filter.modulo(10.5, 3, %{}), Decimal.new("1.5"))
+      true
   """
   @spec modulo(number | nil, number | nil, Context.t()) :: number
   def modulo(left, right, _) do
@@ -674,8 +687,14 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.plus(4, 2, %{})
       6
 
-      iex> Liquex.Filter.plus(183.357, 12, %{})
-      195.357
+      iex> Liquex.Filter.plus(183, 12, %{})
+      195
+
+      iex> Decimal.equal?(Liquex.Filter.plus(0.1, 0.2, %{}), Decimal.new("0.3"))
+      true
+
+      iex> Decimal.equal?(Liquex.Filter.plus(9.99, 14.5, %{}), Decimal.new("24.49"))
+      true
   """
   @spec plus(number | nil, number | nil, Context.t()) :: number
   def plus(left, right, _), do: Math.add(to_number(left), to_number(right))
@@ -836,6 +855,11 @@ defmodule Liquex.Filter do
     do: do_round(to_number(value), to_number(precision))
 
   defp do_round(%Special{} = s, _), do: Math.computation_error(s)
+
+  # Decimal inputs typically come from prior arithmetic; convert to float for
+  # the rounding to mirror Liquid's BigDecimal -> Float -> round path.
+  defp do_round(%Decimal{} = d, precision),
+    do: do_round(Decimal.to_float(d), precision)
 
   defp do_round(value, precision) when precision < 0 do
     factor = trunc(:math.pow(10, -precision))
@@ -1042,8 +1066,11 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.times(24, 7, %{})
       168
 
-      iex> Liquex.Filter.times(183.357, 12, %{})
-      2200.284
+      iex> Liquex.Filter.times(7, 12, %{})
+      84
+
+      iex> Decimal.equal?(Liquex.Filter.times(9.99, 2, %{}), Decimal.new("19.98"))
+      true
   """
   def times(value, divisor, _), do: Math.mul(to_number(value), to_number(divisor))
 
@@ -1212,6 +1239,7 @@ defmodule Liquex.Filter do
 
   defp to_number(nil), do: 0
   defp to_number(%Special{} = s), do: s
+  defp to_number(%Decimal{} = d), do: d
   defp to_number(value) when is_number(value), do: value
 
   defp to_number(value) when is_binary(value) do
