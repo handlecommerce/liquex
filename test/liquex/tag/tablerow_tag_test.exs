@@ -25,7 +25,11 @@ defmodule Liquex.Tag.TablerowTagTest do
           {:tag, Liquex.Tag.TablerowTag},
           identifier: "product",
           collection: [field: [key: "collection"]],
-          parameters: [cols: 2, limit: 3, offset: 2],
+          parameters: [
+            cols: {:literal, 2},
+            limit: {:literal, 3},
+            offset: {:literal, 2}
+          ],
           contents: [{{:tag, Liquex.Tag.ObjectTag}, [field: [key: "product"], filters: []]}]
         }
       ])
@@ -82,6 +86,35 @@ defmodule Liquex.Tag.TablerowTagTest do
                  ~s(</tr>\n<tr class="row2">) <>
                  ~s(<td class="col1">3-1-2-true-false-false-true|</td>) <>
                  ~s(</tr>\n)
+    end
+
+    test "tablerow accepts variables and string ints for cols/limit/offset" do
+      ctx =
+        Context.new(%{"arr" => [1, 2, 3, 4, 5, 6], "n" => 2, "off" => 1, "lim" => 3})
+
+      assert render_template(
+               ~s({% tablerow i in arr cols: n %}{{ i }}{% endtablerow %}),
+               ctx
+             ) ==
+               ~s(<tr class="row1">\n<td class="col1">1</td><td class="col2">2</td></tr>\n) <>
+                 ~s(<tr class="row2"><td class="col1">3</td><td class="col2">4</td></tr>\n) <>
+                 ~s(<tr class="row3"><td class="col1">5</td><td class="col2">6</td></tr>\n)
+
+      assert render_template(
+               ~s({% tablerow i in arr cols: n limit: lim, offset: off %}{{ i }}{% endtablerow %}),
+               ctx
+             ) ==
+               ~s(<tr class="row1">\n<td class="col1">2</td><td class="col2">3</td></tr>\n) <>
+                 ~s(<tr class="row2"><td class="col1">4</td></tr>\n)
+
+      # Liquid's loose coercion: string "3" should be treated as integer 3.
+      assert render_template(
+               ~s({% tablerow i in arr cols: "3" %}{{ i }}{% endtablerow %}),
+               Context.new(%{"arr" => [1, 2, 3, 4, 5, 6]})
+             ) ==
+               ~s(<tr class="row1">\n) <>
+                 ~s(<td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>\n) <>
+                 ~s(<tr class="row2"><td class="col1">4</td><td class="col2">5</td><td class="col3">6</td></tr>\n)
     end
 
     test "empty collection still emits an empty row" do

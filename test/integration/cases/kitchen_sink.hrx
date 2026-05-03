@@ -1,0 +1,147 @@
+<===> kitchen_sink.json
+{
+  "site": {"name": "Acme Co", "url": "https://acme.example/"},
+  "products": [
+    {"id": 1, "title": "Widget", "price": 9.99, "tags": ["a", "b"], "active": true},
+    {"id": 2, "title": "Gadget", "price": 14.5, "tags": ["b", "c"], "active": true},
+    {"id": 3, "title": "Doohickey", "price": null, "tags": ["a"], "active": false}
+  ],
+  "name": "Mark",
+  "answer": 42,
+  "ratio": 1.5,
+  "html": "<em>hi</em>",
+  "single": {"only": "value"},
+  "g": "first",
+  "h": "second"
+}
+
+<===> kitchen_sink.liquid
+== Object output and access ==
+Hello, {{ name }}!
+Site: {{ site.name }} ({{ site.url }})
+First product: {{ products[0].title }} -- ${{ products[0].price }}
+Tags: {% for t in products[0].tags %}{{ t }}{% unless forloop.last %}, {% endunless %}{% endfor %}
+products.size = {{ products.size }}
+products.first.title = {{ products.first.title }}
+products.last.id = {{ products.last.id }}
+
+== Whitespace control ==
+[{{- name -}}]
+[{%- if true -%}stripped{%- endif -%}]
+
+== Inline comments ==
+{% # nothing to see here %}before/after
+{% liquid
+  # comment in a liquid block
+  echo "x"
+%}
+
+== Comments and raw ==
+foo{% comment %}drop me{% endcomment %}bar
+{% raw %}{{ not_evaluated }}{% endraw %}
+
+== Assign / capture / increment / decrement ==
+{% assign greeting = "Hello, " | append: name %}{{ greeting }}
+{% capture caps %}I am {{ name }}, {{ answer }} years young.{% endcapture %}{{ caps }}
+{% increment ctr %}{% increment ctr %}{% increment ctr %}
+{% decrement neg %}{% decrement neg %}{% decrement neg %}
+
+== Conditionals ==
+{% if name == "Mark" %}me{% elsif name == "Mary" %}other{% else %}who?{% endif %}
+{% unless answer == 0 %}non-zero{% endunless %}
+{% if products[0].active and products[2].active %}both{% else %}not-both{% endif %}
+{% if "Mark" contains "ar" %}substring{% endif %}
+{% if products[0].tags contains "a" %}list-contains{% endif %}
+{% if 1 <> 2 %}not-equal-via-diamond{% endif %}
+{% unless answer == 0 %}u-true{% else %}u-false{% endunless %}
+{% unless answer == 42 %}u-true{% else %}u-false{% endunless %}
+
+== Case / when ==
+{% case answer %}{% when 1 or 2 %}small{% when 42 %}the answer{% else %}other{% endcase %}
+{% case name %}{% when "Mark", "Mary" %}M-name{% else %}other{% endcase %}
+
+== For loops ==
+{% for p in products %}{{ p.title }}{% unless forloop.last %}, {% endunless %}{% endfor %}
+{% for i in (1..3) %}{{ i }}{% endfor %}
+{% for p in products limit: 2 %}{{ p.id }} {% endfor %}
+{% for p in products offset: 1 %}{{ p.id }} {% endfor %}
+{% for p in products limit: 2 %}{{ p.id }}{% endfor %}|{% for p in products offset: continue %}{{ p.id }}{% endfor %}
+{% for p in products reversed %}{{ p.id }}{% endfor %}
+{% for p in products %}{% if p.id == 2 %}{% break %}{% endif %}{{ p.id }} {% endfor %}
+{% for p in products %}{% if p.id == 2 %}{% continue %}{% endif %}{{ p.id }} {% endfor %}
+{% for p in products %}{% for t in p.tags %}{{ forloop.parentloop.index }}.{{ forloop.index }}={{ t }} {% endfor %}{% endfor %}
+forloop fields: {% for p in products %}[{{ forloop.index0 }}/{{ forloop.length }} first={{ forloop.first }} last={{ forloop.last }} rindex={{ forloop.rindex }}]{% endfor %}
+
+== Hash iteration (single-entry) ==
+{% for pair in single %}{{ pair[0] }}={{ pair[1] }}|{{ pair.size }}{% endfor %}
+
+== Cycle ==
+{% cycle "a", "b", "c" %}{% cycle "a", "b", "c" %}{% cycle "a", "b", "c" %}{% cycle "a", "b", "c" %}
+{% cycle "x": 1, 2 %}{% cycle "y": 1, 2 %}{% cycle "x": 1, 2 %}{% cycle "y": 1, 2 %}
+{% cycle g: "p", "q" %}{% cycle g: "p", "q" %}{% cycle g: "p", "q" %}
+
+== Tablerow ==
+{% tablerow p in products cols: 2 %}{{ p.title }}{% endtablerow %}
+tablerowloop fields:
+{% tablerow p in products cols: 2 %}[{{ tablerowloop.index }}: r{{ tablerowloop.row }}c{{ tablerowloop.col }} cf={{ tablerowloop.col_first }} cl={{ tablerowloop.col_last }}]{% endtablerow %}
+
+== Filters ==
+{{ name | upcase }}
+{{ name | downcase }}
+{{ name | size }}
+{{ "  hello  " | strip }}
+{{ "<b>x</b>" | strip_html }}
+{{ "<b>x</b>" | escape }}
+{{ name | append: "!" | prepend: ">> " }}
+{{ name | replace: "Mark", "World" }}
+{{ name | replace_first: "M", "Q" }}
+{{ name | replace_last: "k", "Z" }}
+{{ "hello world" | remove: "o" }}
+{{ "hello world" | remove_first: "o" }}
+{{ "hello world" | remove_last: "o" }}
+{{ "abc" | slice: 1, 2 }}
+{{ products | map: "id" | join: "," }}
+{{ products | map: "id" | sum }}
+{{ products | reject: "active", false | map: "id" | join: "," }}
+{% assign found = products | find: "id", 2 %}{{ found.title }}
+{{ products | find_index: "id", 2 }}
+{{ products | has: "id", 99 }}
+{{ products | size }}
+{% assign first_p = products | first %}{{ first_p.title }}
+{% assign last_p = products | last %}{{ last_p.title }}
+{{ products | uniq: "id" | size }}
+{{ products | compact: "price" | size }}
+{{ products | where: "active", true | size }}
+{{ ratio | ceil }} {{ ratio | floor }} {{ ratio | round }} {{ ratio | round: 1 }}
+{{ answer | plus: 8 }} {{ answer | minus: 2 }} {{ answer | times: 2 }} {{ answer | divided_by: 5 }} {{ answer | modulo: 5 }}
+{{ answer | at_least: 100 }} {{ answer | at_most: 10 }}
+{{ answer | abs }}
+{{ "abc" | reverse }} {{ "abc" | first }} {{ "abc" | last }}
+{{ "abcdefghij" | truncate: 6 }}
+{{ "one two three four five" | truncatewords: 2 }}
+{{ "a,b,c" | split: "," | join: "|" }}
+{{ "  x\ny\n" | strip_newlines | rstrip }}
+{{ html | newline_to_br | strip_html }}
+{{ "Hello world" | url_encode }}
+{{ "_hello world?+/" | base64_encode }}
+{{ "X2hlbGxvIHdvcmxkPysv" | base64_url_safe_decode }}
+{{ "pizza" | default: "fallback" }} {{ "" | default: "fallback" }} {{ false | default: "fallback" }} {{ false | default: "fallback", allow_false: true }}
+
+== Numeric specials ==
+{% assign inf = 1 | divided_by: 0.0 %}
+{% assign nan = 0 | divided_by: 0.0 %}
+{{ inf }} {{ nan }} {{ inf | plus: 1 }} {{ inf | times: -1 }} {{ inf | divided_by: 2 }} {{ 1 | divided_by: inf }}
+{% if inf > 100 %}inf>100{% endif %}; {% if nan != nan %}nan!=nan{% endif %}
+
+== Range iteration ==
+{% for i in (1..3) %}{{ i }}{% endfor %}
+{{ products | map: "id" | join: "," }}
+
+== Liquid tag (multi-statement) ==
+{% liquid
+  assign label = "Total"
+  assign total = products | map: "id" | sum
+  echo label
+  echo ": "
+  echo total
+%}

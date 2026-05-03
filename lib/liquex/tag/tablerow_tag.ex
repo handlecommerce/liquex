@@ -150,20 +150,31 @@ defmodule Liquex.Tag.TablerowTag do
 
     cols =
       ignore(string("cols:"))
-      |> unwrap_and_tag(integer(min: 1), :cols)
       |> ignore(Literal.non_breaking_whitespace())
+      |> unwrap_and_tag(Argument.argument(), :cols)
 
     limit =
       ignore(string("limit:"))
-      |> unwrap_and_tag(integer(min: 1), :limit)
       |> ignore(Literal.non_breaking_whitespace())
+      |> unwrap_and_tag(Argument.argument(), :limit)
 
     offset =
       ignore(string("offset:"))
-      |> unwrap_and_tag(integer(min: 1), :offset)
       |> ignore(Literal.non_breaking_whitespace())
+      |> unwrap_and_tag(Argument.argument(), :offset)
 
-    tablerow_parameters = repeat(choice([cols, limit, offset]))
+    parameter = choice([cols, limit, offset])
+
+    parameters =
+      optional(
+        parameter
+        |> repeat(
+          ignore(Literal.non_breaking_whitespace())
+          |> optional(ignore(string(",")))
+          |> ignore(Literal.non_breaking_whitespace())
+          |> concat(parameter)
+        )
+      )
 
     combinator
     |> ignore(string("tablerow"))
@@ -174,7 +185,8 @@ defmodule Liquex.Tag.TablerowTag do
     |> ignore(Literal.non_breaking_whitespace(empty(), 1))
     |> tag(collection, :collection)
     |> ignore(Literal.non_breaking_whitespace())
-    |> tag(tablerow_parameters, :parameters)
+    |> tag(parameters, :parameters)
+    |> ignore(Literal.non_breaking_whitespace())
   end
 
   def render(
@@ -186,6 +198,7 @@ defmodule Liquex.Tag.TablerowTag do
         ],
         context
       ) do
+    parameters = evaluate_params(parameters, context)
     cols = Keyword.get(parameters, :cols)
 
     case collection
@@ -200,6 +213,26 @@ defmodule Liquex.Tag.TablerowTag do
         |> render_row(identifier, contents, cols, context)
     end
   end
+
+  # Resolves parameter ASTs (which can be literal integers, variables, or
+  # strings like "3") into integers, the way Liquid coerces them.
+  defp evaluate_params(parameters, context) do
+    Enum.map(parameters, fn {key, ast} ->
+      {key, ast |> Liquex.Argument.eval(context) |> to_integer()}
+    end)
+  end
+
+  defp to_integer(n) when is_integer(n), do: n
+  defp to_integer(n) when is_float(n), do: trunc(n)
+
+  defp to_integer(s) when is_binary(s) do
+    case Integer.parse(s) do
+      {n, _} -> n
+      :error -> 0
+    end
+  end
+
+  defp to_integer(_), do: 0
 
   defp render_row(collection, identifier, contents, cols, context) do
     items = Enum.to_list(collection)
