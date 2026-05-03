@@ -202,25 +202,32 @@ defmodule Liquex.Tag.ForTag do
     reversed =
       replace(string("reversed"), :reversed)
       |> unwrap_and_tag(:order)
-      |> ignore(Literal.non_breaking_whitespace())
 
     limit =
       ignore(string("limit:"))
-      |> unwrap_and_tag(integer(min: 1), :limit)
       |> ignore(Literal.non_breaking_whitespace())
+      |> unwrap_and_tag(integer(min: 1), :limit)
 
     offset =
       ignore(string("offset:"))
-      |> unwrap_and_tag(integer(min: 1), :offset)
       |> ignore(Literal.non_breaking_whitespace())
+      |> unwrap_and_tag(
+        choice([integer(min: 1), replace(string("continue"), :continue)]),
+        :offset
+      )
 
-    repeat(
-      choice([
-        reversed,
-        limit,
-        offset
-      ])
+    parameter = choice([reversed, limit, offset])
+
+    optional(
+      parameter
+      |> repeat(
+        ignore(Literal.non_breaking_whitespace())
+        |> optional(ignore(string(",")))
+        |> ignore(Literal.non_breaking_whitespace())
+        |> concat(parameter)
+      )
     )
+    |> ignore(Literal.non_breaking_whitespace())
   end
 
   defp else_tag do
@@ -239,11 +246,26 @@ defmodule Liquex.Tag.ForTag do
         ],
         %Context{} = context
       ) do
-    collection
-    |> Liquex.Argument.eval(context)
-    |> Expression.eval_collection(parameters)
-    |> Collection.to_enumerable()
-    |> render_collection(identifier, contents, else_contents, context)
+    {resolved_offset, parameters} = resolve_offset(parameters, collection, context)
+
+    items =
+      collection
+      |> Liquex.Argument.eval(context)
+      |> Expression.eval_collection(parameters)
+      |> case do
+        nil -> nil
+        c -> Collection.to_enumerable(c) |> Enum.to_list()
+      end
+
+    iter_count =
+      case items do
+        nil -> 0
+        list -> length(list)
+      end
+
+    context = put_continue_offset(context, collection, resolved_offset + iter_count)
+
+    render_collection(items, identifier, contents, else_contents, context)
   end
 
   def render(content, %Context{} = context) do
@@ -290,6 +312,33 @@ defmodule Liquex.Tag.ForTag do
       # credo:disable-for-next-line
       {Enum.reverse(result), context}
   end
+
+  # Resolves an `offset: continue` parameter against the running per-collection
+  # tally stored in `context.private`. Returns `{resolved_offset, parameters}`
+  # where parameters has any `:continue` replaced with an integer so the rest of
+  # the pipeline (Expression.eval_collection -> Collection.offset) sees a normal
+  # numeric offset.
+  defp resolve_offset(parameters, collection, context) do
+    case Keyword.get(parameters, :offset) do
+      :continue ->
+        offset = get_continue_offset(context, collection)
+        {offset, Keyword.put(parameters, :offset, offset)}
+
+      n when is_integer(n) ->
+        {n, parameters}
+
+      nil ->
+        {0, parameters}
+    end
+  end
+
+  defp continue_key(collection), do: {:for_continue, collection}
+
+  defp get_continue_offset(%Context{private: private}, collection),
+    do: Map.get(private, continue_key(collection), 0)
+
+  defp put_continue_offset(%Context{private: private} = context, collection, value),
+    do: %{context | private: Map.put(private, continue_key(collection), value)}
 
   defp forloop(index, length, parentloop) do
     %{

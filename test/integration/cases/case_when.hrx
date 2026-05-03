@@ -10,3 +10,23 @@
 {% else %}
   buzz
 {% endcase %}
+
+== `or` keyword joining values ==
+{% assign x = 2 %}
+{% case x %}
+{% when 1 or 2 %}A
+{% when 3 %}B
+{% else %}C{% endcase %}
+
+== variables in when ==
+{% assign y = 5 %}
+{% case y %}
+{% when y %}match
+{% else %}other{% endcase %}
+
+== mixed commas and `or` ==
+{% assign target = 7 %}
+{% assign other = 7 %}
+{% case target %}
+{% when 1, other or 9 %}hit
+{% else %}miss{% endcase %}

@@ -58,17 +58,36 @@ defmodule Liquex.Expression do
 
   @spec eval_collection(Collection.t(), Keyword.t()) :: Collection.t()
   def eval_collection(collection, parameters \\ [])
-  def eval_collection(collection, []), do: collection
+  def eval_collection(nil, _), do: nil
 
-  def eval_collection(collection, [{:limit, limit} | tail]),
-    do: collection |> Collection.limit(limit) |> eval_collection(tail)
+  def eval_collection(collection, parameters) do
+    # Liquid applies offset then limit regardless of declared order, then
+    # reverses last. Match that fixed order so output is independent of how
+    # the user spelled the parameters.
+    collection
+    |> apply_offset(parameters)
+    |> apply_limit(parameters)
+    |> apply_reverse(parameters)
+  end
 
-  def eval_collection(collection, [{:offset, offset} | tail]),
-    do: collection |> Collection.offset(offset) |> eval_collection(tail)
+  defp apply_offset(collection, parameters) do
+    case Keyword.get(parameters, :offset) do
+      nil -> collection
+      n -> Collection.offset(collection, n)
+    end
+  end
 
-  def eval_collection(collection, [{:order, :reversed} | tail]),
-    do: collection |> Collection.reverse() |> eval_collection(tail)
+  defp apply_limit(collection, parameters) do
+    case Keyword.get(parameters, :limit) do
+      nil -> collection
+      n -> Collection.limit(collection, n)
+    end
+  end
 
-  def eval_collection(collection, [{:cols, _} | tail]),
-    do: collection |> eval_collection(tail)
+  defp apply_reverse(collection, parameters) do
+    case Keyword.get(parameters, :order) do
+      :reversed -> Collection.reverse(collection)
+      _ -> collection
+    end
+  end
 end

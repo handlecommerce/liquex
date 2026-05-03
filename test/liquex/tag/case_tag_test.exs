@@ -109,6 +109,31 @@ defmodule Liquex.Tag.CaseTagTest do
              |> to_string()
              |> String.trim() == "Hello! Who are you?"
     end
+
+    test "when accepts the `or` keyword between values" do
+      template_src = ~s({% case x %}{% when 1 or 2 %}A{% when 3 %}B{% else %}C{% endcase %})
+
+      assert render(template_src, Context.new(%{"x" => 1})) == "A"
+      assert render(template_src, Context.new(%{"x" => 2})) == "A"
+      assert render(template_src, Context.new(%{"x" => 3})) == "B"
+      assert render(template_src, Context.new(%{"x" => 99})) == "C"
+    end
+
+    test "when accepts variable references" do
+      template_src = ~s({% case x %}{% when y %}match{% else %}other{% endcase %})
+
+      assert render(template_src, Context.new(%{"x" => 5, "y" => 5})) == "match"
+      assert render(template_src, Context.new(%{"x" => 5, "y" => 6})) == "other"
+    end
+
+    test "when accepts a mix of commas and `or` separators with variables" do
+      template_src = ~s({% case x %}{% when 1, y or 3 %}hit{% else %}miss{% endcase %})
+
+      assert render(template_src, Context.new(%{"x" => 1, "y" => 5})) == "hit"
+      assert render(template_src, Context.new(%{"x" => 5, "y" => 5})) == "hit"
+      assert render(template_src, Context.new(%{"x" => 3, "y" => 5})) == "hit"
+      assert render(template_src, Context.new(%{"x" => 99, "y" => 5})) == "miss"
+    end
   end
 
   describe "render with liquid tag" do

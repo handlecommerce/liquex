@@ -85,16 +85,17 @@ defmodule Liquex.Tag.CaseTag do
   end
 
   defp when_contents(combinator \\ empty()) do
+    separator =
+      ignore(Literal.whitespace())
+      |> ignore(choice([string(","), string("or")]))
+      |> ignore(Literal.whitespace(empty(), 1))
+
     combinator
     |> ignore(string("when"))
     |> ignore(Literal.whitespace(empty(), 1))
     |> tag(
-      Literal.literal()
-      |> repeat(
-        ignore(string(","))
-        |> ignore(Literal.whitespace(empty(), 1))
-        |> Literal.literal()
-      ),
+      Parser.Argument.argument()
+      |> repeat(separator |> Parser.Argument.argument()),
       :expression
     )
   end

@@ -249,7 +249,7 @@ defmodule Liquex.Tag.ForTagTest do
              |> to_string()
              |> String.trim()
              |> String.split("\n")
-             |> trim_list() == ~w(5)
+             |> trim_list() == ~w(3 2)
 
       assert render(
                """
@@ -258,7 +258,7 @@ defmodule Liquex.Tag.ForTagTest do
                endfor %}
                """,
                context
-             ) == "5"
+             ) == "32"
     end
 
     test "render loop with range" do
@@ -383,6 +383,47 @@ defmodule Liquex.Tag.ForTagTest do
 
               echo x %}
              """) == "inner"
+    end
+
+    test "offset: continue resumes from where the previous loop on the same collection left off" do
+      ctx = Context.new(%{"arr" => [1, 2, 3, 4, 5, 6, 7]})
+
+      template =
+        "{% for i in arr limit: 2 %}{{ i }} {% endfor %}" <>
+          "<>" <>
+          "{% for i in arr offset: continue %}{{ i }} {% endfor %}"
+
+      assert render(template, ctx) == "1 2 <>3 4 5 6 7"
+    end
+
+    test "offset: continue chains across multiple loops" do
+      ctx = Context.new(%{"arr" => [1, 2, 3, 4, 5, 6, 7]})
+
+      template =
+        "{% for i in arr limit: 2 %}{{ i }} {% endfor %}" <>
+          "<>" <>
+          "{% for i in arr limit: 2, offset: continue %}{{ i }} {% endfor %}" <>
+          "<>" <>
+          "{% for i in arr offset: continue %}{{ i }} {% endfor %}"
+
+      assert render(template, ctx) == "1 2 <>3 4 <>5 6 7"
+    end
+
+    test "offset: continue with no prior loop starts at 0" do
+      ctx = Context.new(%{"arr" => [1, 2, 3]})
+      assert render("{% for i in arr offset: continue %}{{ i }} {% endfor %}", ctx) == "1 2 3"
+    end
+
+    test "for parameters tolerate spaces after colon and commas between them" do
+      ctx = Context.new(%{"arr" => [1, 2, 3, 4, 5, 6, 7]})
+      assert render("{% for i in arr limit: 2, offset: 1 %}{{ i }} {% endfor %}", ctx) == "2 3"
+      assert render("{% for i in arr offset:1 limit:2 %}{{ i }} {% endfor %}", ctx) == "2 3"
+    end
+
+    test "offset/limit always apply offset first regardless of source order" do
+      ctx = Context.new(%{"arr" => [1, 2, 3, 4, 5, 6, 7]})
+      assert render("{% for i in arr limit:2 offset:1 %}{{ i }} {% endfor %}", ctx) == "2 3"
+      assert render("{% for i in arr offset:1 limit:2 %}{{ i }} {% endfor %}", ctx) == "2 3"
     end
 
     test "forloop.parentloop is nil at the top level" do
