@@ -71,16 +71,20 @@ defmodule Liquex.Parser.Literal do
   """
   @spec literal(NimbleParsec.t()) :: NimbleParsec.t()
   def literal(combinator \\ empty()) do
-    true_value = replace(string("true"), true)
-    false_value = replace(string("false"), false)
-
-    nil_value = replace(string("nil"), nil)
+    keyword = fn word, value ->
+      string(word)
+      |> lookahead_not(ascii_char([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ??]))
+      |> replace(value)
+    end
 
     combinator
     |> choice([
-      true_value,
-      false_value,
-      nil_value,
+      keyword.("true", true),
+      keyword.("false", false),
+      keyword.("nil", nil),
+      keyword.("null", nil),
+      keyword.("empty", Liquex.Special.empty()),
+      keyword.("blank", Liquex.Special.blank()),
       float(),
       int(),
       quoted_string()

@@ -1,0 +1,36 @@
+<===> inspect_output.json
+{"single": {"a": 1}, "with_nil": {"a": null}, "with_str": {"a": "hi"}, "with_array": {"a": [1, 2, 3]}, "deep": {"x": [{"y": 1}]}, "arr_of_hash": [{"x": 1}, {"y": 2}]}
+
+<===> inspect_output.liquid
+== Single-key hash ==
+{{ single }}
+{{ with_nil }}
+{{ with_str }}
+{{ with_array }}
+
+== Nested ==
+{{ deep }}
+
+== Array of hashes (top-level array still concatenates) ==
+{{ arr_of_hash }}
+
+== Empty hash ==
+{% assign eh = arr_of_hash | where: "z" %}
+{{ eh }}
+
+== Range output ==
+{{ (1..3) }}
+{% assign r = (1..3) %}{{ r }}
+{% assign r2 = (1..3) %}{{ r2 | join: "," }}
+{{ (1..3) | size }}
+{{ (1..3) | first }}
+{{ (1..3) | last }}
+
+== Reversed range -- forward-only ==
+{{ (5..1) }}
+{% for i in (5..1) %}NEVER{% else %}empty{% endfor %}
+{{ (5..1) | size }}
+{{ (5..1) | join: "," }}
+
+== Range with float bounds (truncated to int) ==
+{% for i in (1.5..3.5) %}{{ i }},{% endfor %}

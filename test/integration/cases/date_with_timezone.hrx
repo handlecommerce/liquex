@@ -1,0 +1,24 @@
+<===> date_with_timezone.liquid
+== Datetime strings with timezone offsets keep their time fields ==
+{{ "2024-01-02 12:34:56 +0500" | date: "%H" }}
+{{ "2024-01-02 12:34:56 +0500" | date: "%M" }}
+{{ "2024-01-02 12:34:56 +0500" | date: "%S" }}
+{{ "2024-01-02 12:34:56 +0500" | date: "%H:%M:%S" }}
+
+== Datetime strings preserve their offset (requires tzdata) ==
+{{ "2024-01-02 12:34:56 +0500" | date: "%z" }}
+{{ "2024-01-02 12:34:56 -0800" | date: "%z" }}
+{{ "2024-01-02T12:34:56Z" | date: "%z" }}
+
+== Date-only strings still work ==
+{{ "2024-01-02" | date: "%Y-%m-%d" }}
+{{ "2024-01-02" | date: "%A" }}
+{{ "2024-01-02" | date: "%B" }}
+
+== Unix timestamps render in host-local time (not UTC) ==
+{{ 1700000000 | date: "%Y" }}
+{{ 1700000000 | date: "%Y-%m-%d %H:%M:%S %z" }}
+
+== `'today'` and `'now'` render hour fields without crashing ==
+{{ "now" | date: "%Y" | size }}
+{{ "today" | date: "%Y" | size }}

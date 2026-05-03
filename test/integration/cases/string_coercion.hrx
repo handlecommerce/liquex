@@ -1,0 +1,26 @@
+<===> string_coercion.liquid
+== Strings with trailing junk parse to leading integer ==
+{{ "4.6abc" | ceil }}
+{{ "4.6abc" | floor }}
+{{ "4abc" | plus: 0 }}
+{{ "4.6abc" | times: 1 }}
+{{ "4abc" | ceil }}
+{{ "-4.6abc" | ceil }}
+
+== Pure decimal strings still parse as floats ==
+{{ "4.6" | ceil }}
+{{ "4.6" | floor }}
+{{ "-4.6" | ceil }}
+
+== Non-numeric strings yield 0 ==
+{{ "abc" | ceil }}
+{{ ".5abc" | ceil }}
+
+== String property access ==
+{% assign s = "hello" %}
+{{ s.size }}
+[{{ s.first }}]
+[{{ s.last }}]
+[{{ s.foo }}]
+{% if s.first == nil %}firstNil{% endif %}
+{% if s.size == 5 %}sizeOK{% endif %}

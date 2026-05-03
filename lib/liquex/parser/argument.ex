@@ -18,5 +18,5 @@ defmodule Liquex.Parser.Argument.Helper do
   alias Liquex.Parser.Field
   alias Liquex.Parser.Literal
 
-  defcombinator(:argument, choice([Literal.literal(), Field.field()]))
+  defcombinator(:argument, choice([Literal.literal(), Literal.range(), Field.field()]))
 end

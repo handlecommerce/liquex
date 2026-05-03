@@ -45,11 +45,15 @@ defmodule Liquex.Filter do
         __MODULE__
       end
 
-    Kernel.apply(mod, func, [value | function_args] ++ [context])
+    # Liquid's filters operate on Ruby Arrays; ranges go through `to_a` first.
+    Kernel.apply(mod, func, [normalize(value) | function_args] ++ [context])
   rescue
     # credo:disable-for-next-line
     ArgumentError -> raise Liquex.Error, "Invalid filter #{function}"
   end
+
+  defp normalize(%Range{} = r), do: Enum.to_list(r)
+  defp normalize(value), do: value
 
   # Merges the tuples at the end of the argument list into a keyword list, but with string keys
   #     value, size, {"crop", direction}, {"filter", filter}
@@ -246,13 +250,7 @@ defmodule Liquex.Filter do
       4
   """
   @spec ceil(number | String.t() | nil, map()) :: number
-  def ceil(value, _) when is_binary(value) do
-    case Float.parse(value) do
-      {num, ""} -> Float.ceil(num) |> trunc()
-      _ -> 0
-    end
-  end
-
+  def ceil(value, ctx) when is_binary(value), do: value |> to_number() |> ceil(ctx)
   def ceil(value, _) when is_float(value), do: Float.ceil(value) |> trunc()
   def ceil(value, _) when is_integer(value), do: value
   def ceil(nil, _), do: 0
@@ -326,27 +324,88 @@ defmodule Liquex.Filter do
   def date(%DateTime{} = value, format, _), do: Calendar.strftime(value, format)
   def date(%NaiveDateTime{} = value, format, _), do: Calendar.strftime(value, format)
 
-  def date("now", format, context), do: date(DateTime.utc_now(), format, context)
-  def date("today", format, context), do: date(Date.utc_today(), format, context)
+  def date(value, format, context) when value in ["now", "today"],
+    do: date(now_in_zone(context), format, context)
 
   def date(value, format, context) when is_integer(value),
-    do: date(DateTime.from_unix!(value), format, context)
+    do: date(unix_in_zone(value, context), format, context)
 
   def date(value, format, context) when is_binary(value) do
     # Thanks to the nonspecific definition of the format in the spec, we parse
-    # some common date formats
+    # some common date formats. Keep the full datetime (hours/minutes/etc.) so
+    # format directives like `%H` work; previously we degraded to a Date and
+    # crashed when the format asked for time fields.
     case DateTimeParser.parse_datetime(value, assume_time: true) do
-      {:ok, parsed_date} ->
-        parsed_date
-        |> NaiveDateTime.to_date()
-        |> date(format, context)
-
-      _ ->
-        nil
+      {:ok, parsed} -> date(parsed, format, context)
+      _ -> nil
     end
   end
 
   def date(nil, _, _), do: nil
+
+  # `'now'` / `'today'` and integer Unix timestamps render in the host's local
+  # timezone by default (matching Ruby's `Time.now`/`Time.at`, which honor
+  # `ENV['TZ']`). Set `Liquex.Context.new(.., timezone: "America/New_York")` to
+  # override -- requires a `tzdata`-backed `TimeZoneDatabase`.
+  defp now_in_zone(%Liquex.Context{timezone: nil}) do
+    utc = :calendar.universal_time()
+    build_local_datetime(:calendar.local_time(), utc)
+  end
+
+  defp now_in_zone(%Liquex.Context{timezone: tz}) do
+    case DateTime.now(tz) do
+      {:ok, dt} -> dt
+      {:error, reason} -> raise_tz_error(tz, reason)
+    end
+  end
+
+  defp now_in_zone(_), do: now_in_zone(%Liquex.Context{})
+
+  defp unix_in_zone(value, %Liquex.Context{timezone: nil}) do
+    utc_erl = DateTime.from_unix!(value) |> DateTime.to_naive() |> NaiveDateTime.to_erl()
+    local_erl = :calendar.universal_time_to_local_time(utc_erl)
+    build_local_datetime(local_erl, utc_erl)
+  end
+
+  defp unix_in_zone(value, %Liquex.Context{timezone: tz}) do
+    case value |> DateTime.from_unix!() |> DateTime.shift_zone(tz) do
+      {:ok, dt} -> dt
+      {:error, reason} -> raise_tz_error(tz, reason)
+    end
+  end
+
+  defp unix_in_zone(value, _), do: unix_in_zone(value, %Liquex.Context{})
+
+  defp raise_tz_error(tz, :utc_only_time_zone_database) do
+    raise Liquex.Error,
+          "Cannot use timezone #{inspect(tz)}: no tzdata-backed time zone " <>
+            "database is configured. Add `{:tzdata, \"~> 1.1\"}` and call " <>
+            "`Calendar.put_time_zone_database(Tzdata.TimeZoneDatabase)`."
+  end
+
+  defp raise_tz_error(tz, reason),
+    do: raise(Liquex.Error, "Cannot resolve timezone #{inspect(tz)}: #{inspect(reason)}")
+
+  defp build_local_datetime({{y, mo, d}, {h, mi, s}} = local_erl, utc_erl) do
+    offset =
+      :calendar.datetime_to_gregorian_seconds(local_erl) -
+        :calendar.datetime_to_gregorian_seconds(utc_erl)
+
+    %DateTime{
+      year: y,
+      month: mo,
+      day: d,
+      hour: h,
+      minute: mi,
+      second: s,
+      microsecond: {0, 0},
+      time_zone: System.get_env("TZ") || "Etc/Local",
+      zone_abbr: "",
+      utc_offset: offset,
+      std_offset: 0,
+      calendar: Calendar.ISO
+    }
+  end
 
   @doc """
   Allows you to specify a fallback in case a value doesn’t exist. default will show its value
@@ -1087,11 +1146,8 @@ defmodule Liquex.Filter do
     if String.length(value) <= length do
       value
     else
-      String.slice(
-        value,
-        0,
-        length - String.length(ellipsis)
-      ) <> ellipsis
+      slice_length = max(length - String.length(ellipsis), 0)
+      String.slice(value, 0, slice_length) <> ellipsis
     end
   end
 
@@ -1232,20 +1288,23 @@ defmodule Liquex.Filter do
   defp to_number(value) when is_number(value), do: value
 
   defp to_number(value) when is_binary(value) do
+    # Match Liquid: a string that is fully `-?\d+\.\d+` parses as a float
+    # (BigDecimal in Ruby); otherwise fall back to `String#to_i`, which parses
+    # leading digits and yields 0 if none. So `'4.6abc'` -> 4, not 0 or 4.6.
     case Integer.parse(value) do
-      # Integer value
       {int_val, ""} ->
         int_val
 
-      # Floating point value
-      {_, "." <> _rest} ->
+      {int_val, "." <> _rest} ->
         case Float.parse(value) do
           {float_value, ""} -> float_value
-          _ -> 0.0
+          _ -> int_val
         end
 
-      # Unknown, so use Ruby's style of "Convert to 0 instead"
-      _ ->
+      {int_val, _rest} ->
+        int_val
+
+      :error ->
         0
     end
   end

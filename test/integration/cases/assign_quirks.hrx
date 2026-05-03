@@ -1,0 +1,22 @@
+<===> assign_quirks.json
+{"a": "hello", "b": "world", "x": null}
+
+<===> assign_quirks.liquid
+== Liquid's lax `assign` keeps just the first operand ==
+{% assign c1 = 1 == 1 %}{{ c1 }}
+{% assign c2 = 1 < 2 %}{{ c2 }}
+{% assign c3 = a == b %}{{ c3 }}
+{% assign c4 = true and false %}{{ c4 }}
+{% assign c5 = x or "fallback" %}[{{ c5 }}]
+{% assign c6 = a or b %}{{ c6 }}
+
+== Filters still apply after the silently-dropped junk ==
+{% assign f1 = 1 < 2 | append: "!" %}{{ f1 }}
+{% assign f2 = a and b | upcase %}{{ f2 }}
+{% assign f3 = 1 == 2 | times: 10 %}{{ f3 }}
+
+== Normal assign forms still work ==
+{% assign n1 = 5 %}{{ n1 }}
+{% assign n2 = 5 | plus: 1 %}{{ n2 }}
+{% assign n3 = "hi" %}{{ n3 }}
+{% assign n4 = (1..3) %}{{ n4 | join: "," }}

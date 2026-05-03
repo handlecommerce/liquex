@@ -1,0 +1,38 @@
+<===> empty_blank.json
+{"empty_str": "", "blank_str": "   ", "empty_arr": [], "empty_hash": {}, "name": "alice"}
+
+<===> empty_blank.liquid
+== empty matches ==
+{% if empty_str == empty %}T{% else %}F{% endif %}
+{% if empty_arr == empty %}T{% else %}F{% endif %}
+{% if empty_hash == empty %}T{% else %}F{% endif %}
+
+== empty does NOT match ==
+{% if blank_str == empty %}T{% else %}F{% endif %}
+{% if missing == empty %}T{% else %}F{% endif %}
+{% if name == empty %}T{% else %}F{% endif %}
+
+== blank matches nothing in plain Liquid ==
+{% if empty_str == blank %}T{% else %}F{% endif %}
+{% if blank_str == blank %}T{% else %}F{% endif %}
+{% if missing == blank %}T{% else %}F{% endif %}
+{% if empty_arr == blank %}T{% else %}F{% endif %}
+
+== Reversed operands ==
+{% if empty == empty_str %}T{% else %}F{% endif %}
+{% if blank == empty_str %}T{% else %}F{% endif %}
+
+== Inequality ==
+{% if missing != empty %}T{% else %}F{% endif %}
+{% if empty_str != empty %}T{% else %}F{% endif %}
+
+== empty/blank/null literals render ==
+[{{ empty }}]
+[{{ blank }}]
+[{{ null }}]
+
+== null is alias for nil ==
+{% if missing == null %}T{% else %}F{% endif %}
+
+== Identifiers prefixed with literal keywords still work ==
+{{ emptyset }}{{ blanket }}{{ nullable }}

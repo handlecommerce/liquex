@@ -1,0 +1,22 @@
+<===> float_format.liquid
+== Decimal range: -4 <= order <= 14 ==
+{{ 0.0001 | times: 1 }}
+{{ 0.001 | times: 1 }}
+{{ 1.5 | times: 1 }}
+{{ 100.5 | times: 1 }}
+{{ 1000000000 | times: 1.0 }}
+{{ 100000000000000 | times: 1.0 }}
+
+== Scientific: order < -4 ==
+{{ 0.00001 | times: 1 }}
+{{ 0.00009 | times: 1 }}
+{{ -0.00001 | times: 1 }}
+
+== Scientific: order >= 15 ==
+{{ 1000000000000000 | times: 1.0 }}
+{{ 10000000000000000 | times: 1.0 }}
+
+== Plus/times preserves Ruby float format ==
+{{ 0.1 | plus: 0.2 }}
+{{ 0.1 | times: 3 }}
+{{ 1.5 | divided_by: 2 }}

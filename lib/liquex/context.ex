@@ -60,7 +60,8 @@ defmodule Liquex.Context do
             file_system: nil,
             errors: [],
             cache: nil,
-            cache_prefix: nil
+            cache_prefix: nil,
+            timezone: nil
 
   @type t :: %__MODULE__{
           environment: map(),
@@ -72,7 +73,8 @@ defmodule Liquex.Context do
           file_system: struct,
           cache: term,
           cache_prefix: String.t(),
-          errors: list(Liquex.Error.t())
+          errors: list(Liquex.Error.t()),
+          timezone: nil | String.t()
         }
 
   alias Liquex.Indifferent
@@ -97,6 +99,12 @@ defmodule Liquex.Context do
 
     * :cache_prefix - Prefix for cache keys, if you need separate partial caches
       for multitenancy or otherwise
+
+    * :timezone - IANA name (e.g. `"America/New_York"`) used by the `date` filter
+      for `'now'`/`'today'`/integer Unix timestamps. Requires a tzdata-backed
+      `TimeZoneDatabase` configured via `Calendar.put_time_zone_database/1`.
+      Defaults to `nil`, which means "use the host's local time" (same as
+      Ruby's `Time.now`, honoring the `TZ` environment variable).
   """
   @spec new(map(), Keyword.t()) :: t()
   def new(environment, opts \\ []) do
@@ -107,7 +115,8 @@ defmodule Liquex.Context do
       filter_module: Keyword.get(opts, :filter_module, Liquex.Filter),
       file_system: Keyword.get(opts, :file_system, %Liquex.BlankFileSystem{}),
       cache: Keyword.get(opts, :cache, Liquex.Cache.DisabledCache),
-      cache_prefix: Keyword.get(opts, :cache_prefix, nil)
+      cache_prefix: Keyword.get(opts, :cache_prefix, nil),
+      timezone: Keyword.get(opts, :timezone)
     }
   end
 
@@ -208,7 +217,8 @@ defmodule Liquex.Context do
     new(environment,
       static_environment: context.static_environment,
       filter_module: context.filter_module,
-      file_system: context.file_system
+      file_system: context.file_system,
+      timezone: context.timezone
     )
   end
 end

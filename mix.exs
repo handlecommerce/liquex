@@ -42,7 +42,8 @@ defmodule Liquex.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:jason, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:hrx, "~> 0.2.0", only: [:test], runtime: false}
+      {:hrx, "~> 0.2.0", only: [:test], runtime: false},
+      {:tzdata, "~> 1.1", only: [:test]}
     ]
   end
 

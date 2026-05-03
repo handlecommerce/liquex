@@ -26,6 +26,61 @@ defmodule Liquex.FilterTest do
              )
   end
 
+  describe "date with timezone context" do
+    defp render!(template, ctx) do
+      {:ok, ast} = Liquex.parse(template)
+      {data, _} = Liquex.render!(ast, ctx)
+      to_string(data)
+    end
+
+    test "Etc/UTC override forces zero offset" do
+      ctx = Liquex.Context.new(%{}, timezone: "Etc/UTC")
+      assert render!("{{ 'now' | date: '%z' }}", ctx) == "+0000"
+    end
+
+    test "named zone shifts the wall clock and offset" do
+      ctx = Liquex.Context.new(%{}, timezone: "America/New_York")
+      # 2023-11-14 22:13:20 UTC -> 17:13:20-05:00
+      assert render!("{{ 1700000000 | date: '%Y-%m-%d %H:%M:%S %z' }}", ctx) ==
+               "2023-11-14 17:13:20 -0500"
+    end
+
+    test "named zone applies to 'now'" do
+      ctx = Liquex.Context.new(%{}, timezone: "Asia/Tokyo")
+      assert render!("{{ 'now' | date: '%z' }}", ctx) == "+0900"
+    end
+
+    test "missing zone gives a clear Liquex error, not a vague filter error" do
+      ctx = Liquex.Context.new(%{}, timezone: "Mars/Olympus_Mons")
+
+      assert_raise Liquex.Error, ~r/Cannot resolve timezone/, fn ->
+        render!("{{ 'now' | date: '%z' }}", ctx)
+      end
+    end
+
+    test "default (no :timezone option) renders in host-local time" do
+      ctx = Liquex.Context.new(%{})
+      # Whatever the host TZ is, the offset matches the host's libc localtime.
+      assert render!("{{ 1700000000 | date: '%z' }}", ctx) ==
+               format_offset_at_unix(1_700_000_000)
+    end
+
+    defp format_offset_at_unix(unix) do
+      utc_erl = DateTime.from_unix!(unix) |> DateTime.to_naive() |> NaiveDateTime.to_erl()
+      local_erl = :calendar.universal_time_to_local_time(utc_erl)
+
+      offset =
+        :calendar.datetime_to_gregorian_seconds(local_erl) -
+          :calendar.datetime_to_gregorian_seconds(utc_erl)
+
+      sign = if offset < 0, do: "-", else: "+"
+      abs = abs(offset)
+      hours = div(abs, 3600) |> Integer.to_string() |> String.pad_leading(2, "0")
+      mins = (rem(abs, 3600) |> div(60)) |> Integer.to_string() |> String.pad_leading(2, "0")
+      sign <> hours <> mins
+    end
+  end
+
   describe "base64" do
     test "encode and decode round-trip" do
       assert Filter.base64_encode("_hello_", %{}) == "X2hlbGxvXw=="

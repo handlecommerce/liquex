@@ -1,0 +1,17 @@
+<===> truncate_edge.liquid
+== truncate with non-positive lengths returns just the ellipsis ==
+[{{ "hello" | truncate: -3 }}]
+[{{ "hello" | truncate: -1 }}]
+[{{ "hello" | truncate: 0 }}]
+[{{ "hello" | truncate: 1 }}]
+[{{ "hello" | truncate: 2 }}]
+[{{ "hello" | truncate: 3 }}]
+[{{ "hello" | truncate: 4 }}]
+[{{ "hello" | truncate: 5 }}]
+[{{ "hello" | truncate: 6 }}]
+
+== Custom ellipsis ==
+[{{ "hello" | truncate: 0, "X" }}]
+[{{ "hello" | truncate: -3, "..." }}]
+[{{ "hello world" | truncate: 5, "..." }}]
+[{{ "hello world" | truncate: 8, ", and so on" }}]

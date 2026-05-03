@@ -45,6 +45,11 @@ defmodule Liquex.Expression do
   defp do_eval({left, :contains, right}),
     do: String.contains?(to_string(left), to_string(right))
 
+  defp do_eval({%Liquex.Special{} = s, :==, right}), do: Liquex.Special.equal?(s, right)
+  defp do_eval({left, :==, %Liquex.Special{} = s}), do: Liquex.Special.equal?(s, left)
+  defp do_eval({%Liquex.Special{} = s, :!=, right}), do: not Liquex.Special.equal?(s, right)
+  defp do_eval({left, :!=, %Liquex.Special{} = s}), do: not Liquex.Special.equal?(s, left)
+
   defp do_eval({left, op, right})
        when is_struct(left, Decimal) or is_struct(right, Decimal),
        do: Liquex.Math.apply_op(op, left, right)

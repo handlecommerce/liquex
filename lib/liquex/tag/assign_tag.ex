@@ -50,8 +50,33 @@ defmodule Liquex.Tag.AssignTag do
   end
 
   def assign_contents(combinator \\ empty()) do
+    # Liquid's lax `Variable` parser captures the first quoted fragment as the
+    # value and silently swallows any comparison/boolean operators that
+    # appear before the first `|`. So `assign x = 1 == 1` and
+    # `assign x = nothing or 'hi' | append: '!'` keep just the leading
+    # operand. Match the quirk so templates render byte-for-byte.
+    junk_between_value_and_filters =
+      ignore(Literal.whitespace(empty(), 1))
+      |> ignore(
+        choice([
+          string("=="),
+          string("!="),
+          string("<>"),
+          string(">="),
+          string("<="),
+          string(">"),
+          string("<"),
+          keyword("contains"),
+          keyword("and"),
+          keyword("or")
+        ])
+      )
+      |> ignore(Literal.whitespace(empty(), 1))
+      |> ignore(Argument.argument())
+
     literal_and_filters =
       Argument.argument()
+      |> repeat(junk_between_value_and_filters)
       |> optional(tag(repeat(Object.filter()), :filters))
 
     combinator
@@ -62,6 +87,11 @@ defmodule Liquex.Tag.AssignTag do
     |> ignore(string("="))
     |> ignore(Literal.whitespace())
     |> tag(literal_and_filters, :right)
+  end
+
+  defp keyword(word) do
+    string(word)
+    |> lookahead_not(ascii_char([?a..?z, ?A..?Z, ?0..?9, ?_, ?-, ??]))
   end
 
   def render([left: left, right: [right, filters: filters]], %Context{} = context)
