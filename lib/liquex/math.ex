@@ -1,232 +1,166 @@
-defmodule Liquex.Math.Special do
-  @moduledoc false
-
-  # Sentinel for IEEE 754 specials that BEAM cannot represent natively
-  # (Erlang's float type is restricted to finite values). Constructed by
-  # arithmetic that overflows division by 0.0 and propagated through the
-  # math filters and comparisons in expressions, matching Liquid's rendering
-  # of `Float::INFINITY` / `Float::NAN`.
-
-  defstruct [:type]
-  @type t :: %__MODULE__{type: :infinity | :neg_infinity | :nan}
-
-  defimpl String.Chars do
-    def to_string(%{type: :infinity}), do: "Infinity"
-    def to_string(%{type: :neg_infinity}), do: "-Infinity"
-    def to_string(%{type: :nan}), do: "NaN"
-  end
-
-  defimpl Inspect do
-    def inspect(%{type: :infinity}, _), do: "#Liquex.Math<Infinity>"
-    def inspect(%{type: :neg_infinity}, _), do: "#Liquex.Math<-Infinity>"
-    def inspect(%{type: :nan}, _), do: "#Liquex.Math<NaN>"
-  end
-end
-
 defmodule Liquex.Math do
   @moduledoc false
 
-  alias Liquex.Math.Special
+  # Numeric helpers that mirror Liquid's BigDecimal-backed arithmetic.
+  #
+  # - Integer arithmetic stays Integer (5 + 3 = 8).
+  # - Anything involving a Float, Decimal, or special value goes through
+  #   `Decimal` so `9.99 + 14.5` is exactly `Decimal "24.49"` instead of the
+  #   IEEE-noise `24.490000000000002`.
+  # - IEEE 754 specials (Infinity, -Infinity, NaN) are Decimal's native
+  #   representations: `Decimal.new("Infinity")` etc. Their `String.Chars`
+  #   form is already `"Infinity"` / `"-Infinity"` / `"NaN"`, matching
+  #   Liquid's `Float::INFINITY.to_s` and friends.
+  # - We run all Decimal calls inside a context with traps disabled so
+  #   invalid operations (`Inf - Inf`, `Inf * 0`) return signaling values
+  #   instead of raising.
 
-  @infinity %Special{type: :infinity}
-  @neg_infinity %Special{type: :neg_infinity}
-  @nan %Special{type: :nan}
+  @ctx %Decimal.Context{
+    precision: 28,
+    rounding: :half_up,
+    flags: [],
+    traps: []
+  }
 
-  def infinity, do: @infinity
-  def neg_infinity, do: @neg_infinity
-  def nan, do: @nan
+  defp with_ctx(fun), do: Decimal.Context.with(@ctx, fun)
 
-  def special?(%Special{}), do: true
+  # ---- Constructors and predicates ---------------------------------------
+
+  def infinity, do: Decimal.new("Infinity")
+  def neg_infinity, do: Decimal.new("-Infinity")
+  def nan, do: Decimal.new("NaN")
+
+  def special?(%Decimal{coef: c}) when c in [:inf, :NaN, :qNaN, :sNaN], do: true
   def special?(_), do: false
 
-  def nan?(%Special{type: :nan}), do: true
+  def nan?(%Decimal{coef: c}) when c in [:NaN, :qNaN, :sNaN], do: true
   def nan?(_), do: false
 
-  def infinite?(%Special{type: t}) when t in [:infinity, :neg_infinity], do: true
+  def infinite?(%Decimal{coef: :inf}), do: true
   def infinite?(_), do: false
 
   # Liquid converts native floats to BigDecimal via the float's string form so
-  # that arithmetic preserves the human-readable value (`9.99` stays `9.99`,
-  # not the IEEE-noise `9.99000000000000017...`). We mirror that with `Decimal`:
-  # `9.99 + 14.5` becomes `Decimal.add(Decimal.new("9.99"), Decimal.new("14.5"))
-  # == Decimal "24.49"`. The result is rendered by converting Decimal to Float
-  # for shortest-round-trip output (matching Ruby's `BigDecimal#to_f` then
-  # `Float#to_s`).
+  # that arithmetic preserves the human-readable value (`9.99` stays `9.99`).
   defp to_decimal(%Decimal{} = d), do: d
   defp to_decimal(n) when is_integer(n), do: Decimal.new(n)
   defp to_decimal(n) when is_float(n), do: n |> Float.to_string() |> Decimal.new()
 
-  defp dec_zero?(%Decimal{} = d), do: Decimal.equal?(d, 0)
+  defp dec_zero?(%Decimal{coef: 0}), do: true
+  defp dec_zero?(%Decimal{}), do: false
   defp dec_zero?(n) when is_integer(n) or is_float(n), do: n == 0
 
-  defp dec_positive?(%Decimal{} = d), do: Decimal.positive?(d)
-  defp dec_positive?(n) when is_number(n), do: n > 0
-
-  defp dec_negative?(%Decimal{} = d), do: Decimal.negative?(d)
-  defp dec_negative?(n) when is_number(n), do: n < 0
-
-  # Build the appropriate special when dividing by zero. Mirrors IEEE 754:
-  #  +x / +0.0 -> +inf,  -x / +0.0 -> -inf,  0 / +0.0 -> NaN.
-  def from_zero_div(value) do
-    cond do
-      special?(value) -> value
-      dec_positive?(value) -> @infinity
-      dec_negative?(value) -> @neg_infinity
-      true -> @nan
-    end
-  end
+  defp non_integer_zero?(0), do: false
+  defp non_integer_zero?(n) when is_integer(n), do: false
+  defp non_integer_zero?(n) when is_float(n), do: n == 0
+  defp non_integer_zero?(%Decimal{coef: 0}), do: true
+  defp non_integer_zero?(_), do: false
 
   # ---- Arithmetic ---------------------------------------------------------
 
-  def add(@nan, _), do: @nan
-  def add(_, @nan), do: @nan
-  def add(@infinity, @neg_infinity), do: @nan
-  def add(@neg_infinity, @infinity), do: @nan
-  def add(@infinity, _), do: @infinity
-  def add(_, @infinity), do: @infinity
-  def add(@neg_infinity, _), do: @neg_infinity
-  def add(_, @neg_infinity), do: @neg_infinity
   def add(a, b) when is_integer(a) and is_integer(b), do: a + b
-  def add(a, b), do: Decimal.add(to_decimal(a), to_decimal(b))
+  def add(a, b), do: with_ctx(fn -> Decimal.add(to_decimal(a), to_decimal(b)) end)
 
-  def sub(a, b), do: add(a, negate(b))
-
-  def mul(@nan, _), do: @nan
-  def mul(_, @nan), do: @nan
-
-  def mul(%Special{type: t}, b) when t in [:infinity, :neg_infinity],
-    do: mul_inf(t, b)
-
-  def mul(a, %Special{type: t}) when t in [:infinity, :neg_infinity],
-    do: mul_inf(t, a)
+  def sub(a, b) when is_integer(a) and is_integer(b), do: a - b
+  def sub(a, b), do: with_ctx(fn -> Decimal.sub(to_decimal(a), to_decimal(b)) end)
 
   def mul(a, b) when is_integer(a) and is_integer(b), do: a * b
-  def mul(a, b), do: Decimal.mult(to_decimal(a), to_decimal(b))
+  def mul(a, b), do: with_ctx(fn -> Decimal.mult(to_decimal(a), to_decimal(b)) end)
 
-  defp mul_inf(:infinity, %Special{type: :infinity}), do: @infinity
-  defp mul_inf(:infinity, %Special{type: :neg_infinity}), do: @neg_infinity
-  defp mul_inf(:neg_infinity, %Special{type: :infinity}), do: @neg_infinity
-  defp mul_inf(:neg_infinity, %Special{type: :neg_infinity}), do: @infinity
-
-  defp mul_inf(t, x) do
-    cond do
-      dec_zero?(x) -> @nan
-      dec_positive?(x) -> if t == :infinity, do: @infinity, else: @neg_infinity
-      true -> if t == :infinity, do: @neg_infinity, else: @infinity
-    end
-  end
-
-  def divide(@nan, _), do: @nan
-  def divide(_, @nan), do: @nan
-  def divide(%Special{}, %Special{}), do: @nan
-
-  def divide(%Special{type: t}, b) do
-    cond do
-      special?(b) -> @nan
-      t == :infinity and dec_positive?(b) -> @infinity
-      t == :infinity and dec_negative?(b) -> @neg_infinity
-      t == :neg_infinity and dec_positive?(b) -> @neg_infinity
-      t == :neg_infinity and dec_negative?(b) -> @infinity
-      # Division of infinity by zero preserves the infinity's sign.
-      t == :infinity -> @infinity
-      true -> @neg_infinity
-    end
-  end
-
-  def divide(_a, %Special{type: t}) when t in [:infinity, :neg_infinity], do: 0.0
-
+  # Liquid's `Integer#/` is floor division (`-7 / 4 == -2`). For mixed int/
+  # float operations Liquid coerces both to BigDecimal, so any non-integer
+  # operand routes through Decimal -- which handles 0.0 divisors as a
+  # sign-preserving Infinity automatically.
   def divide(a, b) when is_integer(a) and is_integer(b) do
-    cond do
-      b == 0 -> {:zero_division}
-      true -> Integer.floor_div(a, b)
-    end
+    if b == 0, do: {:zero_division}, else: Integer.floor_div(a, b)
   end
 
   def divide(a, b) do
     cond do
-      dec_zero?(b) and (is_float(b) or match?(%Decimal{}, b)) ->
-        from_zero_div(a)
+      # Liquid renders finite / infinity as 0.0 (Float), not Decimal "0".
+      infinite?(b) and not special?(a) -> 0.0
+      true -> with_ctx(fn -> Decimal.div(to_decimal(a), to_decimal(b)) end)
+    end
+  end
+
+  # Ruby's `%` is `a - b * floor(a / b)` (sign matches divisor). Decimal.rem
+  # uses truncation, so we implement floor-mod manually for non-integers.
+  def modulo(a, b) when is_integer(a) and is_integer(b) do
+    if b == 0, do: {:zero_division}, else: Integer.mod(a, b)
+  end
+
+  def modulo(a, b) do
+    cond do
+      nan?(a) or nan?(b) ->
+        nan()
+
+      infinite?(a) ->
+        nan()
+
+      infinite?(b) ->
+        # Liquid renders `finite mod infinity` as the value coerced to Float
+        # (`10` -> `10.0`, `10.5` -> `10.5`).
+        finite_as_float(a)
+
+      non_integer_zero?(b) ->
+        nan()
 
       dec_zero?(b) ->
         {:zero_division}
 
       true ->
-        Decimal.div(to_decimal(a), to_decimal(b))
+        with_ctx(fn ->
+          q = to_decimal(a) |> Decimal.div(to_decimal(b)) |> dec_floor()
+          Decimal.sub(to_decimal(a), Decimal.mult(to_decimal(b), q))
+        end)
     end
   end
 
-  def modulo(@nan, _), do: @nan
-  def modulo(_, @nan), do: @nan
-  def modulo(%Special{type: t}, _) when t in [:infinity, :neg_infinity], do: @nan
+  defp finite_as_float(n) when is_integer(n), do: n * 1.0
+  defp finite_as_float(n) when is_float(n), do: n
+  defp finite_as_float(%Decimal{} = d), do: Decimal.to_float(d)
 
-  def modulo(a, %Special{type: t}) when t in [:infinity, :neg_infinity] do
-    # Liquid renders a finite modulo by infinity as the value coerced to a
-    # Float (`10` -> `10.0`).
-    case a do
-      n when is_integer(n) -> n * 1.0
-      n when is_float(n) -> n
-      %Decimal{} = d -> Decimal.to_float(d)
-    end
-  end
+  defp dec_floor(%Decimal{coef: c} = d) when c in [:inf, :NaN, :qNaN, :sNaN], do: d
+  defp dec_floor(%Decimal{} = d), do: Decimal.round(d, 0, :floor)
 
-  def modulo(a, b) when is_integer(a) and is_integer(b) do
-    cond do
-      b == 0 -> {:zero_division}
-      true -> Integer.mod(a, b)
-    end
-  end
-
-  def modulo(a, b) do
-    cond do
-      dec_zero?(b) and (is_float(b) or match?(%Decimal{}, b)) -> @nan
-      dec_zero?(b) -> {:zero_division}
-      true -> dec_mod(to_decimal(a), to_decimal(b))
-    end
-  end
-
-  # Ruby-style remainder: a - b * floor(a / b). Sign matches the divisor.
-  defp dec_mod(a, b) do
-    quotient = a |> Decimal.div(b) |> Decimal.round(0, :floor)
-    Decimal.sub(a, Decimal.mult(b, quotient))
-  end
-
-  def negate(@infinity), do: @neg_infinity
-  def negate(@neg_infinity), do: @infinity
-  def negate(@nan), do: @nan
-  def negate(n) when is_number(n), do: -n
+  def negate(n) when is_integer(n), do: -n
+  def negate(n) when is_float(n), do: -n
   def negate(%Decimal{} = d), do: Decimal.negate(d)
 
-  def absolute(@infinity), do: @infinity
-  def absolute(@neg_infinity), do: @infinity
-  def absolute(@nan), do: @nan
-  def absolute(n) when is_number(n), do: abs(n)
+  def absolute(n) when is_integer(n), do: abs(n)
+  def absolute(n) when is_float(n), do: abs(n)
   def absolute(%Decimal{} = d), do: Decimal.abs(d)
 
   # ---- Comparison ---------------------------------------------------------
 
-  # :nan means "comparison is unordered"; equality/ordering ops should all
-  # evaluate false except `!=` which is true.
-  def compare(@nan, _), do: :nan
-  def compare(_, @nan), do: :nan
-  def compare(@infinity, @infinity), do: :eq
-  def compare(@neg_infinity, @neg_infinity), do: :eq
-  def compare(@infinity, _), do: :gt
-  def compare(_, @infinity), do: :lt
-  def compare(@neg_infinity, _), do: :lt
-  def compare(_, @neg_infinity), do: :gt
-
-  def compare(a, b) when is_number(a) and is_number(b) do
+  # `Decimal.compare/2` returns `:lt | :eq | :gt`, or a NaN Decimal if the
+  # comparison is unordered. We collapse the NaN case to the `:nan` atom for
+  # uniformity with the apply_op dispatch below.
+  def compare(a, b) do
     cond do
-      a < b -> :lt
-      a > b -> :gt
-      true -> :eq
+      nan?(a) or nan?(b) ->
+        :nan
+
+      is_number(a) and is_number(b) ->
+        cond do
+          a < b -> :lt
+          a > b -> :gt
+          true -> :eq
+        end
+
+      true ->
+        with_ctx(fn ->
+          case Decimal.compare(to_decimal(a), to_decimal(b)) do
+            :lt -> :lt
+            :gt -> :gt
+            :eq -> :eq
+            %Decimal{} -> :nan
+          end
+        end)
     end
   end
 
-  def compare(a, b), do: Decimal.compare(to_decimal(a), to_decimal(b))
-
   # Apply a Liquid comparison op (:==, :!=, :<, :>, :<=, :>=) to two operands
-  # when at least one is special.
+  # when at least one is special / Decimal.
   def apply_op(op, a, b) do
     case compare(a, b) do
       :nan -> op == :!=
@@ -238,9 +172,12 @@ defmodule Liquex.Math do
 
   # Liquid's "Computation results in 'X'" error message format used by
   # floor/ceil/round when given a non-finite input.
-  def computation_error(%Special{type: :nan}),
-    do: "Liquid error: Computation results in 'NaN' (Not a Number)"
+  def computation_error(%Decimal{coef: :inf, sign: 1}),
+    do: "Liquid error: Computation results in 'Infinity'"
 
-  def computation_error(%Special{} = s),
-    do: "Liquid error: Computation results in '#{s}'"
+  def computation_error(%Decimal{coef: :inf, sign: -1}),
+    do: "Liquid error: Computation results in '-Infinity'"
+
+  def computation_error(%Decimal{coef: c}) when c in [:NaN, :qNaN, :sNaN],
+    do: "Liquid error: Computation results in 'NaN' (Not a Number)"
 end

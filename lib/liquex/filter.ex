@@ -8,7 +8,6 @@ defmodule Liquex.Filter do
 
   alias Liquex.Context
   alias Liquex.Math
-  alias Liquex.Math.Special
 
   defmacro __using__(_) do
     quote do
@@ -83,7 +82,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.abs("-1.1", %{})
       1.1
   """
-  @spec abs(String.t() | number | Special.t() | nil, any) :: number | Special.t()
+  @spec abs(String.t() | number | Decimal.t() | nil, any) :: number | Decimal.t()
   def abs(value, _), do: Math.absolute(to_number(value))
 
   @doc """
@@ -111,7 +110,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.at_least("5", "3", %{})
       5
   """
-  @spec at_least(number | binary, number | binary, map()) :: number | Special.t()
+  @spec at_least(number | binary, number | binary, map()) :: number | Decimal.t()
   def at_least(value, max, _), do: do_at_least(to_number(value), to_number(max))
 
   defp do_at_least(v, m) do
@@ -143,7 +142,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.at_most("4", "3", %{})
       3
   """
-  @spec at_most(number, number, map()) :: number | Special.t()
+  @spec at_most(number, number, map()) :: number | Decimal.t()
   def at_most(value, max, _), do: do_at_most(to_number(value), to_number(max))
 
   defp do_at_most(v, m) do
@@ -257,7 +256,9 @@ defmodule Liquex.Filter do
   def ceil(value, _) when is_float(value), do: Float.ceil(value) |> trunc()
   def ceil(value, _) when is_integer(value), do: value
   def ceil(nil, _), do: 0
-  def ceil(%Special{} = s, _), do: Math.computation_error(s)
+
+  def ceil(%Decimal{coef: c} = d, _) when c in [:inf, :NaN, :qNaN, :sNaN],
+    do: Math.computation_error(d)
 
   def ceil(%Decimal{} = d, _),
     do: d |> Decimal.round(0, :ceiling) |> Decimal.to_integer()
@@ -398,21 +399,9 @@ defmodule Liquex.Filter do
       true
   """
   def divided_by(value, divisor, _) do
-    value = to_number(value)
-    divisor = to_number(divisor)
-
-    case Math.divide(value, divisor) do
-      {:zero_division} ->
-        "Liquid error: divided by 0"
-
-      %Special{} = s ->
-        s
-
-      result when is_integer(divisor) and is_number(result) ->
-        trunc(result)
-
-      result ->
-        result
+    case Math.divide(to_number(value), to_number(divisor)) do
+      {:zero_division} -> "Liquid error: divided by 0"
+      result -> result
     end
   end
 
@@ -546,12 +535,17 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.floor(2.0, %{})
       2
   """
-  @spec floor(binary | number | Special.t() | Decimal.t() | nil, any) :: integer | binary
+  @spec floor(binary | number | Decimal.t() | nil, any) :: integer | binary
   def floor(value, _) do
     case to_number(value) do
-      %Special{} = s -> Math.computation_error(s)
-      %Decimal{} = d -> d |> Decimal.round(0, :floor) |> Decimal.to_integer()
-      n -> trunc(n)
+      %Decimal{coef: c} = d when c in [:inf, :NaN, :qNaN, :sNaN] ->
+        Math.computation_error(d)
+
+      %Decimal{} = d ->
+        d |> Decimal.round(0, :floor) |> Decimal.to_integer()
+
+      n ->
+        trunc(n)
     end
   end
 
@@ -657,13 +651,8 @@ defmodule Liquex.Filter do
   """
   @spec modulo(number | nil, number | nil, Context.t()) :: number
   def modulo(left, right, _) do
-    left = to_number(left)
-    right = to_number(right)
-
-    case Math.modulo(left, right) do
+    case Math.modulo(to_number(left), to_number(right)) do
       {:zero_division} -> "Liquid error: divided by 0"
-      %Special{} = s -> s
-      result when is_float(result) -> Float.round(result, 5)
       result -> result
     end
   end
@@ -854,10 +843,11 @@ defmodule Liquex.Filter do
   def round(value, precision \\ 0, _context),
     do: do_round(to_number(value), to_number(precision))
 
-  defp do_round(%Special{} = s, _), do: Math.computation_error(s)
+  defp do_round(%Decimal{coef: c} = d, _) when c in [:inf, :NaN, :qNaN, :sNaN],
+    do: Math.computation_error(d)
 
-  # Decimal inputs typically come from prior arithmetic; convert to float for
-  # the rounding to mirror Liquid's BigDecimal -> Float -> round path.
+  # Finite Decimal inputs typically come from prior arithmetic; convert to
+  # float for the rounding to mirror Liquid's BigDecimal -> Float -> round.
   defp do_round(%Decimal{} = d, precision),
     do: do_round(Decimal.to_float(d), precision)
 
@@ -1238,7 +1228,6 @@ defmodule Liquex.Filter do
   defp property_equals?(_item, _property, _target), do: false
 
   defp to_number(nil), do: 0
-  defp to_number(%Special{} = s), do: s
   defp to_number(%Decimal{} = d), do: d
   defp to_number(value) when is_number(value), do: value
 

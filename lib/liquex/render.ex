@@ -59,6 +59,13 @@ defmodule Liquex.Render do
 
   def to_output_string(nil), do: ""
 
+  # NaN's sign is not meaningful (-NaN == NaN), but Decimal.sub etc. can
+  # produce a negative NaN. Render as "NaN" regardless of sign to match Ruby's
+  # `Float::NAN.to_s` -> "NaN".
+  def to_output_string(%Decimal{coef: c}) when c in [:NaN, :qNaN, :sNaN], do: "NaN"
+
+  def to_output_string(%Decimal{coef: :inf} = d), do: Decimal.to_string(d)
+
   def to_output_string(%Decimal{} = d),
     do: d |> Decimal.to_float() |> Float.to_string()
 

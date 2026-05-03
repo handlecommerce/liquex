@@ -14,10 +14,11 @@ defmodule Liquex.MathTest do
       assert to_string(@nan) == "NaN"
     end
 
-    test "inspect is human-readable" do
-      assert inspect(@inf) == "#Liquex.Math<Infinity>"
-      assert inspect(@ninf) == "#Liquex.Math<-Infinity>"
-      assert inspect(@nan) == "#Liquex.Math<NaN>"
+    test "specials are Decimal structs" do
+      # Decimal handles inspect; we just verify the value-level identity.
+      assert match?(%Decimal{coef: :inf, sign: 1}, @inf)
+      assert match?(%Decimal{coef: :inf, sign: -1}, @ninf)
+      assert Math.nan?(@nan)
     end
   end
 
@@ -47,18 +48,12 @@ defmodule Liquex.MathTest do
     end
   end
 
-  describe "from_zero_div" do
+  describe "divide-by-float-zero produces signed specials" do
+    # Decimal handles this natively; tested through the public divide/2 API.
     test "preserves sign" do
-      assert Math.from_zero_div(5) == @inf
-      assert Math.from_zero_div(-5) == @ninf
-      assert Math.from_zero_div(0) == @nan
-      assert Math.from_zero_div(0.0) == @nan
-    end
-
-    test "passes through specials" do
-      assert Math.from_zero_div(@inf) == @inf
-      assert Math.from_zero_div(@ninf) == @ninf
-      assert Math.from_zero_div(@nan) == @nan
+      assert Math.divide(5, 0.0) == @inf
+      assert Math.divide(-5, 0.0) == @ninf
+      assert Math.nan?(Math.divide(0, 0.0))
     end
   end
 
