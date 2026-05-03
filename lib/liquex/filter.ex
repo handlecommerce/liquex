@@ -7,6 +7,8 @@ defmodule Liquex.Filter do
   @callback apply(any, filter_t, map) :: any
 
   alias Liquex.Context
+  alias Liquex.Math
+  alias Liquex.Math.Special
 
   defmacro __using__(_) do
     quote do
@@ -81,8 +83,8 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.abs("-1.1", %{})
       1.1
   """
-  @spec abs(String.t() | number | nil, any) :: number
-  def abs(value, _), do: abs(to_number(value))
+  @spec abs(String.t() | number | Special.t() | nil, any) :: number | Special.t()
+  def abs(value, _), do: Math.absolute(to_number(value))
 
   @doc """
   Appends `text` to the end of `value`
@@ -109,10 +111,23 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.at_least("5", "3", %{})
       5
   """
-  @spec at_least(number | binary, number | binary, map()) :: number
+  @spec at_least(number | binary, number | binary, map()) :: number | Special.t()
   def at_least(value, max, _), do: do_at_least(to_number(value), to_number(max))
-  defp do_at_least(value, min) when value > min, do: value
-  defp do_at_least(_value, min), do: min
+
+  defp do_at_least(v, m) do
+    cond do
+      Math.nan?(v) -> m
+      Math.nan?(m) -> v
+      Math.special?(v) or Math.special?(m) ->
+        if Math.compare(v, m) == :gt, do: v, else: m
+
+      v > m ->
+        v
+
+      true ->
+        m
+    end
+  end
 
   @doc """
   Sets a maximum value
@@ -128,11 +143,23 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.at_most("4", "3", %{})
       3
   """
-  @spec at_most(number, number, map()) :: number
+  @spec at_most(number, number, map()) :: number | Special.t()
   def at_most(value, max, _), do: do_at_most(to_number(value), to_number(max))
 
-  defp do_at_most(value, max) when value < max, do: value
-  defp do_at_most(_value, max), do: max
+  defp do_at_most(v, m) do
+    cond do
+      Math.nan?(v) -> m
+      Math.nan?(m) -> v
+      Math.special?(v) or Math.special?(m) ->
+        if Math.compare(v, m) == :lt, do: v, else: m
+
+      v < m ->
+        v
+
+      true ->
+        m
+    end
+  end
 
   @doc """
   Encodes a string into base 64.
@@ -230,6 +257,7 @@ defmodule Liquex.Filter do
   def ceil(value, _) when is_float(value), do: Float.ceil(value) |> trunc()
   def ceil(value, _) when is_integer(value), do: value
   def ceil(nil, _), do: 0
+  def ceil(%Special{} = s, _), do: Math.computation_error(s)
 
   @doc """
   Removes any nil values from an array.
@@ -364,14 +392,21 @@ defmodule Liquex.Filter do
       2.857142857142857
   """
   def divided_by(value, divisor, _) do
-    # Blindly convert to a number to follow standard
+    value = to_number(value)
     divisor = to_number(divisor)
 
-    case divisor do
-      0 -> "Liquid error: divided by 0"
-      +0.0 -> "Liquid error: divided by 0"
-      d when is_integer(d) -> trunc(to_number(value) / divisor)
-      _ -> to_number(value) / divisor
+    case Math.divide(value, divisor) do
+      {:zero_division} ->
+        "Liquid error: divided by 0"
+
+      %Special{} = s ->
+        s
+
+      result when is_integer(divisor) and is_number(result) ->
+        trunc(result)
+
+      result ->
+        result
     end
   end
 
@@ -505,11 +540,12 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.floor(2.0, %{})
       2
   """
-  @spec floor(binary | number | nil, any) :: integer
+  @spec floor(binary | number | Special.t() | nil, any) :: integer | binary
   def floor(value, _) do
-    value
-    |> to_number()
-    |> trunc()
+    case to_number(value) do
+      %Special{} = s -> Math.computation_error(s)
+      n -> trunc(n)
+    end
   end
 
   @doc """
@@ -593,7 +629,7 @@ defmodule Liquex.Filter do
       171.357
   """
   @spec minus(number | nil, number | nil, Context.t()) :: number
-  def minus(left, right, _), do: to_number(left) - to_number(right)
+  def minus(left, right, _), do: Math.sub(to_number(left), to_number(right))
 
   @doc """
   Returns the remainder of a division operation.
@@ -611,10 +647,11 @@ defmodule Liquex.Filter do
     left = to_number(left)
     right = to_number(right)
 
-    cond do
-      right == 0 -> "Liquid error: divided by 0"
-      is_float(left) or is_float(right) -> :math.fmod(left, right) |> Float.round(5)
-      true -> rem(left, right)
+    case Math.modulo(left, right) do
+      {:zero_division} -> "Liquid error: divided by 0"
+      %Special{} = s -> s
+      result when is_float(result) -> Float.round(result, 5)
+      result -> result
     end
   end
 
@@ -641,7 +678,7 @@ defmodule Liquex.Filter do
       195.357
   """
   @spec plus(number | nil, number | nil, Context.t()) :: number
-  def plus(left, right, _), do: to_number(left) + to_number(right)
+  def plus(left, right, _), do: Math.add(to_number(left), to_number(right))
 
   @doc """
   Adds the specified string to the beginning of another string.
@@ -797,6 +834,8 @@ defmodule Liquex.Filter do
   @spec round(binary | number | nil, binary | number | nil, Context.t()) :: number
   def round(value, precision \\ 0, _context),
     do: do_round(to_number(value), to_number(precision))
+
+  defp do_round(%Special{} = s, _), do: Math.computation_error(s)
 
   defp do_round(value, precision) when precision < 0 do
     factor = trunc(:math.pow(10, -precision))
@@ -978,7 +1017,7 @@ defmodule Liquex.Filter do
       0
   """
   def sum(list, _) when is_list(list),
-    do: Enum.reduce(list, 0, fn item, acc -> acc + to_number(item) end)
+    do: Enum.reduce(list, 0, fn item, acc -> Math.add(acc, to_number(item)) end)
 
   def sum(list, property, _) when is_list(list) do
     Enum.reduce(list, 0, fn item, acc ->
@@ -988,7 +1027,7 @@ defmodule Liquex.Filter do
           true -> 0
         end
 
-      acc + to_number(value)
+      Math.add(acc, to_number(value))
     end)
   end
 
@@ -1006,7 +1045,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.times(183.357, 12, %{})
       2200.284
   """
-  def times(value, divisor, _), do: to_number(value) * to_number(divisor)
+  def times(value, divisor, _), do: Math.mul(to_number(value), to_number(divisor))
 
   @doc """
   Shortens a string down to the number of characters passed as an argument. If
@@ -1172,6 +1211,7 @@ defmodule Liquex.Filter do
   defp property_equals?(_item, _property, _target), do: false
 
   defp to_number(nil), do: 0
+  defp to_number(%Special{} = s), do: s
   defp to_number(value) when is_number(value), do: value
 
   defp to_number(value) when is_binary(value) do

@@ -45,6 +45,10 @@ defmodule Liquex.Expression do
   defp do_eval({left, :contains, right}),
     do: String.contains?(to_string(left), to_string(right))
 
+  defp do_eval({left, op, right})
+       when is_struct(left, Liquex.Math.Special) or is_struct(right, Liquex.Math.Special),
+       do: Liquex.Math.apply_op(op, left, right)
+
   defp do_eval({left, op, right}), do: apply(Kernel, op, [left, right])
 
   # Truthy values

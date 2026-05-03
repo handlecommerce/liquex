@@ -1,0 +1,85 @@
+<===> numeric_specials.liquid
+{%- assign inf = 1 | divided_by: 0.0 -%}
+{%- assign ninf = -1 | divided_by: 0.0 -%}
+{%- assign nan = 0 | divided_by: 0.0 -%}
+
+== Construction ==
+{{ 5 | divided_by: 0.0 }}
+{{ -5 | divided_by: 0.0 }}
+{{ 0 | divided_by: 0.0 }}
+{{ 0.0 | divided_by: 0.0 }}
+{{ 1 | divided_by: 0 }}
+
+== Plus / minus / times ==
+{{ inf | plus: 1 }}
+{{ inf | plus: inf }}
+{{ inf | plus: ninf }}
+{{ inf | minus: 1 }}
+{{ inf | minus: inf }}
+{{ inf | times: 2 }}
+{{ inf | times: 0 }}
+{{ inf | times: -1 }}
+{{ ninf | times: -1 }}
+
+== NaN absorbs ==
+{{ nan | plus: 1 }}
+{{ nan | minus: 1 }}
+{{ nan | times: 2 }}
+{{ nan | divided_by: 2 }}
+{{ 1 | plus: nan }}
+
+== Division ==
+{{ inf | divided_by: 2 }}
+{{ inf | divided_by: 0.0 }}
+{{ 1 | divided_by: inf }}
+
+== Modulo ==
+{{ inf | modulo: 2 }}
+{{ 10 | modulo: inf }}
+
+== Math filters ==
+{{ inf | abs }}
+{{ ninf | abs }}
+{{ nan | abs }}
+{{ inf | floor }}
+{{ inf | ceil }}
+{{ inf | round }}
+{{ nan | floor }}
+{{ nan | ceil }}
+{{ ninf | floor }}
+
+== at_least / at_most ==
+{{ 5 | at_least: inf }}
+{{ 5 | at_most: inf }}
+{{ 5 | at_least: ninf }}
+{{ 5 | at_most: ninf }}
+{{ 5 | at_least: nan }}
+{{ 5 | at_most: nan }}
+
+== Filter chains ==
+{{ 5 | divided_by: 0.0 | plus: 1 }}
+{{ 5 | divided_by: 0.0 | times: -1 }}
+{{ 5 | divided_by: 0.0 | minus: 5 | divided_by: 0.0 }}
+{{ 0 | divided_by: 0.0 | plus: 1 }}
+{{ -5 | divided_by: 0.0 | abs }}
+{{ 5 | divided_by: 0.0 | floor }}
+
+== Comparisons ==
+{% if inf > 100 %}T{% else %}F{% endif %}
+{% if inf < 100 %}T{% else %}F{% endif %}
+{% if inf == inf %}T{% else %}F{% endif %}
+{% if inf > ninf %}T{% else %}F{% endif %}
+{% if ninf < inf %}T{% else %}F{% endif %}
+{% if inf >= inf %}T{% else %}F{% endif %}
+{% if inf <= inf %}T{% else %}F{% endif %}
+{% if nan == nan %}T{% else %}F{% endif %}
+{% if nan != nan %}T{% else %}F{% endif %}
+{% if nan < 1 %}T{% else %}F{% endif %}
+{% if nan > 1 %}T{% else %}F{% endif %}
+{% if nan <= 1 %}T{% else %}F{% endif %}
+{% if nan >= 1 %}T{% else %}F{% endif %}
+
+== Truthiness ==
+{% if inf %}T{% else %}F{% endif %}
+{% if ninf %}T{% else %}F{% endif %}
+{% if nan %}T{% else %}F{% endif %}
