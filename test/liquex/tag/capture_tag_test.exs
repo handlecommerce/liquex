@@ -49,5 +49,20 @@ defmodule Liquex.Tag.CaptureTagTest do
 
       assert Context.fetch(context, "a") |> elem(1) |> String.trim() == "Hello World!"
     end
+
+    test "capture inside a for loop persists in the outer scope" do
+      {:ok, template} =
+        """
+        {% for i in (1..1) %}{% capture greeting %}Hello {{ i }}{% endcapture %}{% endfor %}
+        {{ greeting }}
+        """
+        |> String.trim()
+        |> Liquex.parse()
+
+      {result, context} = Liquex.render!(template)
+
+      assert result |> to_string() |> String.trim() == "Hello 1"
+      assert Context.fetch(context, "greeting") |> elem(1) == "Hello 1"
+    end
   end
 end

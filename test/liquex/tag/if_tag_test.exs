@@ -26,6 +26,20 @@ defmodule Liquex.Tag.IfTagTest do
       ])
     end
 
+    test "parses <> as an alias for !=" do
+      "{% if a <> b %}Hello{% endif %}"
+      |> assert_parse([
+        {
+          {:tag, Liquex.Tag.IfTag},
+          expression: [[left: [field: [key: "a"]], op: :!=, right: [field: [key: "b"]]]],
+          contents: [text: "Hello"]
+        }
+      ])
+
+      assert render("{% if 1 <> 2 %}yes{% else %}no{% endif %}") == "yes"
+      assert render("{% if 1 <> 1 %}yes{% else %}no{% endif %}") == "no"
+    end
+
     test "parse if block with and" do
       "{% if true and false %}Hello{% endif %}"
       |> assert_parse([

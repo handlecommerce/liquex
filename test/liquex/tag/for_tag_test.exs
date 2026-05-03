@@ -384,6 +384,22 @@ defmodule Liquex.Tag.ForTagTest do
               echo x %}
              """) == "inner"
     end
+
+    test "forloop.parentloop is nil at the top level" do
+      assert render("{% for i in (1..2) %}[{{ forloop.parentloop }}]{% endfor %}") == "[][]"
+    end
+
+    test "forloop.parentloop exposes the outer loop in nested loops" do
+      assert render(
+               "{% for i in (1..2) %}{% for j in (1..2) %}{{ forloop.parentloop.index }}.{{ forloop.index }} {% endfor %}{% endfor %}"
+             ) == "1.1 1.2 2.1 2.2"
+    end
+
+    test "forloop.parentloop chains across multiple nesting levels" do
+      assert render(
+               "{% for a in (1..1) %}{% for b in (1..1) %}{% for c in (1..1) %}{{ forloop.parentloop.parentloop.index }}{% endfor %}{% endfor %}{% endfor %}"
+             ) == "1"
+    end
   end
 
   defp trim_list(list) do

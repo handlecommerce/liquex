@@ -259,6 +259,7 @@ defmodule Liquex.Tag.ForTag do
 
   def render_collection(results, identifier, contents, _, context) do
     len = Enum.count(results)
+    parentloop = Context.get(context, "forloop")
 
     {result, context} =
       results
@@ -267,7 +268,7 @@ defmodule Liquex.Tag.ForTag do
         # Assign the loop variables
         ctx =
           Context.push_scope(ctx, %{
-            "forloop" => forloop(index, len),
+            "forloop" => forloop(index, len, parentloop),
             identifier => record
           })
 
@@ -290,7 +291,7 @@ defmodule Liquex.Tag.ForTag do
       {Enum.reverse(result), context}
   end
 
-  defp forloop(index, length) do
+  defp forloop(index, length, parentloop) do
     %{
       "index" => index + 1,
       "index0" => index,
@@ -298,7 +299,8 @@ defmodule Liquex.Tag.ForTag do
       "rindex0" => length - index - 1,
       "first" => index == 0,
       "last" => index == length - 1,
-      "length" => length
+      "length" => length,
+      "parentloop" => parentloop
     }
   end
 end

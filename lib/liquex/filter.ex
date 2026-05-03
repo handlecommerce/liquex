@@ -135,6 +135,60 @@ defmodule Liquex.Filter do
   defp do_at_most(_value, max), do: max
 
   @doc """
+  Encodes a string into base 64.
+
+  ## Examples
+
+      iex> Liquex.Filter.base64_encode("_hello_", %{})
+      "X2hlbGxvXw=="
+  """
+  @spec base64_encode(String.t() | nil, map()) :: String.t()
+  def base64_encode(value, _), do: value |> to_string() |> Base.encode64()
+
+  @doc """
+  Decodes a base 64 string.
+
+  ## Examples
+
+      iex> Liquex.Filter.base64_decode("X2hlbGxvXw==", %{})
+      "_hello_"
+  """
+  @spec base64_decode(String.t() | nil, map()) :: String.t()
+  def base64_decode(value, _) do
+    case value |> to_string() |> Base.decode64() do
+      {:ok, decoded} -> decoded
+      :error -> raise Liquex.Error, "invalid base64 provided to base64_decode"
+    end
+  end
+
+  @doc """
+  Encodes a string into URL-safe base 64.
+
+  ## Examples
+
+      iex> Liquex.Filter.base64_url_safe_encode("_hello world?+/", %{})
+      "X2hlbGxvIHdvcmxkPysv"
+  """
+  @spec base64_url_safe_encode(String.t() | nil, map()) :: String.t()
+  def base64_url_safe_encode(value, _), do: value |> to_string() |> Base.url_encode64()
+
+  @doc """
+  Decodes a URL-safe base 64 string.
+
+  ## Examples
+
+      iex> Liquex.Filter.base64_url_safe_decode("X2hlbGxvIHdvcmxkPysv", %{})
+      "_hello world?+/"
+  """
+  @spec base64_url_safe_decode(String.t() | nil, map()) :: String.t()
+  def base64_url_safe_decode(value, _) do
+    case value |> to_string() |> Base.url_decode64() do
+      {:ok, decoded} -> decoded
+      :error -> raise Liquex.Error, "invalid base64 provided to base64_url_safe_decode"
+    end
+  end
+
+  @doc """
   Capitalizes a string
 
   ## Examples
@@ -193,6 +247,17 @@ defmodule Liquex.Filter do
     do: Enum.reject(value, &is_nil/1)
 
   @doc """
+  Removes any items in the array whose `property` is `nil`.
+
+  ## Examples
+
+      iex> Liquex.Filter.compact([%{"a" => 1}, %{"a" => nil}, %{"a" => 2}], "a", %{})
+      [%{"a" => 1}, %{"a" => 2}]
+  """
+  def compact(value, property, _) when is_list(value),
+    do: Enum.reject(value, &is_nil(Liquex.Indifferent.get(&1, property)))
+
+  @doc """
   Concatenates (joins together) multiple arrays. The resulting array contains all the items
 
   ## Examples
@@ -232,6 +297,9 @@ defmodule Liquex.Filter do
   def date("now", format, context), do: date(DateTime.utc_now(), format, context)
   def date("today", format, context), do: date(Date.utc_today(), format, context)
 
+  def date(value, format, context) when is_integer(value),
+    do: date(DateTime.from_unix!(value), format, context)
+
   def date(value, format, context) when is_binary(value) do
     # Thanks to the nonspecific definition of the format in the spec, we parse
     # some common date formats
@@ -259,9 +327,25 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.default("", "2.99", %{})
       "2.99"
+
+      iex> Liquex.Filter.default(false, "x", [{"allow_false", true}], %{})
+      false
+
+      iex> Liquex.Filter.default(false, "x", [{"allow_false", false}], %{})
+      "x"
   """
   def default(value, def_value, _) when value in [nil, "", false, []], do: def_value
   def default(value, _, _), do: value
+
+  def default(value, def_value, options, context) when is_list(options) do
+    case Enum.find(options, fn
+           {"allow_false", _} -> true
+           _ -> false
+         end) do
+      {"allow_false", true} when value == false -> false
+      _ -> default(value, def_value, context)
+    end
+  end
 
   @doc """
   Divides a number by another number.
@@ -285,6 +369,7 @@ defmodule Liquex.Filter do
 
     case divisor do
       0 -> "Liquid error: divided by 0"
+      +0.0 -> "Liquid error: divided by 0"
       d when is_integer(d) -> trunc(to_number(value) / divisor)
       _ -> to_number(value) / divisor
     end
@@ -318,8 +403,14 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.escape("Tetsuro Takara", %{})
       "Tetsuro Takara"
   """
-  def escape(value, _),
-    do: HtmlEntities.encode(to_string(value))
+  def escape(value, _) do
+    to_string(value)
+    |> String.replace("&", "&amp;")
+    |> String.replace("<", "&lt;")
+    |> String.replace(">", "&gt;")
+    |> String.replace("\"", "&quot;")
+    |> String.replace("'", "&#39;")
+  end
 
   @doc """
   Escapes a string by replacing characters with escape sequences (so that the string can
@@ -331,8 +422,61 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.escape_once("1 &lt; 2 &amp; 3", %{})
       "1 &lt; 2 &amp; 3"
   """
-  def escape_once(value, _),
-    do: to_string(value) |> HtmlEntities.decode() |> HtmlEntities.encode()
+  def escape_once(value, _) do
+    Regex.replace(
+      ~r/["><']|&(?!([a-zA-Z]+|(#\d+));)/,
+      to_string(value),
+      &escape_char/1
+    )
+  end
+
+  defp escape_char("&"), do: "&amp;"
+  defp escape_char("<"), do: "&lt;"
+  defp escape_char(">"), do: "&gt;"
+  defp escape_char("\""), do: "&quot;"
+  defp escape_char("'"), do: "&#39;"
+
+  @doc """
+  Returns the first item in an array whose `property` is truthy. Returns `nil`
+  if no item matches or the array is empty.
+
+  ## Examples
+
+      iex> Liquex.Filter.find([%{"v" => 1}, %{"v" => 2}], "v", 2, %{})
+      %{"v" => 2}
+
+      iex> Liquex.Filter.find([%{"v" => 1}, %{"v" => 2}], "v", %{})
+      %{"v" => 1}
+
+      iex> Liquex.Filter.find([], "v", 2, %{})
+      nil
+  """
+  def find(list, property, _) when is_list(list),
+    do: Enum.find(list, &property_truthy?(&1, property))
+
+  def find(list, property, target_value, _) when is_list(list),
+    do: Enum.find(list, &property_equals?(&1, property, target_value))
+
+  @doc """
+  Returns the index of the first item in an array whose `property` is truthy or
+  matches `target_value`. Returns `nil` if no item matches or the array is empty.
+
+  ## Examples
+
+      iex> Liquex.Filter.find_index([%{"v" => 1}, %{"v" => 2}], "v", 2, %{})
+      1
+
+      iex> Liquex.Filter.find_index([%{"v" => 1}, %{"v" => 2}], "v", %{})
+      0
+
+      iex> Liquex.Filter.find_index([], "v", 2, %{})
+      nil
+  """
+  def find_index(list, property, _) when is_list(list),
+    do: Enum.find_index(list, &property_truthy?(&1, property))
+
+  def find_index(list, property, target_value, _) when is_list(list),
+    do: Enum.find_index(list, &property_equals?(&1, property, target_value))
 
   @doc """
   Returns the first item of an array.
@@ -347,6 +491,7 @@ defmodule Liquex.Filter do
   """
   def first([], _), do: nil
   def first([f | _], _), do: f
+  def first(_, _), do: nil
 
   @doc """
   Rounds the input down to the nearest whole number. Liquid tries to convert the input to a
@@ -378,6 +523,27 @@ defmodule Liquex.Filter do
   def join(values, joiner, _), do: Enum.join(values, joiner)
 
   @doc """
+  Returns `true` if any item in the array has the given `property` truthy or
+  matching `target_value`, otherwise `false`. Returns `false` for empty arrays.
+
+  ## Examples
+
+      iex> Liquex.Filter.has([%{"v" => 1}, %{"v" => 2}], "v", 2, %{})
+      true
+
+      iex> Liquex.Filter.has([%{"v" => 1}], "v", 99, %{})
+      false
+
+      iex> Liquex.Filter.has([], "v", 2, %{})
+      false
+  """
+  def has(list, property, _) when is_list(list),
+    do: Enum.any?(list, &property_truthy?(&1, property))
+
+  def has(list, property, target_value, _) when is_list(list),
+    do: Enum.any?(list, &property_equals?(&1, property, target_value))
+
+  @doc """
   Returns the last item of `arr`.
 
   ## Examples
@@ -388,8 +554,9 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.first([], %{})
       nil
   """
-  @spec last(list, Liquex.Context.t()) :: any
-  def last(arr, context), do: arr |> Enum.reverse() |> first(context)
+  @spec last(any, Liquex.Context.t()) :: any
+  def last(arr, context) when is_list(arr), do: arr |> Enum.reverse() |> first(context)
+  def last(_, _), do: nil
 
   @doc """
   Removes all whitespace (tabs, spaces, and newlines) from the left side of a string.
@@ -490,6 +657,24 @@ defmodule Liquex.Filter do
   def prepend(value, prepender, _), do: to_string(prepender) <> to_string(value)
 
   @doc """
+  Returns the items of an array whose `property` is falsy, or whose `property`
+  is not equal to `target_value` when given.
+
+  ## Examples
+
+      iex> Liquex.Filter.reject([%{"v" => 1}, %{"v" => 2}, %{"v" => 3}], "v", 2, %{})
+      [%{"v" => 1}, %{"v" => 3}]
+
+      iex> Liquex.Filter.reject([%{"a" => true}, %{"a" => false}], "a", %{})
+      [%{"a" => false}]
+  """
+  def reject(list, property, _) when is_list(list),
+    do: Enum.reject(list, &property_truthy?(&1, property))
+
+  def reject(list, property, target_value, _) when is_list(list),
+    do: Enum.reject(list, &property_equals?(&1, property, target_value))
+
+  @doc """
   Removes every occurrence of the specified substring from a string.
 
   ## Examples
@@ -508,6 +693,16 @@ defmodule Liquex.Filter do
       "I sted to see the train through the rain"
   """
   def remove_first(value, original, context), do: replace_first(value, original, "", context)
+
+  @doc """
+  Removes only the last occurrence of the specified substring from a string.
+
+  ## Examples
+
+      iex> Liquex.Filter.remove_last("I strained to see the train through the rain", "rain", %{})
+      "I strained to see the train through the "
+  """
+  def remove_last(value, original, context), do: replace_last(value, original, "", context)
 
   @doc """
   Replaces every occurrence of the first argument in a string with the second argument.
@@ -533,6 +728,33 @@ defmodule Liquex.Filter do
       String.replace(to_string(value), to_string(original), to_string(replacement), global: false)
 
   @doc """
+  Replaces only the last occurrence of the first argument in a string with the
+  second argument. Returns the input unchanged if no occurrence is found.
+
+  ## Examples
+
+      iex> Liquex.Filter.replace_last("red, red, red", "red", "blue", %{})
+      "red, red, blue"
+
+      iex> Liquex.Filter.replace_last("abc", "x", "y", %{})
+      "abc"
+  """
+  def replace_last(value, original, replacement, _) do
+    input = to_string(value)
+    search = to_string(original)
+    repl = to_string(replacement)
+
+    case String.split(input, search) do
+      [_only] ->
+        input
+
+      parts ->
+        {leading, [tail]} = Enum.split(parts, length(parts) - 1)
+        Enum.join(leading, search) <> repl <> tail
+    end
+  end
+
+  @doc """
   Reverses the order of the items in an array. reverse cannot reverse a string.
 
   ## Examples
@@ -541,6 +763,7 @@ defmodule Liquex.Filter do
       ["plums", "peaches", "oranges", "apples"]
   """
   def reverse(arr, _) when is_list(arr), do: Enum.reverse(arr)
+  def reverse(value, _), do: value
 
   @doc """
   Rounds a number to the nearest integer or, if a number is passed as an argument, to that number of decimal places.
@@ -565,15 +788,23 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.round(183.357, 0, %{})
       183
 
+      iex> Liquex.Filter.round(1234, -2, %{})
+      1200
+
       iex> Liquex.Filter.round(183.357, -1, %{})
-      183
+      180
   """
   @spec round(binary | number | nil, binary | number | nil, Context.t()) :: number
   def round(value, precision \\ 0, _context),
     do: do_round(to_number(value), to_number(precision))
 
+  defp do_round(value, precision) when precision < 0 do
+    factor = trunc(:math.pow(10, -precision))
+    Kernel.round(value / factor) * factor
+  end
+
   defp do_round(value, _) when is_integer(value), do: value
-  defp do_round(value, precision) when precision <= 0, do: Float.round(value) |> trunc()
+  defp do_round(value, 0), do: Float.round(value) |> trunc()
   defp do_round(value, precision), do: Float.round(value, precision)
 
   @doc """
@@ -599,6 +830,7 @@ defmodule Liquex.Filter do
       4
   """
   def size(value, _) when is_list(value), do: length(value)
+  def size(value, _) when is_map(value) and not is_struct(value), do: map_size(value)
   def size(value, _), do: String.length(to_string(value))
 
   @doc """
@@ -624,8 +856,23 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.slice("Liquid", -3, 2, %{})
       "ui"
+
+  Slicing an array returns a sub-array.
+
+  ## Examples
+
+      iex> Liquex.Filter.slice([1, 2, 3, 4, 5], 1, 2, %{})
+      [2, 3]
+
+      iex> Liquex.Filter.slice([1, 2, 3, 4, 5], 2, %{})
+      [3]
   """
-  def slice(value, start, length \\ 1, _),
+  def slice(value, start, length \\ 1, _)
+
+  def slice(value, start, length, _) when is_list(value),
+    do: Enum.slice(value, start, length)
+
+  def slice(value, start, length, _),
     do: String.slice(to_string(value), start, length)
 
   @doc """
@@ -675,14 +922,31 @@ defmodule Liquex.Filter do
   def strip(value, _), do: String.trim(to_string(value))
 
   @doc """
-  Removes any HTML tags from a string.
+  Removes any HTML tags from a string. The contents of `<script>`, `<style>`,
+  and HTML comments are stripped along with the tags themselves, matching the
+  Liquid gem's `strip_html` behavior.
 
   ## Examples
 
       iex> Liquex.Filter.strip_html("Have <em>you</em> read <strong>Ulysses</strong>?", %{})
       "Have you read Ulysses?"
+
+      iex> Liquex.Filter.strip_html("<script>alert(1)</script>hi", %{})
+      "hi"
+
+      iex> Liquex.Filter.strip_html("<style>p {}</style>hi", %{})
+      "hi"
+
+      iex> Liquex.Filter.strip_html("a<!-- gone -->b", %{})
+      "ab"
   """
-  def strip_html(value, _), do: HtmlSanitizeEx.strip_tags(to_string(value))
+  def strip_html(value, _) do
+    to_string(value)
+    |> String.replace(~r/<script.*?<\/script>/s, "")
+    |> String.replace(~r/<!--.*?-->/s, "")
+    |> String.replace(~r/<style.*?<\/style>/s, "")
+    |> String.replace(~r/<.*?>/s, "")
+  end
 
   @doc """
   Removes any newline characters (line breaks) from a string.
@@ -696,6 +960,36 @@ defmodule Liquex.Filter do
     to_string(value)
     |> String.replace("\r", "")
     |> String.replace("\n", "")
+  end
+
+  @doc """
+  Returns the sum of the items in an array. Items are coerced to numbers; with
+  a `property` argument, the named property of each item is summed instead.
+
+  ## Examples
+
+      iex> Liquex.Filter.sum([1, 2, 3], %{})
+      6
+
+      iex> Liquex.Filter.sum([%{"v" => 1}, %{"v" => 2}], "v", %{})
+      3
+
+      iex> Liquex.Filter.sum([], %{})
+      0
+  """
+  def sum(list, _) when is_list(list),
+    do: Enum.reduce(list, 0, fn item, acc -> acc + to_number(item) end)
+
+  def sum(list, property, _) when is_list(list) do
+    Enum.reduce(list, 0, fn item, acc ->
+      value =
+        cond do
+          is_map(item) -> Liquex.Indifferent.get(item, property, 0)
+          true -> 0
+        end
+
+      acc + to_number(value)
+    end)
   end
 
   @doc """
@@ -761,9 +1055,13 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.truncatewords("Ground control to Major Tom.", 3, "", %{})
       "Ground control to"
+
+      iex> Liquex.Filter.truncatewords("a b c d e", 0, %{})
+      "a..."
   """
   def truncatewords(value, length, ellipsis \\ "...", _) do
     value = to_string(value)
+    length = max(to_number(length), 1)
     words = value |> String.split()
 
     if length(words) <= length do
@@ -787,6 +1085,17 @@ defmodule Liquex.Filter do
       ["ants", "bugs", "bees"]
   """
   def uniq(list, _), do: Enum.uniq(list)
+
+  @doc """
+  Removes items from an array that share a value at the given `property`.
+
+  ## Examples
+
+      iex> Liquex.Filter.uniq([%{"id" => 1}, %{"id" => 2}, %{"id" => 1}], "id", %{})
+      [%{"id" => 1}, %{"id" => 2}]
+  """
+  def uniq(list, property, _) when is_list(list),
+    do: Enum.uniq_by(list, &Liquex.Indifferent.get(&1, property))
 
   @doc """
   Makes each character in a string uppercase. It has no effect on strings
@@ -846,6 +1155,22 @@ defmodule Liquex.Filter do
   """
   def where(list, key, _), do: Liquex.Collection.where(list, key)
 
+  # Predicates shared by find/find_index/has/reject (Liquid's filter_array helper).
+  defp property_truthy?(item, property) when is_map(item) do
+    case Liquex.Indifferent.get(item, property) do
+      nil -> false
+      false -> false
+      _ -> true
+    end
+  end
+
+  defp property_truthy?(_item, _property), do: false
+
+  defp property_equals?(item, property, target) when is_map(item),
+    do: Liquex.Indifferent.get(item, property) == target
+
+  defp property_equals?(_item, _property, _target), do: false
+
   defp to_number(nil), do: 0
   defp to_number(value) when is_number(value), do: value
 
@@ -867,4 +1192,6 @@ defmodule Liquex.Filter do
         0
     end
   end
+
+  defp to_number(_), do: 0
 end

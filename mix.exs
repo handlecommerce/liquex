@@ -37,8 +37,6 @@ defmodule Liquex.MixProject do
     [
       {:nimble_parsec, "~> 1.4"},
       {:date_time_parser, "~> 1.2"},
-      {:html_entities, "~> 0.5.2"},
-      {:html_sanitize_ex, "~> 1.5"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},

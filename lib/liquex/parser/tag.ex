@@ -115,6 +115,7 @@ defmodule Liquex.Parser.Tag do
       choice([
         replace(string("=="), :==),
         replace(string("!="), :!=),
+        replace(string("<>"), :!=),
         replace(string(">="), :>=),
         replace(string("<="), :<=),
         replace(string(">"), :>),

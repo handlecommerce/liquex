@@ -33,76 +33,74 @@ defmodule Liquex.Tag.TablerowTagTest do
   end
 
   describe "render" do
-    test "simple tablerow" do
-      {:ok, template} =
-        """
-        <table>
-        {% tablerow product in collection %}
-          {{ product }}
-        {% endtablerow %}
-        </table>
-        """
-        |> String.trim()
-        |> Liquex.parse()
-
+    test "default cols puts every item in a single row with column classes" do
       context = Context.new(%{"collection" => [1, 2, 3]})
 
-      assert Liquex.render!(template, context)
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list()
-             |> Enum.join() ==
-               "<table><tr><td>1</td></tr><tr><td>2</td></tr><tr><td>3</td></tr></table>"
+      assert render_template("<table>{% tablerow p in collection %}{{ p }}{% endtablerow %}</table>", context) ==
+               ~s(<table><tr class="row1">\n<td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>\n</table>)
 
-      assert render(
-               """
-                 <table>{% liquid tablerow product in collection
-                   echo product
-                 endtablerow %}</table>
-               """,
+      assert render_template(
+               "<table>{% liquid tablerow p in collection\necho p\nendtablerow %}</table>",
                context
-             ) == "<table><tr><td>1</td></tr><tr><td>2</td></tr><tr><td>3</td></tr></table>"
+             ) ==
+               ~s(<table><tr class="row1">\n<td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>\n</table>)
     end
 
-    test "tablerow with cols" do
-      {:ok, template} =
-        """
-        <table>
-        {% tablerow product in collection cols:2 %}
-          {{ product }}
-        {% endtablerow %}
-        </table>
-        """
-        |> String.trim()
-        |> Liquex.parse()
+    test "cols wraps and emits row classes without padding empty cells" do
+      context = Context.new(%{"collection" => [1, 2, 3, 4, 5]})
 
-      context = Context.new(%{"collection" => [1, 2, 3]})
-
-      assert Liquex.render!(template, context)
-             |> elem(0)
-             |> to_string()
-             |> String.trim()
-             |> String.split("\n")
-             |> trim_list()
-             |> Enum.join() ==
-               "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
-
-      assert render(
-               """
-                 <table>{% liquid tablerow product in collection cols:2
-                   echo product
-                 endtablerow %}</table>
-               """,
+      assert render_template(
+               "<table>{% tablerow p in collection cols:2 %}{{ p }}{% endtablerow %}</table>",
                context
-             ) == "<table><tr><td>1</td><td>2</td></tr><tr><td>3</td><td></td></tr></table>"
+             ) ==
+               ~s(<table><tr class="row1">\n) <>
+                 ~s(<td class="col1">1</td><td class="col2">2</td>) <>
+                 ~s(</tr>\n<tr class="row2">) <>
+                 ~s(<td class="col1">3</td><td class="col2">4</td>) <>
+                 ~s(</tr>\n<tr class="row3">) <>
+                 ~s(<td class="col1">5</td>) <>
+                 ~s(</tr>\n</table>)
+    end
+
+    test "exposes tablerowloop fields" do
+      context = Context.new(%{"collection" => [10, 20, 30]})
+
+      out =
+        render_template(
+          "{% tablerow p in collection cols:2 %}" <>
+            "{{ tablerowloop.index }}-{{ tablerowloop.col }}-{{ tablerowloop.row }}-" <>
+            "{{ tablerowloop.col_first }}-{{ tablerowloop.col_last }}-" <>
+            "{{ tablerowloop.first }}-{{ tablerowloop.last }}|" <>
+            "{% endtablerow %}",
+          context
+        )
+
+      assert out ==
+               ~s(<tr class="row1">\n) <>
+                 ~s(<td class="col1">1-1-1-true-false-true-false|</td>) <>
+                 ~s(<td class="col2">2-2-1-false-true-false-false|</td>) <>
+                 ~s(</tr>\n<tr class="row2">) <>
+                 ~s(<td class="col1">3-1-2-true-false-false-true|</td>) <>
+                 ~s(</tr>\n)
+    end
+
+    test "empty collection still emits an empty row" do
+      context = Context.new(%{"collection" => []})
+
+      assert render_template("{% tablerow p in collection %}{{ p }}{% endtablerow %}", context) ==
+               ~s(<tr class="row1">\n</tr>\n)
+    end
+
+    test "nil collection renders nothing" do
+      context = Context.new(%{"collection" => nil})
+
+      assert render_template("{% tablerow p in collection %}{{ p }}{% endtablerow %}", context) ==
+               ""
     end
   end
 
-  defp trim_list(list) do
-    list
-    |> Enum.map(&String.trim/1)
-    |> Enum.reject(&(&1 == ""))
+  defp render_template(template, context) do
+    {:ok, parsed} = Liquex.parse(template)
+    parsed |> Liquex.render!(context) |> elem(0) |> to_string()
   end
 end

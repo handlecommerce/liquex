@@ -186,52 +186,79 @@ defmodule Liquex.Tag.TablerowTag do
         ],
         context
       ) do
-    cols = Keyword.get(parameters, :cols, 1)
+    cols = Keyword.get(parameters, :cols)
 
-    collection
-    |> Liquex.Argument.eval(context)
-    |> Expression.eval_collection(parameters)
-    |> Liquex.Collection.to_enumerable()
-    |> render_row(identifier, contents, cols, context)
+    case collection
+         |> Liquex.Argument.eval(context)
+         |> Expression.eval_collection(parameters) do
+      nil ->
+        {[], context}
+
+      evaluated ->
+        evaluated
+        |> Liquex.Collection.to_enumerable()
+        |> render_row(identifier, contents, cols, context)
+    end
   end
 
   defp render_row(collection, identifier, contents, cols, context) do
+    items = Enum.to_list(collection)
+    length = length(items)
+    cols = cols || max(length, 1)
+
     {results, context} =
-      collection
+      items
       |> Enum.with_index()
       |> Enum.reduce({[], context}, fn {record, idx}, {acc, ctx} ->
-        ctx = Context.assign(ctx, identifier, record)
+        loop = tablerowloop(idx, length, cols)
 
-        {result, ctx} = Render.render!(contents, ctx)
+        ctx =
+          Context.push_scope(ctx, %{
+            "tablerowloop" => loop,
+            identifier => record
+          })
 
-        result =
-          cond do
-            cols == 1 ->
-              ["<tr><td>", result, "</td></tr>"]
+        {rendered, ctx} = Render.render!(contents, ctx)
+        ctx = Context.pop_scope(ctx)
 
-            rem(idx, cols) == 0 ->
-              ["<tr><td>", result, "</td>"]
+        cell = [
+          ~s(<td class="col),
+          Integer.to_string(loop["col"]),
+          ~s(">),
+          rendered,
+          "</td>"
+        ]
 
-            rem(idx, cols) == cols - 1 ->
-              ["<td>", result, "</td></tr>"]
-
-            true ->
-              ["<td>", result, "</td>"]
+        separator =
+          if loop["col_last"] and not loop["last"] do
+            [~s(</tr>\n<tr class="row), Integer.to_string(loop["row"] + 1), ~s(">)]
+          else
+            []
           end
 
-        {[result | acc], ctx}
+        {[separator, cell | acc], ctx}
       end)
 
-    # Close out the table
-    closing =
-      0..rem(length(collection), cols)
-      |> Enum.drop(1)
-      |> Enum.map(fn _ -> "<td></td>" end)
-      |> case do
-        [] -> []
-        tags -> ["</tr>" | tags]
-      end
+    output = [~s(<tr class="row1">\n), Enum.reverse(results), "</tr>\n"]
+    {output, context}
+  end
 
-    {Enum.reverse(closing ++ results), context}
+  defp tablerowloop(idx, length, cols) do
+    col = rem(idx, cols) + 1
+
+    %{
+      "length" => length,
+      "index" => idx + 1,
+      "index0" => idx,
+      "rindex" => length - idx,
+      "rindex0" => length - idx - 1,
+      "col" => col,
+      "col0" => col - 1,
+      "row" => div(idx, cols) + 1,
+      "first" => idx == 0,
+      "last" => idx == length - 1,
+      "col_first" => col == 1,
+      "col_last" => col == cols
+    }
   end
 end
