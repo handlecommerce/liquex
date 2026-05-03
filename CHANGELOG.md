@@ -5,6 +5,82 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-05-02
+
+A round of byte-for-byte parity work against the Liquid gem. Most changes are
+bug fixes that bring output closer to Ruby Liquid; a handful alter output for
+templates that already worked, called out under "Behavior changes" below.
+
+### Added
+
+- `empty`, `blank`, and `null` are now reserved literal keywords, parsed
+  via a `Liquex.Special` sentinel. `'' == empty`, `[] == empty`, and
+  `{} == empty` evaluate to true; `nil == empty` and `nil == blank`
+  evaluate to false, matching Liquid's `MethodLiteral` semantics.
+- Maps render in Ruby's hash-inspect form (`{"a"=>1}`, with nested arrays
+  as `[1, 2]`), and ranges render as `1..3`. Both previously crashed.
+- Ranges work as filter inputs (`{{ (1..3) | join: "," }}`,
+  `{{ (1..3) | size }}`, etc.) by being normalized to a list when entering
+  the filter pipeline.
+- `Liquex.Context.new/2` accepts a `:timezone` option (e.g.
+  `"America/New_York"`). When set, the `date` filter renders `'now'`,
+  `'today'`, and integer Unix timestamps in that zone. See "Timezone
+  notes" below for the tzdata requirement.
+- `{% assign x = ... %}` accepts comparison and boolean operators between
+  the value and the filter chain, matching Liquid's lax `Variable` parser
+  (`{% assign x = 1 == 1 | append: '!' %}` -> `1!`). Previously crashed.
+
+### Behavior changes
+
+- The `date` filter for `'now'`, `'today'`, and integer Unix timestamps
+  now defaults to the **host's local timezone** (read from `ENV['TZ']`
+  via libc), matching Ruby's `Time.now`/`Time.at`. It previously rendered
+  in UTC. Set `TZ=UTC` on the host or pass `timezone: "Etc/UTC"` to
+  `Liquex.Context.new/2` to restore the old behavior.
+- Ranges are forward-only: `(5..1)` iterates as empty (matching Liquid),
+  not `[5, 4, 3, 2, 1]`. The range still prints as `"5..1"`.
+- Float output matches Ruby's `Float#to_s`: decimal notation in
+  `[1e-4, 1e15)`, scientific elsewhere with a sign-prefixed two-digit
+  exponent (`1.0e-05`, `1.0e+15`). Previously used Elixir's
+  `Float.to_string/1` thresholds and exponent format.
+- Numeric coercion of strings with trailing junk follows Ruby's `to_i`.
+  `'4.6abc' | ceil` is now `4` (was `0`); `'4abc' | plus: 0` is `4`.
+- Maps render via the inspect form rather than crashing. Map iteration
+  order is whatever Erlang's map ordering produces -- usually
+  alphabetical by key for small maps, which differs from Ruby's
+  insertion order. Single-key hashes always match byte-for-byte; tests
+  asserting multi-key hash output should use single-key fixtures or
+  alphabetically-ordered keys.
+
+### Fixed
+
+- `'hello' | truncate: 0` and other non-positive lengths return the
+  ellipsis instead of crashing.
+- `s.first`, `s.last`, and other unknown property access on strings
+  return `nil` instead of raising `FunctionClauseError`. `s.size` still
+  works.
+- Datetime strings with timezone components no longer crash format
+  directives like `%H`/`%M`/`%S` (the parsed datetime is no longer
+  degraded to a `Date`).
+- With a tzdata-backed `Calendar.TimeZoneDatabase` configured,
+  `'2024-01-02 12:34:56 +0500' | date: '%z'` correctly preserves the
+  parsed offset.
+
+### Timezone notes
+
+- The `date` filter and the new `:timezone` context option lean on
+  Elixir's `Calendar.TimeZoneDatabase`. Stock Elixir ships
+  `Calendar.UTCOnlyTimeZoneDatabase`, which only supports UTC. To use
+  named zones (`"America/New_York"`, etc.) or to preserve offsets parsed
+  from string inputs, add `{:tzdata, "~> 1.1"}` to your deps and call
+  `Calendar.put_time_zone_database(Tzdata.TimeZoneDatabase)` once at
+  boot. Without it, `:timezone` accepts only `"Etc/UTC"` and string
+  inputs with offsets degrade to offset-less `NaiveDateTime` (the same
+  silent fallback Liquex had before).
+- The integration suite forwards `ENV['TZ']` to the Ruby subprocess so
+  Liquid and Liquex stay in sync regardless of the developer's machine.
+  CI should pin `TZ` (e.g. `TZ=UTC mix test`) for reproducibility.
+
 ## [0.13.1] - 2024-07-19
 
 - Fix warning in Elixir 1.17 [#47](https://github.com/handlecommerce/liquex/pull/47)
