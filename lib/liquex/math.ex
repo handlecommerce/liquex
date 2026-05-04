@@ -75,10 +75,11 @@ defmodule Liquex.Math do
   end
 
   def divide(a, b) do
-    cond do
-      # Liquid renders finite / infinity as 0.0 (Float), not Decimal "0".
-      infinite?(b) and not special?(a) -> 0.0
-      true -> with_ctx(fn -> Decimal.div(to_decimal(a), to_decimal(b)) end)
+    # Liquid renders finite / infinity as 0.0 (Float), not Decimal "0".
+    if infinite?(b) and not special?(a) do
+      0.0
+    else
+      with_ctx(fn -> Decimal.div(to_decimal(a), to_decimal(b)) end)
     end
   end
 
@@ -132,31 +133,20 @@ defmodule Liquex.Math do
 
   # ---- Comparison ---------------------------------------------------------
 
-  # `Decimal.compare/2` returns `:lt | :eq | :gt`, or a NaN Decimal if the
-  # comparison is unordered. We collapse the NaN case to the `:nan` atom for
-  # uniformity with the apply_op dispatch below.
+  # NaN inputs collapse to the `:nan` atom for uniformity with the apply_op
+  # dispatch below. Otherwise `Decimal.compare/2` returns `:lt | :eq | :gt`
+  # directly.
   def compare(a, b) do
     cond do
-      nan?(a) or nan?(b) ->
-        :nan
-
-      is_number(a) and is_number(b) ->
-        cond do
-          a < b -> :lt
-          a > b -> :gt
-          true -> :eq
-        end
-
-      true ->
-        with_ctx(fn ->
-          case Decimal.compare(to_decimal(a), to_decimal(b)) do
-            :lt -> :lt
-            :gt -> :gt
-            :eq -> :eq
-          end
-        end)
+      nan?(a) or nan?(b) -> :nan
+      is_number(a) and is_number(b) -> compare_numbers(a, b)
+      true -> with_ctx(fn -> Decimal.compare(to_decimal(a), to_decimal(b)) end)
     end
   end
+
+  defp compare_numbers(a, b) when a < b, do: :lt
+  defp compare_numbers(a, b) when a > b, do: :gt
+  defp compare_numbers(_, _), do: :eq
 
   # Apply a Liquid comparison op (:==, :!=, :<, :>, :<=, :>=) to two operands
   # when at least one is special / Decimal.

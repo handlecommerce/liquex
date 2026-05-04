@@ -400,6 +400,7 @@ defmodule Liquex.MathTest do
     test "filter chains preserve special values" do
       assert render("{{ 5 | divided_by: 0.0 | plus: 1 }}") == "Infinity"
       assert render("{{ 5 | divided_by: 0.0 | times: -1 }}") == "-Infinity"
+
       assert render("{{ 5 | divided_by: 0.0 | minus: \"5\" | divided_by: 0.0 | minus: \"5\" }}") ==
                "Infinity"
     end

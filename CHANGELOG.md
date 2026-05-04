@@ -14,15 +14,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in templates, with results memoized for the duration of a single render.
   Repeat references to `{{ products.first.category.name }}` within one
   render only invoke the underlying drop fetches once. Stateful drops can
-  opt out per-module with `def cacheable?(_), do: false`. Existing
-  `@behaviour Access` structs continue to work unchanged on the legacy
-  uncached path.
+  opt out per-module with `def cacheable?(_), do: false`.
+- `use Liquex.Drop` + `defliquid name(drop, ctx), do: …` macro provides a
+  whitelist-checked, method-style way to declare drop attributes. Compiles
+  to direct `case`-dispatched `fetch/3` clauses (no runtime `apply`
+  overhead). Pass `cacheable: false` to skip per-render memoization for
+  drops whose attributes are cheap pure computations.
+- `Liquex.Drop.Forloop` and `Liquex.Drop.TablerowLoop` back the `forloop`
+  and `tablerowloop` template variables. Previously these were precomputed
+  maps; now they are tiny immutable structs whose attributes derive on
+  demand. Closes a small parity gap: `tablerowloop.col0`, `index0`,
+  `length`, `rindex`, and `rindex0` now have explicit test coverage.
 - `Liquex.Cache.memoize/3` — ergonomic helper over the existing
   `Liquex.Cache` behaviour for custom filter authors who want per-render
   memoization of expensive operations.
 
-### Changed
+### Changed (breaking)
 
+- **Drops are the only way for user-defined structs to participate in
+  template traversal beyond direct field access.** `@behaviour Access`
+  on a user struct is no longer dispatched by Liquex's resolver. If you
+  had a struct with `@behaviour Access` and a custom `fetch/2` to drive
+  template lookups, port it to `@behaviour Liquex.Drop` (or
+  `use Liquex.Drop` with `defliquid` declarations) and rename `fetch/2`
+  to `fetch/3` — the third argument is the render context, which you can
+  ignore (`_context`). Plain structs without a behaviour still resolve
+  field access by atom or string key.
 - `Liquex.Argument.eval/2` and `Liquex.Expression.eval/2` now return
   `{value, context}` tuples (previously just `value`). All in-tree tag
   callers updated. Custom tags that call these directly will need to
@@ -31,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   triggered by filter argument evaluation propagate. Custom filter modules
   that override `apply/3` to return just a value continue to work — the
   render pipeline accepts both shapes.
+- `Liquex.Representable.is_lazy/1` callback renamed to `lazy?/1` per
+  Elixir naming convention. Implementors must rename their function.
 - `Liquex.Tag.RenderTag` partial-template parse cache now uses
   `Liquex.Cache.memoize/3` internally. Cache key format changed from a
   string (`"prefix:Liquex.Tag.RenderTag:partial.NAME"`) to a tuple

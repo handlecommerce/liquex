@@ -61,9 +61,10 @@ defmodule Liquex.Represent do
   defp to_string_key({k, v}, lazy), do: {k, lazy_represent(v, lazy)}
 
   defp lazy_represent(value, true) do
-    case Representable.is_lazy(value) do
-      true -> fn -> Liquex.Representable.represent(value, true) end
-      _ -> Liquex.Representable.represent(value, true)
+    if Representable.lazy?(value) do
+      fn -> Liquex.Representable.represent(value, true) end
+    else
+      Liquex.Representable.represent(value, true)
     end
   end
 

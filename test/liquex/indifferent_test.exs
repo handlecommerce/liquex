@@ -3,26 +3,22 @@ defmodule Liquex.IndifferentTest do
 
   use ExUnit.Case, async: true
 
-  defmodule TestAccessModule do
-    @behaviour Access
-
-    defstruct []
-
-    def fetch(_container, :atom_test), do: {:ok, %{title: "Atom Test"}}
-    def fetch(_container, "string_test"), do: {:ok, %{title: "String Test"}}
-    def fetch(_, _), do: :error
-
-    def pop(container, _key), do: {nil, container}
-
-    def get_and_update(container, _key, _func), do: {nil, container}
-  end
-
   defmodule TestNonAccessModule, do: defstruct([:x])
 
   doctest Liquex.Indifferent
 
-  describe "access behaviour" do
-    test "allows lazy access to Access implementing modules" do
+  defmodule TestDrop do
+    @moduledoc false
+    use Liquex.Drop, cacheable: false
+
+    defstruct []
+
+    defliquid atom_test(_drop, _ctx), do: %{title: "Atom Test"}
+    defliquid string_test(_drop, _ctx), do: %{title: "String Test"}
+  end
+
+  describe "drop dispatch" do
+    test "resolves dynamic keys via the Liquex.Drop behaviour" do
       {:ok, template} =
         """
         {{ test['atom_test'].title }}!
@@ -31,7 +27,7 @@ defmodule Liquex.IndifferentTest do
         |> String.trim()
         |> Liquex.parse()
 
-      assert Liquex.render!(template, %{test: %TestAccessModule{}})
+      assert Liquex.render!(template, %{test: %TestDrop{}})
              |> elem(0)
              |> to_string()
              |> String.trim() == "Atom Test!\nString Test!"

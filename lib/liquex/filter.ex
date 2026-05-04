@@ -120,8 +120,12 @@ defmodule Liquex.Filter do
 
   defp do_at_least(v, m) do
     cond do
-      Math.nan?(v) -> m
-      Math.nan?(m) -> v
+      Math.nan?(v) ->
+        m
+
+      Math.nan?(m) ->
+        v
+
       Math.special?(v) or Math.special?(m) ->
         if Math.compare(v, m) == :gt, do: v, else: m
 
@@ -152,8 +156,12 @@ defmodule Liquex.Filter do
 
   defp do_at_most(v, m) do
     cond do
-      Math.nan?(v) -> m
-      Math.nan?(m) -> v
+      Math.nan?(v) ->
+        m
+
+      Math.nan?(m) ->
+        v
+
       Math.special?(v) or Math.special?(m) ->
         if Math.compare(v, m) == :lt, do: v, else: m
 
@@ -1095,12 +1103,7 @@ defmodule Liquex.Filter do
 
   def sum(list, property, _) when is_list(list) do
     Enum.reduce(list, 0, fn item, acc ->
-      value =
-        cond do
-          is_map(item) -> Liquex.Indifferent.get(item, property, 0)
-          true -> 0
-        end
-
+      value = if is_map(item), do: Liquex.Indifferent.get(item, property, 0), else: 0
       Math.add(acc, to_number(value))
     end)
   end

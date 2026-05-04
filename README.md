@@ -79,8 +79,9 @@ line:
 def cacheable?(_drop), do: false
 ```
 
-Existing structs that implement `@behaviour Access` continue to work
-unchanged — they fall through the legacy uncached path.
+Plain structs without `@behaviour Liquex.Drop` are readable from
+templates via direct field access (atom or string keys) but cannot
+resolve dynamic keys or compute on access.
 
 ## Lazy variables
 

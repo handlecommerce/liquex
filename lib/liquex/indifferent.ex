@@ -24,12 +24,6 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.get(%{a: "Hello"}, "b", "Goodbye")
       "Goodbye"
 
-      iex> Liquex.Indifferent.get(%TestAccessModule{}, :atom_test)
-      %{title: "Atom Test"}
-
-      iex> Liquex.Indifferent.get(%TestAccessModule{}, "atom_test")
-      %{title: "Atom Test"}
-
       iex> Liquex.Indifferent.get(%TestNonAccessModule{x: "Hello World!"}, :x)
       "Hello World!"
 
@@ -58,13 +52,11 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.put(%{a: "Hello"}, "b", "World")
       %{"b" => "World", :a => "Hello"}
   """
-  def put(map, key, value) when is_struct(map) do
-    if implements_behaviour?(map, Access) do
-      Access.get_and_update(map, key, &{&1, value}) |> elem(1)
-    else
-      put(Map.from_struct(map), key, value)
-    end
-  end
+  def put(%Liquex.Context{} = ctx, key, value),
+    do: Liquex.Context.assign(ctx, key, value)
+
+  def put(map, key, value) when is_struct(map),
+    do: put(Map.from_struct(map), key, value)
 
   def put(map, key, value), do: Map.put(map, get_key!(map, key, key), value)
 
@@ -88,12 +80,6 @@ defmodule Liquex.Indifferent do
 
       iex> Liquex.Indifferent.fetch(%{:a => "Hello", "a" => "Goodbye"}, "a")
       {:ok, "Goodbye"}
-
-      iex> Liquex.Indifferent.fetch(%TestAccessModule{}, :atom_test)
-      {:ok, %{title: "Atom Test"}}
-
-      iex> Liquex.Indifferent.fetch(%TestAccessModule{}, "atom_test")
-      {:ok, %{title: "Atom Test"}}
   """
   def fetch(data, key) do
     case access(data, key) do
@@ -119,8 +105,7 @@ defmodule Liquex.Indifferent do
   declare the behaviour, threading the render context.
 
   Returns `{result, context}`. The context is unchanged for non-Drop data; for
-  Drops it may carry a memoized entry under `private[:drop_cache]` (set up
-  in Phase 3 of the per-render Drop cache).
+  Drops it may carry a memoized entry under `private[:drop_cache]`.
   """
   def fetch(data, key, context) do
     case attempt(data, key, context) do
@@ -130,7 +115,7 @@ defmodule Liquex.Indifferent do
       {:error, context} ->
         cond do
           is_binary(key) ->
-            try_alternate(data, String.to_existing_atom(key), context)
+            attempt(data, String.to_existing_atom(key), context)
 
           is_atom(key) ->
             attempt(data, Atom.to_string(key), context)
@@ -143,22 +128,18 @@ defmodule Liquex.Indifferent do
     ArgumentError -> {:error, context}
   end
 
-  defp try_alternate(data, key, context), do: attempt(data, key, context)
+  defp attempt(%Liquex.Context{} = ctx, key, context),
+    do: {Liquex.Context.fetch(ctx, key), context}
 
   defp attempt(data, key, context) when is_struct(data) do
-    cond do
-      Drop.drop?(data) ->
-        cached_drop_fetch(data, key, context)
-
-      implements_behaviour?(data, Access) ->
-        {Access.fetch(data, key), context}
-
-      true ->
-        {Map.fetch(data, key), context}
+    if Drop.drop?(data) do
+      cached_drop_fetch(data, key, context)
+    else
+      {Map.fetch(data, key), context}
     end
   end
 
-  defp attempt(data, key, context), do: {Access.fetch(data, key), context}
+  defp attempt(data, key, context), do: {Map.fetch(data, key), context}
 
   defp cached_drop_fetch(drop, key, context) do
     if Drop.cacheable?(drop) do
@@ -229,9 +210,6 @@ defmodule Liquex.Indifferent do
 
   defp get_key(map, key) do
     cond do
-      implements_behaviour?(map, Access) ->
-        {:ok, key}
-
       Map.has_key?(map, key) ->
         {:ok, key}
 
@@ -257,24 +235,7 @@ defmodule Liquex.Indifferent do
     end
   end
 
-  # Access a map/struct by key using either Map.fetch/2 or Access.fetch/2
-  defp access(data, key) when is_struct(data) do
-    # Structs don't allow Access.fetch/2 access without implementing Access so
-    # fallback to Map.fetch/2
-    if implements_behaviour?(data, Access) do
-      Access.fetch(data, key)
-    else
-      Map.fetch(data, key)
-    end
-  end
-
-  defp access(data, key), do: Access.fetch(data, key)
-
-  defp implements_behaviour?(map, behaviour) when is_struct(map) do
-    map.__struct__.module_info()[:attributes]
-    |> Keyword.get(:behaviour, [])
-    |> Enum.member?(behaviour)
-  end
-
-  defp implements_behaviour?(_, _), do: false
+  defp access(%Liquex.Context{} = ctx, key), do: Liquex.Context.fetch(ctx, key)
+  defp access(data, key) when is_struct(data), do: Map.fetch(data, key)
+  defp access(data, key), do: Map.fetch(data, key)
 end

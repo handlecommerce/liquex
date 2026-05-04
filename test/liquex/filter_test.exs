@@ -76,7 +76,7 @@ defmodule Liquex.FilterTest do
       sign = if offset < 0, do: "-", else: "+"
       abs = abs(offset)
       hours = div(abs, 3600) |> Integer.to_string() |> String.pad_leading(2, "0")
-      mins = (rem(abs, 3600) |> div(60)) |> Integer.to_string() |> String.pad_leading(2, "0")
+      mins = rem(abs, 3600) |> div(60) |> Integer.to_string() |> String.pad_leading(2, "0")
       sign <> hours <> mins
     end
   end

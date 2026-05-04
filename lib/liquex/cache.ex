@@ -48,7 +48,7 @@ defmodule Liquex.Cache do
   Fetch a value from cache. If the value doesn't exist, run the given function
   and store the results within the cache.
   """
-  @callback fetch(key, (() -> value())) :: value()
+  @callback fetch(key, (-> value())) :: value()
 
   @doc """
   Memoize `fun` in `context`'s cache, namespaced by `context.cache_prefix`.
@@ -60,7 +60,7 @@ defmodule Liquex.Cache do
   When `cache:` is the default `Liquex.Cache.DisabledCache`, this just calls
   `fun.()` every time — extension authors can use `memoize/3` unconditionally.
   """
-  @spec memoize(Context.t(), key(), (() -> value())) :: value()
+  @spec memoize(Context.t(), key(), (-> value())) :: value()
   def memoize(%Context{cache: cache, cache_prefix: prefix}, key, fun) do
     cache.fetch({prefix, key}, fun)
   end

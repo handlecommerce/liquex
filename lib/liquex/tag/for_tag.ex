@@ -340,15 +340,6 @@ defmodule Liquex.Tag.ForTag do
     do: %{context | private: Map.put(private, continue_key(collection), value)}
 
   defp forloop(index, length, parentloop) do
-    %{
-      "index" => index + 1,
-      "index0" => index,
-      "rindex" => length - index,
-      "rindex0" => length - index - 1,
-      "first" => index == 0,
-      "last" => index == length - 1,
-      "length" => length,
-      "parentloop" => parentloop
-    }
+    %Liquex.Drop.Forloop{index: index, length: length, parentloop: parentloop}
   end
 end

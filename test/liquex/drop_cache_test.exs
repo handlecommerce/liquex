@@ -171,35 +171,96 @@ defmodule Liquex.DropCacheTest do
     end
   end
 
-  describe "drops with @behaviour Access (legacy)" do
-    defmodule AccessOnlyDrop do
+  describe "use Liquex.Drop + defliquid macro" do
+    defmodule MacroDrop do
       @moduledoc false
-      @behaviour Access
+      use Liquex.Drop
+
+      defstruct [:counter, :name]
+
+      defliquid title(drop, _ctx) do
+        Agent.update(drop.counter, &(&1 + 1))
+        String.upcase(drop.name)
+      end
+
+      defliquid raw_name(drop, _ctx), do: drop.name
+    end
+
+    defmodule CheapMacroDrop do
+      @moduledoc false
+      use Liquex.Drop, cacheable: false
 
       defstruct [:counter]
 
-      @impl true
-      def fetch(%__MODULE__{counter: counter}, _key) do
-        Agent.update(counter, &(&1 + 1))
-        {:ok, "value"}
+      defliquid x(drop, _ctx) do
+        Agent.update(drop.counter, &(&1 + 1))
+        :ok
       end
-
-      @impl true
-      def get_and_update(c, _, _), do: {nil, c}
-      @impl true
-      def pop(c, _), do: {nil, c}
     end
 
-    test "Access-only structs work but are not cached", %{counter: counter} do
-      drop = %AccessOnlyDrop{counter: counter}
-      ctx = Context.new(%{"x" => drop})
+    test "registered attributes dispatch to defliquid functions and are cached", %{
+      counter: counter
+    } do
+      drop = %MacroDrop{counter: counter, name: "widget"}
+      ctx = Context.new(%{"d" => drop})
 
-      template = "{{ x.foo }}{{ x.foo }}{{ x.foo }}"
-      {:ok, ast} = Liquex.parse(template)
+      {:ok, ast} = Liquex.parse("{{ d.title }}-{{ d.title }}-{{ d.raw_name }}")
+      {output, _} = Liquex.render!(ast, ctx)
+
+      assert IO.iodata_to_binary(output) == "WIDGET-WIDGET-widget"
+      # title is computed once across two references; raw_name has no Agent
+      # update so the counter only reflects title invocations.
+      assert Agent.get(counter, & &1) == 1
+    end
+
+    test "unregistered keys return :error", %{counter: counter} do
+      drop = %MacroDrop{counter: counter, name: "widget"}
+      ctx = Context.new(%{"d" => drop})
+
+      {:ok, ast} = Liquex.parse("[{{ d.unknown }}]")
+      {output, _} = Liquex.render!(ast, ctx)
+
+      assert IO.iodata_to_binary(output) == "[]"
+    end
+
+    test "cacheable: false skips memoization", %{counter: counter} do
+      drop = %CheapMacroDrop{counter: counter}
+      ctx = Context.new(%{"d" => drop})
+
+      {:ok, ast} = Liquex.parse("{{ d.x }}{{ d.x }}{{ d.x }}")
       {_, _} = Liquex.render!(ast, ctx)
 
-      # Each reference re-fetches because the legacy Access path doesn't cache.
       assert Agent.get(counter, & &1) == 3
+    end
+
+    test "cacheable: false sets Liquex.Drop.cacheable?/1 to false", %{counter: counter} do
+      assert Liquex.Drop.cacheable?(%CheapMacroDrop{counter: counter}) == false
+      assert Liquex.Drop.cacheable?(%MacroDrop{counter: counter, name: ""}) == true
+    end
+  end
+
+  describe "plain structs (no Liquex.Drop)" do
+    defmodule PlainStruct do
+      @moduledoc false
+      defstruct [:title, :count]
+    end
+
+    test "support direct field access for atom and string keys", %{counter: _counter} do
+      ctx = Context.new(%{"thing" => %PlainStruct{title: "hi", count: 7}})
+
+      {:ok, ast} = Liquex.parse("{{ thing.title }}-{{ thing.count }}")
+      {output, _} = Liquex.render!(ast, ctx)
+
+      assert IO.iodata_to_binary(output) == "hi-7"
+    end
+
+    test "unknown keys on plain structs render empty", %{counter: _counter} do
+      ctx = Context.new(%{"thing" => %PlainStruct{title: "hi"}})
+
+      {:ok, ast} = Liquex.parse("[{{ thing.unknown }}]")
+      {output, _} = Liquex.render!(ast, ctx)
+
+      assert IO.iodata_to_binary(output) == "[]"
     end
   end
 end
