@@ -203,8 +203,14 @@ defmodule Liquex do
   """
   def parse(template, parser \\ Liquex.Parser.Base) do
     case parser.parse(template) do
-      {:ok, content, _, _, _, _} -> {:ok, content}
-      {:error, reason, _, _, {line, _}, _} -> {:error, reason, line}
+      {:ok, content, _, _, _, _} ->
+        {:ok, content}
+
+      {:error, reason, rest, _state, {line, col}, offset} ->
+        {better_reason, better_line, _better_col} =
+          Liquex.Parser.Diagnostic.diagnose(template, rest, offset, line, col, reason)
+
+        {:error, better_reason, better_line}
     end
   end
 
@@ -215,12 +221,15 @@ defmodule Liquex do
   Returns a Liquex AST document or raises an exception.  See also `parse/2`
   """
   def parse!(template, parser \\ Liquex.Parser.Base) do
-    case parse(template, parser) do
-      {:error, reason, line} ->
-        raise Liquex.Error, message: "Liquid parser error: #{reason} - Line #{line}"
+    case parser.parse(template) do
+      {:ok, content, _, _, _, _} ->
+        content
 
-      {:ok, ast} ->
-        ast
+      {:error, reason, rest, _state, {line, col}, offset} ->
+        {better_reason, better_line, better_col} =
+          Liquex.Parser.Diagnostic.diagnose(template, rest, offset, line, col, reason)
+
+        raise Liquex.Error.from_parser(template, better_reason, better_line, better_col)
     end
   end
 
@@ -237,9 +246,14 @@ defmodule Liquex do
     context = put_in(context.private[:drop_cache], %{})
 
     case Liquex.Render.render!(document, context) do
-      {:break, _, _} -> raise Liquex.Error, "'break' found outside of iteration tag"
-      {:continue, _, _} -> raise Liquex.Error, "'continue' found outside of iteration tag"
-      r -> r
+      {:break, value, ctx} ->
+        {value, Context.report_error(ctx, Liquex.Error.render_error("'break' found outside of iteration tag"))}
+
+      {:continue, value, ctx} ->
+        {value, Context.report_error(ctx, Liquex.Error.render_error("'continue' found outside of iteration tag"))}
+
+      r ->
+        r
     end
   end
 

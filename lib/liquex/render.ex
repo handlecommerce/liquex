@@ -205,11 +205,11 @@ defmodule Liquex.Render do
       new_value -> {new_value, context}
     end
   rescue
-    # If we have no matching filter, add to errors and return the original value
+    # Route "unknown filter" errors through the context's :error_mode.
+    # Filter implementations that deliberately raise `Liquex.Error` (e.g. a
+    # filter rejecting bad arguments) propagate as before.
     UndefinedFunctionError ->
-      {value,
-       Context.push_error(context, %Liquex.Error{
-         message: "Invalid filter #{Liquex.Filter.filter_name(filter)}"
-       })}
+      err = Liquex.Error.render_error("Invalid filter #{Liquex.Filter.filter_name(filter)}")
+      {value, Context.report_error(context, err)}
   end
 end

@@ -29,7 +29,17 @@ defmodule Liquex.Filter do
         {:filter, [function, {:arguments, arguments}]},
         context
       ) do
-    func = String.to_existing_atom(function)
+    func =
+      try do
+        String.to_existing_atom(function)
+      rescue
+        # Surface unknown-filter cases via UndefinedFunctionError so the render
+        # pipeline can route them through Context.report_error/2 (honoring
+        # :error_mode). Filter implementations that deliberately raise
+        # `Liquex.Error` continue to propagate.
+        ArgumentError ->
+          raise UndefinedFunctionError, module: mod, function: :"#{function}", arity: 0
+      end
 
     {function_args, context} =
       Enum.map_reduce(arguments, context, fn arg, ctx ->
@@ -48,9 +58,6 @@ defmodule Liquex.Filter do
     # Liquid's filters operate on Ruby Arrays; ranges go through `to_a` first.
     result = Kernel.apply(mod, func, [normalize(value) | function_args] ++ [context])
     {result, context}
-  rescue
-    # credo:disable-for-next-line
-    ArgumentError -> raise Liquex.Error, "Invalid filter #{function}"
   end
 
   defp normalize(%Range{} = r), do: Enum.to_list(r)

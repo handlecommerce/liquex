@@ -61,7 +61,10 @@ defmodule Liquex.Context do
             errors: [],
             cache: nil,
             cache_prefix: nil,
-            timezone: nil
+            timezone: nil,
+            error_mode: :lax
+
+  @type error_mode :: :strict | :warn | :lax
 
   @type t :: %__MODULE__{
           environment: map(),
@@ -74,7 +77,8 @@ defmodule Liquex.Context do
           cache: term,
           cache_prefix: String.t(),
           errors: list(Liquex.Error.t()),
-          timezone: nil | String.t()
+          timezone: nil | String.t(),
+          error_mode: error_mode()
         }
 
   alias Liquex.Indifferent
@@ -105,6 +109,14 @@ defmodule Liquex.Context do
       `TimeZoneDatabase` configured via `Calendar.put_time_zone_database/1`.
       Defaults to `nil`, which means "use the host's local time" (same as
       Ruby's `Time.now`, honoring the `TZ` environment variable).
+
+    * :error_mode - How render-time errors (e.g. unknown filters,
+      `'break'`/`'continue'` outside iteration) are handled. One of:
+
+        * `:lax` (default) - silently swallow the error and continue rendering.
+          Matches Liquex's historical behavior.
+        * `:warn` - accumulate the error in `context.errors` but keep rendering.
+        * `:strict` - raise `Liquex.Error` on the first failure.
   """
   @spec new(map(), Keyword.t()) :: t()
   def new(environment, opts \\ []) do
@@ -116,7 +128,8 @@ defmodule Liquex.Context do
       file_system: Keyword.get(opts, :file_system, %Liquex.BlankFileSystem{}),
       cache: Keyword.get(opts, :cache, Liquex.Cache.DisabledCache),
       cache_prefix: Keyword.get(opts, :cache_prefix, nil),
-      timezone: Keyword.get(opts, :timezone)
+      timezone: Keyword.get(opts, :timezone),
+      error_mode: Keyword.get(opts, :error_mode, :lax)
     }
   end
 
@@ -152,6 +165,19 @@ defmodule Liquex.Context do
   """
   def push_error(%__MODULE__{errors: errors} = context, error),
     do: %{context | errors: [error | errors]}
+
+  @spec report_error(t(), Liquex.Error.t()) :: t() | no_return()
+  @doc """
+  Report a render-time error, honoring the context's `:error_mode`.
+
+    * `:strict` - raises the error
+    * `:warn`   - appends to `context.errors`
+    * `:lax`    - returns the context unchanged
+  """
+  def report_error(%__MODULE__{error_mode: :strict}, %Liquex.Error{} = error), do: raise(error)
+  def report_error(%__MODULE__{error_mode: :warn} = context, %Liquex.Error{} = error),
+    do: push_error(context, error)
+  def report_error(%__MODULE__{error_mode: :lax} = context, %Liquex.Error{}), do: context
 
   @doc """
   Look up variable within the current scope. If the scope does not define the
