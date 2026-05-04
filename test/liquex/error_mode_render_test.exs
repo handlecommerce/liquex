@@ -35,6 +35,24 @@ defmodule Liquex.ErrorModeRenderTest do
     end
   end
 
+  describe "filter typo suggestions" do
+    test "close typo includes did-you-mean hint" do
+      {:ok, ast} = Liquex.parse("{{ x | upcas }}")
+      {_r, ctx} = Liquex.render!(ast, Context.new(%{"x" => "hi"}, error_mode: :warn))
+      assert [%Liquex.Error{message: msg}] = ctx.errors
+      assert msg =~ "Invalid filter upcas"
+      assert msg =~ "did you mean `upcase`?"
+    end
+
+    test "totally unrelated name has no hint" do
+      {:ok, ast} = Liquex.parse("{{ x | qqxyzzy }}")
+      {_r, ctx} = Liquex.render!(ast, Context.new(%{"x" => "hi"}, error_mode: :warn))
+      assert [%Liquex.Error{message: msg}] = ctx.errors
+      assert msg =~ "Invalid filter qqxyzzy"
+      refute msg =~ "did you mean"
+    end
+  end
+
   describe "stray break/continue honors :error_mode" do
     test ":lax swallows stray break (default)" do
       {:ok, ast} = Liquex.parse("hello{% break %}world")

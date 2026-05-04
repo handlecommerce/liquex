@@ -23,6 +23,51 @@ defmodule Liquex.Filter do
   @spec filter_name(filter_t) :: String.t()
   def filter_name({:filter, [filter_name | _]}), do: filter_name
 
+  # Framework-internal functions that aren't user-callable filters.
+  @reserved_filter_names ~w(apply filter_name did_you_mean filter_names)
+
+  @doc """
+  Return the list of user-callable filter names exported by `module` (and the
+  default filter module if different).
+  """
+  @spec filter_names(module) :: [String.t()]
+  def filter_names(module) do
+    modules = Enum.uniq([module, __MODULE__])
+
+    modules
+    |> Enum.flat_map(fn mod ->
+      Code.ensure_loaded(mod)
+
+      mod
+      |> Kernel.function_exported?(:__info__, 1)
+      |> if do
+        mod.__info__(:functions)
+        |> Enum.map(fn {name, _arity} -> Atom.to_string(name) end)
+      else
+        []
+      end
+    end)
+    |> Enum.reject(&(&1 in @reserved_filter_names))
+    |> Enum.uniq()
+  end
+
+  @doc """
+  Suggest a similar filter name for `name` given the candidates from `module`.
+  Returns `" (did you mean `foo`?)"` when a close match exists, otherwise `""`.
+  """
+  @spec did_you_mean(String.t(), module) :: String.t()
+  def did_you_mean(name, module) do
+    {best, score} =
+      module
+      |> filter_names()
+      |> Enum.reduce({nil, 0.0}, fn candidate, {best, best_score} ->
+        s = String.jaro_distance(name, candidate)
+        if s > best_score, do: {candidate, s}, else: {best, best_score}
+      end)
+
+    if best && score >= 0.75, do: " (did you mean `#{best}`?)", else: ""
+  end
+
   def apply(
         mod \\ __MODULE__,
         value,
