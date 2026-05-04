@@ -202,14 +202,14 @@ defmodule Liquex.Parser.Diagnostic do
 
   defp block_balance(template, _rest, _offset) do
     case scan_blocks(template) do
-      {:unclosed, name, line, col} ->
+      {:unclosed, name, markup, line, col} ->
         end_name = "end" <> name
 
-        {"unclosed `{% #{name} %}` (expected `{% #{end_name} %}`)", line, col}
+        {"unclosed `#{truncate_tag(markup)}` (expected `{% #{end_name} %}`)", line, col}
 
-      {:mismatch, found, expected, opener_line, found_line, found_col} ->
+      {:mismatch, found_markup, expected, opener_line, found_line, found_col} ->
         reason =
-          "unexpected `{% #{found} %}` " <>
+          "unexpected `#{truncate_tag(found_markup)}` " <>
             "(expected `{% #{expected} %}` to close block opened at line #{opener_line})"
 
         {reason, found_line, found_col}
@@ -221,8 +221,8 @@ defmodule Liquex.Parser.Diagnostic do
 
         {reason, found_line, found_col}
 
-      {:orphan, found, line, col} ->
-        {"unexpected `{% #{found} %}` (no matching opener)", line, col}
+      {:orphan, found_markup, line, col} ->
+        {"unexpected `#{truncate_tag(found_markup)}` (no matching opener)", line, col}
 
       :ok ->
         nil
@@ -238,10 +238,10 @@ defmodule Liquex.Parser.Diagnostic do
 
   defp walk_blocks([], []), do: :ok
 
-  defp walk_blocks([], [{name, line, col} | _]),
-    do: {:unclosed, name, line, col}
+  defp walk_blocks([], [{name, markup, line, col} | _]),
+    do: {:unclosed, name, markup, line, col}
 
-  defp walk_blocks([{name, line, col, _offset} | rest], stack) do
+  defp walk_blocks([{name, line, col, markup} | rest], stack) do
     cond do
       # Inside a raw or comment block, ignore everything until the matching end.
       stack_top_is?(stack, "raw") and name != "endraw" ->
@@ -251,20 +251,20 @@ defmodule Liquex.Parser.Diagnostic do
         walk_blocks(rest, stack)
 
       name in @block_openers ->
-        walk_blocks(rest, [{name, line, col} | stack])
+        walk_blocks(rest, [{name, markup, line, col} | stack])
 
       Map.has_key?(@block_closers, name) ->
         expected = Map.fetch!(@block_closers, name)
 
         case stack do
-          [{^expected, _, _} | rest_stack] ->
+          [{^expected, _, _, _} | rest_stack] ->
             walk_blocks(rest, rest_stack)
 
-          [{other, opener_line, _opener_col} | _] ->
-            {:mismatch, name, "end" <> other, opener_line, line, col}
+          [{other, _other_markup, opener_line, _opener_col} | _] ->
+            {:mismatch, markup, "end" <> other, opener_line, line, col}
 
           [] ->
-            {:orphan, name, line, col}
+            {:orphan, markup, line, col}
         end
 
       true ->
@@ -280,7 +280,7 @@ defmodule Liquex.Parser.Diagnostic do
     end
   end
 
-  defp typo_close_for(name, [{opener, opener_line, _} | _])
+  defp typo_close_for(name, [{opener, _markup, opener_line, _} | _])
        when is_binary(name) and is_binary(opener) do
     expected = "end" <> opener
 
@@ -292,20 +292,34 @@ defmodule Liquex.Parser.Diagnostic do
 
   defp typo_close_for(_, _), do: nil
 
-  defp stack_top_is?([{name, _, _} | _], name), do: true
+  defp stack_top_is?([{name, _, _, _} | _], name), do: true
   defp stack_top_is?(_, _), do: false
 
   # ── Helpers ──────────────────────────────────────────────────────────────
 
-  # Find every match of regex in template; return [{name, line, col, byte_offset}].
+  # Find every match of regex in template; return
+  # [{name, line, col, full_markup}].
   defp scan_all(template, regex) do
     Regex.scan(regex, template, return: :index, capture: :all)
     |> Enum.map(fn matches ->
-      [{full_start, _full_len}, {name_start, name_len}] = matches
+      [{full_start, full_len}, {name_start, name_len}] = matches
       name = binary_part(template, name_start, name_len)
+      full = binary_part(template, full_start, full_len)
       {line, col} = position_at(template, full_start)
-      {name, line, col, full_start}
+      {name, line, col, full}
     end)
+  end
+
+  # Truncate tag markup so it fits cleanly in an error message: collapse
+  # whitespace to single spaces and cap length at `max` chars (default 60).
+  defp truncate_tag(markup, max \\ 60) do
+    one_line = markup |> String.replace(~r/\s+/, " ") |> String.trim()
+
+    if String.length(one_line) > max do
+      String.slice(one_line, 0, max - 3) <> "..."
+    else
+      one_line
+    end
   end
 
   # Convert a byte offset into a {line, column} pair (1-based).

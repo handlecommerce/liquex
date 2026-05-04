@@ -29,15 +29,15 @@ defmodule Liquex.Parser.DiagnosticTest do
       assert line == 1
     end
 
-    test "block opened but never closed" do
+    test "block opened but never closed shows the offending tag's markup" do
       assert {:error, reason, line} = Liquex.parse("{% if x %}\n  body\n")
-      assert reason =~ "unclosed `{% if %}`"
+      assert reason =~ "unclosed `{% if x %}`"
       assert reason =~ "expected `{% endif %}`"
       # Diagnostic points at the opener
       assert line == 1
     end
 
-    test "block close mismatch references opener line" do
+    test "block close mismatch shows the unexpected tag's markup" do
       template = "{% if x %}\n  {% for i in items %}\n  {% endif %}\n{% endfor %}"
       assert {:error, reason, line} = Liquex.parse(template)
       assert reason =~ "unexpected `{% endif %}`"
@@ -122,6 +122,25 @@ defmodule Liquex.Parser.DiagnosticTest do
       assert {:error, reason, _} = Liquex.parse("{{ x ! }}")
       assert is_binary(reason)
       assert reason != ""
+    end
+
+    test "long tag markup is truncated in the error message" do
+      # 90+ char if expression so it exceeds the 60-char cap.
+      long_expr =
+        "{% if user.role == 'admin' and user.active and (user.team == 'engineering' or user.team == 'product') %}body"
+
+      assert {:error, reason, _} = Liquex.parse(long_expr)
+      assert reason =~ "unclosed"
+      assert reason =~ "..."
+      # Ensure the embedded snippet stays under the cap (60 chars + ellipsis).
+      assert String.length(reason) < 200
+    end
+
+    test "multi-line tag markup is collapsed to one line in the error" do
+      template = "{% if x ==\n   y or z ==\n   w %}body"
+
+      assert {:error, reason, _} = Liquex.parse(template)
+      refute reason =~ "\n", "embedded markup should be flattened"
     end
 
     test "deeply nested matching blocks parse successfully" do
