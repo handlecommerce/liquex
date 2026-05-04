@@ -103,10 +103,7 @@ defmodule Liquex.Parser.Diagnostic do
         if s > best_score, do: {candidate, s}, else: {best, best_score}
       end)
 
-    cond do
-      best && score >= 0.75 -> " (did you mean `#{best}`?)"
-      true -> ""
-    end
+    if best && score >= 0.75, do: " (did you mean `#{best}`?)", else: ""
   end
 
   # ── Rule: unclosed open ──────────────────────────────────────────────────
@@ -241,42 +238,53 @@ defmodule Liquex.Parser.Diagnostic do
   defp walk_blocks([], [{name, markup, line, col} | _]),
     do: {:unclosed, name, markup, line, col}
 
-  defp walk_blocks([{name, line, col, markup} | rest], stack) do
-    cond do
-      # Inside a raw or comment block, ignore everything until the matching end.
-      stack_top_is?(stack, "raw") and name != "endraw" ->
+  defp walk_blocks([tag | rest], stack), do: visit_tag(tag, rest, stack)
+
+  # Inside `{% raw %}` — skip everything except `endraw`.
+  defp visit_tag({name, _line, _col, _markup}, rest, [{"raw", _, _, _} | _] = stack)
+       when name != "endraw",
+       do: walk_blocks(rest, stack)
+
+  # Inside `{% comment %}` — skip everything except `endcomment`.
+  defp visit_tag({name, _line, _col, _markup}, rest, [{"comment", _, _, _} | _] = stack)
+       when name != "endcomment",
+       do: walk_blocks(rest, stack)
+
+  # Block opener — push.
+  defp visit_tag({name, line, col, markup}, rest, stack) when name in @block_openers,
+    do: walk_blocks(rest, [{name, markup, line, col} | stack])
+
+  # Anything else — close, or unknown that may be a typo of an expected close.
+  defp visit_tag({name, line, col, markup} = tag, rest, stack) do
+    if Map.has_key?(@block_closers, name) do
+      handle_close(name, markup, line, col, rest, stack)
+    else
+      handle_unknown(tag, rest, stack)
+    end
+  end
+
+  defp handle_close(name, markup, line, col, rest, stack) do
+    expected = Map.fetch!(@block_closers, name)
+
+    case stack do
+      [{^expected, _, _, _} | rest_stack] ->
+        walk_blocks(rest, rest_stack)
+
+      [{other, _other_markup, opener_line, _opener_col} | _] ->
+        {:mismatch, markup, "end" <> other, opener_line, line, col}
+
+      [] ->
+        {:orphan, markup, line, col}
+    end
+  end
+
+  defp handle_unknown({name, line, col, _markup}, rest, stack) do
+    case typo_close_for(name, stack) do
+      {expected_close, opener_line} ->
+        {:typo_close, name, expected_close, opener_line, line, col}
+
+      nil ->
         walk_blocks(rest, stack)
-
-      stack_top_is?(stack, "comment") and name != "endcomment" ->
-        walk_blocks(rest, stack)
-
-      name in @block_openers ->
-        walk_blocks(rest, [{name, markup, line, col} | stack])
-
-      Map.has_key?(@block_closers, name) ->
-        expected = Map.fetch!(@block_closers, name)
-
-        case stack do
-          [{^expected, _, _, _} | rest_stack] ->
-            walk_blocks(rest, rest_stack)
-
-          [{other, _other_markup, opener_line, _opener_col} | _] ->
-            {:mismatch, markup, "end" <> other, opener_line, line, col}
-
-          [] ->
-            {:orphan, markup, line, col}
-        end
-
-      true ->
-        # If the tag name looks like a typo'd closer for whatever block we're
-        # currently inside, surface it as a typo rather than silently ignoring.
-        case typo_close_for(name, stack) do
-          {expected_close, opener_line} ->
-            {:typo_close, name, expected_close, opener_line, line, col}
-
-          nil ->
-            walk_blocks(rest, stack)
-        end
     end
   end
 
@@ -291,9 +299,6 @@ defmodule Liquex.Parser.Diagnostic do
   end
 
   defp typo_close_for(_, _), do: nil
-
-  defp stack_top_is?([{name, _, _, _} | _], name), do: true
-  defp stack_top_is?(_, _), do: false
 
   # ── Helpers ──────────────────────────────────────────────────────────────
 

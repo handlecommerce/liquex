@@ -183,8 +183,10 @@ defmodule Liquex.Context do
     * `:lax`    - returns the context unchanged
   """
   def report_error(%__MODULE__{error_mode: :strict}, %Liquex.Error{} = error), do: raise(error)
+
   def report_error(%__MODULE__{error_mode: :warn} = context, %Liquex.Error{} = error),
     do: push_error(context, error)
+
   def report_error(%__MODULE__{error_mode: :lax} = context, %Liquex.Error{}), do: context
 
   @doc """

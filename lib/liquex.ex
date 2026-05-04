@@ -185,6 +185,7 @@ defmodule Liquex do
   """
 
   alias Liquex.Context
+  alias Liquex.Parser.Diagnostic
 
   @type document_t :: [
           {:control_flow, [...]}
@@ -208,7 +209,7 @@ defmodule Liquex do
 
       {:error, reason, rest, _state, {line, col}, offset} ->
         {better_reason, better_line, _better_col} =
-          Liquex.Parser.Diagnostic.diagnose(template, rest, offset, line, col, reason)
+          Diagnostic.diagnose(template, rest, offset, line, col, reason)
 
         {:error, better_reason, better_line}
     end
@@ -227,7 +228,7 @@ defmodule Liquex do
 
       {:error, reason, rest, _state, {line, col}, offset} ->
         {better_reason, better_line, better_col} =
-          Liquex.Parser.Diagnostic.diagnose(template, rest, offset, line, col, reason)
+          Diagnostic.diagnose(template, rest, offset, line, col, reason)
 
         raise Liquex.Error.from_parser(template, better_reason, better_line, better_col)
     end
@@ -247,10 +248,18 @@ defmodule Liquex do
 
     case Liquex.Render.render!(document, context) do
       {:break, value, ctx} ->
-        {value, Context.report_error(ctx, Liquex.Error.render_error("'break' found outside of iteration tag"))}
+        {value,
+         Context.report_error(
+           ctx,
+           Liquex.Error.render_error("'break' found outside of iteration tag")
+         )}
 
       {:continue, value, ctx} ->
-        {value, Context.report_error(ctx, Liquex.Error.render_error("'continue' found outside of iteration tag"))}
+        {value,
+         Context.report_error(
+           ctx,
+           Liquex.Error.render_error("'continue' found outside of iteration tag")
+         )}
 
       r ->
         r

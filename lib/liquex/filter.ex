@@ -32,23 +32,22 @@ defmodule Liquex.Filter do
   """
   @spec filter_names(module) :: [String.t()]
   def filter_names(module) do
-    modules = Enum.uniq([module, __MODULE__])
-
-    modules
-    |> Enum.flat_map(fn mod ->
-      Code.ensure_loaded(mod)
-
-      mod
-      |> Kernel.function_exported?(:__info__, 1)
-      |> if do
-        mod.__info__(:functions)
-        |> Enum.map(fn {name, _arity} -> Atom.to_string(name) end)
-      else
-        []
-      end
-    end)
+    [module, __MODULE__]
+    |> Enum.uniq()
+    |> Enum.flat_map(&exported_function_names/1)
     |> Enum.reject(&(&1 in @reserved_filter_names))
     |> Enum.uniq()
+  end
+
+  defp exported_function_names(module) do
+    Code.ensure_loaded(module)
+
+    if Kernel.function_exported?(module, :__info__, 1) do
+      module.__info__(:functions)
+      |> Enum.map(fn {name, _arity} -> Atom.to_string(name) end)
+    else
+      []
+    end
   end
 
   @doc """
@@ -83,7 +82,9 @@ defmodule Liquex.Filter do
         # :error_mode). Filter implementations that deliberately raise
         # `Liquex.Error` continue to propagate.
         ArgumentError ->
-          raise UndefinedFunctionError, module: mod, function: :"#{function}", arity: 0
+          reraise UndefinedFunctionError,
+                  [module: mod, function: :"#{function}", arity: 0],
+                  __STACKTRACE__
       end
 
     {function_args, context} =
