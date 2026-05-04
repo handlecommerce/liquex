@@ -1,7 +1,12 @@
 defmodule Liquex.Indifferent do
   @moduledoc false
 
-  alias Liquex.Drop
+  # Atom/string-key indifferent access for plain maps and structs.
+  # Mirrors Rails' `HashWithIndifferentAccess`: a lookup with key `"foo"`
+  # finds a value at `%{"foo" => v}` or `%{foo: v}`, and the same goes
+  # for `:foo`. Used as the leaf-level utility under
+  # `Liquex.Resolver`, which handles the higher-level dispatch through
+  # Drops, the render context, and stdlib adapters.
 
   @spec get(map, any, any) :: any
   @doc """
@@ -52,9 +57,6 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.put(%{a: "Hello"}, "b", "World")
       %{"b" => "World", :a => "Hello"}
   """
-  def put(%Liquex.Context{} = ctx, key, value),
-    do: Liquex.Context.assign(ctx, key, value)
-
   def put(map, key, value) when is_struct(map),
     do: put(Map.from_struct(map), key, value)
 
@@ -87,8 +89,6 @@ defmodule Liquex.Indifferent do
         result
 
       :error ->
-        # try either a string or atom
-
         cond do
           is_binary(key) -> access(data, String.to_existing_atom(key))
           is_atom(key) -> access(data, Atom.to_string(key))
@@ -97,88 +97,6 @@ defmodule Liquex.Indifferent do
     end
   rescue
     ArgumentError -> :error
-  end
-
-  @spec fetch(map | struct, any, Liquex.Context.t()) :: {{:ok, term} | :error, Liquex.Context.t()}
-  @doc """
-  Like `fetch/2`, but routes through `Liquex.Drop.fetch/3` for structs that
-  declare the behaviour, threading the render context.
-
-  Returns `{result, context}`. The context is unchanged for non-Drop data; for
-  Drops it may carry a memoized entry under `private[:drop_cache]`.
-  """
-  def fetch(data, key, context) do
-    case attempt(data, key, context) do
-      {{:ok, _value}, _context} = result ->
-        result
-
-      {:error, context} ->
-        cond do
-          is_binary(key) ->
-            attempt(data, String.to_existing_atom(key), context)
-
-          is_atom(key) ->
-            attempt(data, Atom.to_string(key), context)
-
-          true ->
-            {:error, context}
-        end
-    end
-  rescue
-    ArgumentError -> {:error, context}
-  end
-
-  defp attempt(%Liquex.Context{} = ctx, key, context),
-    do: {Liquex.Context.fetch(ctx, key), context}
-
-  defp attempt(data, key, context) when is_struct(data) do
-    if Drop.drop?(data) do
-      cached_drop_fetch(data, key, context)
-    else
-      {Map.fetch(data, key), context}
-    end
-  end
-
-  defp attempt(data, key, context), do: {Map.fetch(data, key), context}
-
-  defp cached_drop_fetch(drop, key, context) do
-    if Drop.cacheable?(drop) do
-      case cache_get(context, drop, key) do
-        {:ok, cached} ->
-          {cached, context}
-
-        :miss ->
-          result = drop.__struct__.fetch(drop, key, context)
-          {result, cache_put(context, drop, key, result)}
-      end
-    else
-      {drop.__struct__.fetch(drop, key, context), context}
-    end
-  end
-
-  defp cache_get(%Liquex.Context{private: %{drop_cache: cache}}, drop, key) do
-    case Map.fetch(cache, {drop, key}) do
-      {:ok, value} -> {:ok, value}
-      :error -> :miss
-    end
-  end
-
-  defp cache_get(_context, _drop, _key), do: :miss
-
-  defp cache_put(%Liquex.Context{private: private} = context, drop, key, value) do
-    cache = Map.get(private, :drop_cache, %{})
-    %{context | private: Map.put(private, :drop_cache, Map.put(cache, {drop, key}, value))}
-  end
-
-  @spec get(map | struct, any, any, Liquex.Context.t()) :: {any, Liquex.Context.t()}
-  @doc """
-  Context-threading variant of `get/3`. Returns `{value, context}`.
-  """
-  def get(data, key, default, context) do
-    case fetch(data, key, context) do
-      {{:ok, value}, context} -> {value, context}
-      {:error, context} -> {default, context}
-    end
   end
 
   def get_and_update(data, key, fun) when is_function(fun) do
@@ -235,7 +153,6 @@ defmodule Liquex.Indifferent do
     end
   end
 
-  defp access(%Liquex.Context{} = ctx, key), do: Liquex.Context.fetch(ctx, key)
   defp access(data, key) when is_struct(data), do: Map.fetch(data, key)
   defp access(data, key), do: Map.fetch(data, key)
 end

@@ -3,6 +3,7 @@ defmodule Liquex.Argument do
 
   alias Liquex.Context
   alias Liquex.Indifferent
+  alias Liquex.Resolver
 
   @type field_t :: any
   @type argument_t ::
@@ -74,7 +75,7 @@ defmodule Liquex.Argument do
     do: {nil, context}
 
   defp do_eval(value, [{:key, key} | tail], context) do
-    {next, context} = Indifferent.get(value, key, nil, context)
+    {next, context} = Resolver.get(value, key, nil, context)
     {next, context} = apply_lazy(next, value, context)
     do_eval(next, tail, context)
   end
@@ -87,7 +88,7 @@ defmodule Liquex.Argument do
 
   defp value_at(value, argument, context) when is_tuple(argument) and is_map(value) do
     {key, context} = eval(argument, context)
-    Indifferent.get(value, key, nil, context)
+    Resolver.get(value, key, nil, context)
   end
 
   defp value_at(value, argument, context) when is_tuple(argument) and is_list(value) do
@@ -106,6 +107,16 @@ defmodule Liquex.Argument do
 
   def assign(%Context{} = context, {:field, accesses}, value),
     do: do_assign(context, accesses, value)
+
+  # Top-level assigns into a Context preserve the Context struct by routing
+  # through `Context.assign/3` rather than demoting to a plain map.
+  defp do_assign(%Context{} = ctx, [{:key, key}], value),
+    do: Context.assign(ctx, key, value)
+
+  defp do_assign(%Context{} = ctx, [{:key, key} | tail], value) do
+    inner = Context.get(ctx, key) || %{}
+    Context.assign(ctx, key, do_assign(inner, tail, value))
+  end
 
   defp do_assign(variables, [{:key, key} | tail], value) do
     case tail do
