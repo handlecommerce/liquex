@@ -34,7 +34,6 @@ defmodule Liquex.Parser.Diagnostic do
           {String.t(), pos_integer(), pos_integer()}
   def diagnose(template, rest, offset, fallback_line, fallback_col, fallback_reason) do
     rules = [
-      &orphan_close/3,
       &unclosed_raw/3,
       &unknown_tag/3,
       &unclosed_open/3,
@@ -49,29 +48,6 @@ defmodule Liquex.Parser.Diagnostic do
 
   defp format_fallback(reason) when is_binary(reason), do: reason
   defp format_fallback(reason), do: inspect(reason)
-
-  # ── Rule: orphan close ────────────────────────────────────────────────────
-  # rest starts with %} or }} and the matching opener is missing in everything
-  # parsed so far.
-
-  defp orphan_close(template, "%}" <> _, offset),
-    do: orphan_close_msg(template, offset, "%}", "{%")
-
-  defp orphan_close(template, "-%}" <> _, offset),
-    do: orphan_close_msg(template, offset, "-%}", "{%")
-
-  defp orphan_close(template, "}}" <> _, offset),
-    do: orphan_close_msg(template, offset, "}}", "{{")
-
-  defp orphan_close(template, "-}}" <> _, offset),
-    do: orphan_close_msg(template, offset, "-}}", "{{")
-
-  defp orphan_close(_, _, _), do: nil
-
-  defp orphan_close_msg(template, offset, close, open) do
-    {line, col} = position_at(template, offset)
-    {"unexpected `#{close}` (no matching `#{open}`)", line, col}
-  end
 
   # ── Rule: unclosed {% raw %} ─────────────────────────────────────────────
 

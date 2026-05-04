@@ -245,7 +245,8 @@ defmodule Liquex.Context do
         static_environment: context.static_environment,
         filter_module: context.filter_module,
         file_system: context.file_system,
-        timezone: context.timezone
+        timezone: context.timezone,
+        error_mode: context.error_mode
       )
 
     # Inherit the per-render Drop cache so partials share the parent's
