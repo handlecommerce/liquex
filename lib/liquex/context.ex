@@ -62,7 +62,8 @@ defmodule Liquex.Context do
             cache: nil,
             cache_prefix: nil,
             timezone: nil,
-            error_mode: :lax
+            error_mode: :lax,
+            strict_variables: false
 
   @type error_mode :: :strict | :warn | :lax
 
@@ -78,7 +79,8 @@ defmodule Liquex.Context do
           cache_prefix: String.t(),
           errors: list(Liquex.Error.t()),
           timezone: nil | String.t(),
-          error_mode: error_mode()
+          error_mode: error_mode(),
+          strict_variables: boolean()
         }
 
   alias Liquex.Indifferent
@@ -117,6 +119,11 @@ defmodule Liquex.Context do
           Matches Liquex's historical behavior.
         * `:warn` - accumulate the error in `context.errors` but keep rendering.
         * `:strict` - raise `Liquex.Error` on the first failure.
+
+    * :strict_variables - When `true`, undefined variable lookups are routed
+      through `:error_mode` (raise / collect / ignore). Defaults to `false`,
+      which silently renders missing variables as nil (Liquex's historical
+      behavior, matching Ruby Liquid's default).
   """
   @spec new(map(), Keyword.t()) :: t()
   def new(environment, opts \\ []) do
@@ -129,7 +136,8 @@ defmodule Liquex.Context do
       cache: Keyword.get(opts, :cache, Liquex.Cache.DisabledCache),
       cache_prefix: Keyword.get(opts, :cache_prefix, nil),
       timezone: Keyword.get(opts, :timezone),
-      error_mode: Keyword.get(opts, :error_mode, :lax)
+      error_mode: Keyword.get(opts, :error_mode, :lax),
+      strict_variables: Keyword.get(opts, :strict_variables, false)
     }
   end
 
@@ -245,7 +253,9 @@ defmodule Liquex.Context do
         static_environment: context.static_environment,
         filter_module: context.filter_module,
         file_system: context.file_system,
-        timezone: context.timezone
+        timezone: context.timezone,
+        error_mode: context.error_mode,
+        strict_variables: context.strict_variables
       )
 
     # Inherit the per-render Drop cache so partials share the parent's

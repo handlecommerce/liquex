@@ -15,7 +15,7 @@ by adding `liquex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:liquex, "~> 0.13.0"}
+    {:liquex, "~> 0.15.0"}
   ]
 end
 ```
@@ -215,6 +215,47 @@ iex> {result, _} = Liquex.render!(document, context)
 iex> result |> to_string()
 "Custom Tag: Hello World!"
 ```
+
+## Error handling
+
+Parse errors carry a line, a column, and a small excerpt with a caret
+pointing at the failure. `Liquex.parse!/2` raises a formatted
+`Liquex.Error`; `Liquex.parse/2` returns `{:error, reason, line}`.
+
+```
+** (Liquex.Error) Liquid parse error at line 3, column 1: unexpected `{% endfor %}` (expected `{% endif %}` to close block opened at line 1)
+
+  2 | hello
+  3 | {% endfor %}
+      ^
+```
+
+Render-time failures (unknown filters, stray `{% break %}`/`{% continue %}`
+outside an iteration) are governed by an `:error_mode` option on the
+context — `:strict | :warn | :lax`, default `:lax`:
+
+```elixir
+{:ok, ast} = Liquex.parse("{{ x | upcas }}")
+
+# :lax (default) — silent
+ctx = Liquex.Context.new(%{"x" => "hi"})
+{result, ctx} = Liquex.render!(ast, ctx)
+# result is "hi", ctx.errors is []
+
+# :warn — collects errors
+ctx = Liquex.Context.new(%{"x" => "hi"}, error_mode: :warn)
+{result, ctx} = Liquex.render!(ast, ctx)
+# ctx.errors has %Liquex.Error{message: "Invalid filter upcas (did you mean `upcase`?)"}
+
+# :strict — raises
+ctx = Liquex.Context.new(%{"x" => "hi"}, error_mode: :strict)
+Liquex.render!(ast, ctx)
+# ** (Liquex.Error) Invalid filter upcas (did you mean `upcase`?)
+```
+
+A separate `:strict_variables` flag (default `false`) routes undefined
+variable lookups through the same `:error_mode` so missing references
+can be caught instead of silently rendering as empty.
 
 ## Deviations from original Liquid gem
 

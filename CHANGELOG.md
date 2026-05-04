@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-05-04
+
+Two bodies of work land together. The first is the Drops/Lazy/Resolver
+overhaul that started before this release. The second is a pass at parse-
+and render-time error handling — sharper error messages with line/column
+info, plus opt-in `:error_mode` and `:strict_variables` knobs that mirror
+Ruby Liquid's three-mode behavior.
+
 ### Added
 
 - `Liquex.Drop` behaviour for context-aware indifferent-access "drops".
@@ -28,6 +36,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Liquex.Cache.memoize/3` — ergonomic helper over the existing
   `Liquex.Cache` behaviour for custom filter authors who want per-render
   memoization of expensive operations.
+- Parse errors now carry line, column, and a short excerpt with a caret
+  pointing at the failure. `Liquex.parse!/2` raises with a multi-line
+  formatted message; `Liquex.parse/2` keeps its `{:error, reason, line}`
+  shape but the `reason` string is now sharper. A post-failure diagnostic
+  pass (`Liquex.Parser.Diagnostic`) recognises common shapes and produces
+  pointed messages — unknown tag with did-you-mean, typo'd block closer,
+  unclosed `{%`/`{{`/`{% raw %}`/quoted strings, mismatched or orphan
+  closes, and smart quotes pasted from word processors.
+- `Liquex.Error` exception struct gains `:reason`, `:line`, `:column`,
+  `:excerpt`, `:hint`, and `:kind` fields. `:kind` is `:parse` or
+  `:render`. Existing `:message` field is unchanged.
+- `Liquex.Context.new/2` accepts an `:error_mode` option
+  (`:strict | :warn | :lax`, default `:lax`). Render-time failures
+  (currently: unknown filters, stray `{% break %}`/`{% continue %}`
+  outside an iteration) honour the mode. `:strict` raises,
+  `:warn` accumulates a `Liquex.Error` in `context.errors`, `:lax` is
+  silent. The default preserves existing swallow-and-continue behaviour
+  for filters.
+- `Liquex.Context.new/2` accepts a `:strict_variables` option
+  (default `false`). When `true`, undefined variable lookups route
+  through `:error_mode`. Reports happen at every `.` step, so
+  `{{ x.missing.y }}` flags `missing` even when `x` exists. Defined-as-
+  nil values are not flagged.
+- Filter typos at render time include a did-you-mean hint when the typed
+  name is close to a real filter. Suggestions consult both the default
+  filter module and the context's `:filter_module`.
 
 ### Fixed
 
@@ -42,6 +76,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `nil | reverse` now return Liquid's expected empty value (`""` for
   `join`, `[]` for the rest) instead of raising on the missing
   Enumerable impl.
+- `Liquex.Context.new_isolated_subscope/2` now propagates the parent
+  context's `:filter_module`, `:timezone`, `:error_mode`, and
+  `:strict_variables` into the subscope. Previously only a subset of
+  options crossed the boundary; partials rendered via `{% render %}`
+  could end up with default filter and error settings even when the
+  parent context had been configured otherwise.
 
 ### Changed (breaking)
 
@@ -69,6 +109,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   string (`"prefix:Liquex.Tag.RenderTag:partial.NAME"`) to a tuple
   (`{prefix, {Liquex.Tag.RenderTag, :partial, "NAME"}}`). Only relevant if
   you have a custom `Liquex.Cache` implementation that introspects keys.
+
+### Behavior changes
+
+- `Liquex.render!/2` no longer raises by default when a stray
+  `{% break %}` or `{% continue %}` is rendered outside an iteration tag.
+  The default `:error_mode` is `:lax`, so those tags are silently
+  swallowed and the partial render up to that point is returned.
+  To restore the old raise-on-stray behaviour, pass
+  `Liquex.Context.new(env, error_mode: :strict)`.
+- `Liquex.parse/2` and `Liquex.parse!/2` produce different error strings
+  for the same failures. The 3-tuple shape `{:error, reason, line}`
+  returned by `parse/2` is preserved, but the `reason` string now comes
+  from the diagnostic pass and `line` points at the actual mistake
+  (e.g. line of the unclosed `{% if %}`) rather than wherever
+  NimbleParsec eventually wedged. Code matching on specific old reason
+  substrings (`"expected end of string"`, etc.) will need updating;
+  pattern matches that only inspect the tuple shape are unaffected.
+- `Liquex.Filter.apply/4` raises `UndefinedFunctionError` instead of
+  `Liquex.Error` when called with an unknown filter name. This unifies
+  the unknown-filter path so `Liquex.render!/2`'s rescue can route it
+  through `:error_mode`. Direct callers of `Liquex.Filter.apply/4` that
+  rescued `Liquex.Error` to detect unknown filters should now rescue
+  `UndefinedFunctionError`. Most users go through `Liquex.render!/2` and
+  see the new behaviour transparently.
 
 ## [0.14.0] - 2026-05-02
 

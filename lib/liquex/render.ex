@@ -209,7 +209,9 @@ defmodule Liquex.Render do
     # Filter implementations that deliberately raise `Liquex.Error` (e.g. a
     # filter rejecting bad arguments) propagate as before.
     UndefinedFunctionError ->
-      err = Liquex.Error.render_error("Invalid filter #{Liquex.Filter.filter_name(filter)}")
+      name = Liquex.Filter.filter_name(filter)
+      hint = Liquex.Filter.did_you_mean(name, context.filter_module)
+      err = Liquex.Error.render_error("Invalid filter #{name}#{hint}")
       {value, Context.report_error(context, err)}
   end
 end
