@@ -7,18 +7,18 @@ defmodule Liquex.FilterTest do
   doctest Liquex.Filter
 
   test "apply" do
-    assert 5 == Filter.apply(-5, {:filter, ["abs", {:arguments, []}]}, %{})
+    assert {5, _} = Filter.apply(-5, {:filter, ["abs", {:arguments, []}]}, %{})
   end
 
   test "date" do
-    assert "2022" ==
+    assert {"2022", _} =
              Filter.apply(
                ~D[2022-01-01],
                {:filter, ["date", {:arguments, [{:literal, "%Y"}]}]},
                %{}
              )
 
-    assert nil ==
+    assert {nil, _} =
              Filter.apply(
                nil,
                {:filter, ["date", {:arguments, [{:literal, "%Y"}]}]},
@@ -76,7 +76,7 @@ defmodule Liquex.FilterTest do
       sign = if offset < 0, do: "-", else: "+"
       abs = abs(offset)
       hours = div(abs, 3600) |> Integer.to_string() |> String.pad_leading(2, "0")
-      mins = (rem(abs, 3600) |> div(60)) |> Integer.to_string() |> String.pad_leading(2, "0")
+      mins = rem(abs, 3600) |> div(60) |> Integer.to_string() |> String.pad_leading(2, "0")
       sign <> hours <> mins
     end
   end

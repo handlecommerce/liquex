@@ -1,6 +1,13 @@
 defmodule Liquex.Indifferent do
   @moduledoc false
 
+  # Atom/string-key indifferent access for plain maps and structs.
+  # Mirrors Rails' `HashWithIndifferentAccess`: a lookup with key `"foo"`
+  # finds a value at `%{"foo" => v}` or `%{foo: v}`, and the same goes
+  # for `:foo`. Used as the leaf-level utility under
+  # `Liquex.Resolver`, which handles the higher-level dispatch through
+  # Drops, the render context, and stdlib adapters.
+
   @spec get(map, any, any) :: any
   @doc """
   Gets a value from a map using indifferent access
@@ -21,12 +28,6 @@ defmodule Liquex.Indifferent do
 
       iex> Liquex.Indifferent.get(%{a: "Hello"}, "b", "Goodbye")
       "Goodbye"
-
-      iex> Liquex.Indifferent.get(%TestAccessModule{}, :atom_test)
-      %{title: "Atom Test"}
-
-      iex> Liquex.Indifferent.get(%TestAccessModule{}, "atom_test")
-      %{title: "Atom Test"}
 
       iex> Liquex.Indifferent.get(%TestNonAccessModule{x: "Hello World!"}, :x)
       "Hello World!"
@@ -56,13 +57,8 @@ defmodule Liquex.Indifferent do
       iex> Liquex.Indifferent.put(%{a: "Hello"}, "b", "World")
       %{"b" => "World", :a => "Hello"}
   """
-  def put(map, key, value) when is_struct(map) do
-    if implements_behaviour?(map, Access) do
-      Access.get_and_update(map, key, &{&1, value}) |> elem(1)
-    else
-      put(Map.from_struct(map), key, value)
-    end
-  end
+  def put(map, key, value) when is_struct(map),
+    do: put(Map.from_struct(map), key, value)
 
   def put(map, key, value), do: Map.put(map, get_key!(map, key, key), value)
 
@@ -86,12 +82,6 @@ defmodule Liquex.Indifferent do
 
       iex> Liquex.Indifferent.fetch(%{:a => "Hello", "a" => "Goodbye"}, "a")
       {:ok, "Goodbye"}
-
-      iex> Liquex.Indifferent.fetch(%TestAccessModule{}, :atom_test)
-      {:ok, %{title: "Atom Test"}}
-
-      iex> Liquex.Indifferent.fetch(%TestAccessModule{}, "atom_test")
-      {:ok, %{title: "Atom Test"}}
   """
   def fetch(data, key) do
     case access(data, key) do
@@ -99,8 +89,6 @@ defmodule Liquex.Indifferent do
         result
 
       :error ->
-        # try either a string or atom
-
         cond do
           is_binary(key) -> access(data, String.to_existing_atom(key))
           is_atom(key) -> access(data, Atom.to_string(key))
@@ -140,9 +128,6 @@ defmodule Liquex.Indifferent do
 
   defp get_key(map, key) do
     cond do
-      implements_behaviour?(map, Access) ->
-        {:ok, key}
-
       Map.has_key?(map, key) ->
         {:ok, key}
 
@@ -168,24 +153,6 @@ defmodule Liquex.Indifferent do
     end
   end
 
-  # Access a map/struct by key using either Map.fetch/2 or Access.fetch/2
-  defp access(data, key) when is_struct(data) do
-    # Structs don't allow Access.fetch/2 access without implementing Access so
-    # fallback to Map.fetch/2
-    if implements_behaviour?(data, Access) do
-      Access.fetch(data, key)
-    else
-      Map.fetch(data, key)
-    end
-  end
-
-  defp access(data, key), do: Access.fetch(data, key)
-
-  defp implements_behaviour?(map, behaviour) when is_struct(map) do
-    map.__struct__.module_info()[:attributes]
-    |> Keyword.get(:behaviour, [])
-    |> Enum.member?(behaviour)
-  end
-
-  defp implements_behaviour?(_, _), do: false
+  defp access(data, key) when is_struct(data), do: Map.fetch(data, key)
+  defp access(data, key), do: Map.fetch(data, key)
 end

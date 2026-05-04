@@ -198,12 +198,12 @@ defmodule Liquex.Tag.TablerowTag do
         ],
         context
       ) do
-    parameters = evaluate_params(parameters, context)
+    {parameters, context} = evaluate_params(parameters, context)
     cols = Keyword.get(parameters, :cols)
 
-    case collection
-         |> Liquex.Argument.eval(context)
-         |> Expression.eval_collection(parameters) do
+    {value, context} = Liquex.Argument.eval(collection, context)
+
+    case Expression.eval_collection(value, parameters) do
       nil ->
         {[], context}
 
@@ -217,8 +217,9 @@ defmodule Liquex.Tag.TablerowTag do
   # Resolves parameter ASTs (which can be literal integers, variables, or
   # strings like "3") into integers, the way Liquid coerces them.
   defp evaluate_params(parameters, context) do
-    Enum.map(parameters, fn {key, ast} ->
-      {key, ast |> Liquex.Argument.eval(context) |> to_integer()}
+    Enum.map_reduce(parameters, context, fn {key, ast}, ctx ->
+      {value, ctx} = Liquex.Argument.eval(ast, ctx)
+      {{key, to_integer(value)}, ctx}
     end)
   end
 
@@ -243,7 +244,7 @@ defmodule Liquex.Tag.TablerowTag do
       items
       |> Enum.with_index()
       |> Enum.reduce({[], context}, fn {record, idx}, {acc, ctx} ->
-        loop = tablerowloop(idx, length, cols)
+        loop = %Liquex.Drop.TablerowLoop{index: idx, length: length, cols: cols}
 
         ctx =
           Context.push_scope(ctx, %{
@@ -254,17 +255,22 @@ defmodule Liquex.Tag.TablerowTag do
         {rendered, ctx} = Render.render!(contents, ctx)
         ctx = Context.pop_scope(ctx)
 
+        col = rem(idx, cols) + 1
+        col_last? = col == cols
+        last? = idx == length - 1
+
         cell = [
           ~s(<td class="col),
-          Integer.to_string(loop["col"]),
+          Integer.to_string(col),
           ~s(">),
           rendered,
           "</td>"
         ]
 
         separator =
-          if loop["col_last"] and not loop["last"] do
-            [~s(</tr>\n<tr class="row), Integer.to_string(loop["row"] + 1), ~s(">)]
+          if col_last? and not last? do
+            row = div(idx, cols) + 1
+            [~s(</tr>\n<tr class="row), Integer.to_string(row + 1), ~s(">)]
           else
             []
           end
@@ -274,24 +280,5 @@ defmodule Liquex.Tag.TablerowTag do
 
     output = [~s(<tr class="row1">\n), Enum.reverse(results), "</tr>\n"]
     {output, context}
-  end
-
-  defp tablerowloop(idx, length, cols) do
-    col = rem(idx, cols) + 1
-
-    %{
-      "length" => length,
-      "index" => idx + 1,
-      "index0" => idx,
-      "rindex" => length - idx,
-      "rindex0" => length - idx - 1,
-      "col" => col,
-      "col0" => col - 1,
-      "row" => div(idx, cols) + 1,
-      "first" => idx == 0,
-      "last" => idx == length - 1,
-      "col_first" => col == 1,
-      "col_last" => col == cols
-    }
   end
 end

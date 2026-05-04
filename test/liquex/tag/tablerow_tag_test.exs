@@ -40,7 +40,10 @@ defmodule Liquex.Tag.TablerowTagTest do
     test "default cols puts every item in a single row with column classes" do
       context = Context.new(%{"collection" => [1, 2, 3]})
 
-      assert render_template("<table>{% tablerow p in collection %}{{ p }}{% endtablerow %}</table>", context) ==
+      assert render_template(
+               "<table>{% tablerow p in collection %}{{ p }}{% endtablerow %}</table>",
+               context
+             ) ==
                ~s(<table><tr class="row1">\n<td class="col1">1</td><td class="col2">2</td><td class="col3">3</td></tr>\n</table>)
 
       assert render_template(
@@ -85,6 +88,28 @@ defmodule Liquex.Tag.TablerowTagTest do
                  ~s(<td class="col2">2-2-1-false-true-false-false|</td>) <>
                  ~s(</tr>\n<tr class="row2">) <>
                  ~s(<td class="col1">3-1-2-true-false-false-true|</td>) <>
+                 ~s(</tr>\n)
+    end
+
+    test "exposes the remaining tablerowloop fields" do
+      context = Context.new(%{"collection" => [10, 20, 30]})
+
+      out =
+        render_template(
+          "{% tablerow p in collection cols:2 %}" <>
+            "{{ tablerowloop.index0 }}-{{ tablerowloop.col0 }}-" <>
+            "{{ tablerowloop.length }}-" <>
+            "{{ tablerowloop.rindex }}-{{ tablerowloop.rindex0 }}|" <>
+            "{% endtablerow %}",
+          context
+        )
+
+      assert out ==
+               ~s(<tr class="row1">\n) <>
+                 ~s(<td class="col1">0-0-3-3-2|</td>) <>
+                 ~s(<td class="col2">1-1-3-2-1|</td>) <>
+                 ~s(</tr>\n<tr class="row2">) <>
+                 ~s(<td class="col1">2-0-3-1-0|</td>) <>
                  ~s(</tr>\n)
     end
 

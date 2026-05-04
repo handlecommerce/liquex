@@ -200,7 +200,10 @@ defmodule Liquex.Render do
     do: Enum.reduce(filters, {value, context}, &apply_filter/2)
 
   defp apply_filter(filter, {value, %Context{filter_module: filter_module} = context}) do
-    {filter_module.apply(value, filter, context), context}
+    case filter_module.apply(value, filter, context) do
+      {new_value, %Context{} = new_context} -> {new_value, new_context}
+      new_value -> {new_value, context}
+    end
   rescue
     # If we have no matching filter, add to errors and return the original value
     UndefinedFunctionError ->

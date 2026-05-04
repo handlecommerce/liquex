@@ -137,15 +137,15 @@ defmodule Liquex.Tag.RenderTag do
         [template: template, keywords: keywords],
         %Context{} = context
       ) do
-    new_context = apply_keywords_to_context(context, keywords)
+    {new_context, context} = apply_keywords_to_context(context, keywords)
 
     template
     |> load_contents(context)
     |> Liquex.Render.render!(new_context)
     |> case do
-      {content, _new_context} -> {content, context}
+      {content, sub_context} -> {content, merge_drop_cache(context, sub_context)}
       # break/continue do not get propagated to parent context
-      {_operation, content, _new_context} -> {content, context}
+      {_operation, content, sub_context} -> {content, merge_drop_cache(context, sub_context)}
     end
   end
 
@@ -191,12 +191,13 @@ defmodule Liquex.Tag.RenderTag do
       ) do
     contents = load_contents(template, context)
 
-    new_context = apply_keywords_to_context(context, [])
+    {new_context, context} = apply_keywords_to_context(context, [])
+
+    {value, context} = Liquex.Argument.eval(collection, context)
 
     # Piggy back off `Liquex.Tag.ForTag` to fully support forloop variable
     {result, _context} =
-      collection
-      |> Liquex.Argument.eval(context)
+      value
       |> Liquex.Expression.eval_collection()
       |> Liquex.Collection.to_enumerable()
       |> ForTag.render_collection(identifier, contents, nil, new_context)
@@ -204,23 +205,30 @@ defmodule Liquex.Tag.RenderTag do
     {result, context}
   end
 
-  @spec apply_keywords_to_context(Context.t(), Keyword.t()) :: Context.t()
+  @spec apply_keywords_to_context(Context.t(), Keyword.t()) :: {Context.t(), Context.t()}
   defp apply_keywords_to_context(%Context{} = context, keywords) do
-    scope = Map.new(keywords, fn {:keyword, [k, v]} -> {k, Argument.eval(v, context)} end)
+    {scope_pairs, context} =
+      Enum.map_reduce(keywords, context, fn {:keyword, [k, v]}, ctx ->
+        {value, ctx} = Argument.eval(v, ctx)
+        {{k, value}, ctx}
+      end)
 
-    Context.new_isolated_subscope(context, scope)
+    {Context.new_isolated_subscope(context, Map.new(scope_pairs)), context}
   end
 
   @spec load_contents({:literal, String.t()}, Context.t()) :: Liquex.document_t() | no_return()
-  defp load_contents({:literal, template_name}, %Context{
-         file_system: file_system,
-         cache: cache,
-         cache_prefix: cache_prefix
-       }) do
-    cache.fetch("#{cache_prefix}:Liquex.Tag.RenderTag:partial." <> template_name, fn ->
+  defp load_contents({:literal, template_name}, %Context{file_system: file_system} = context) do
+    Liquex.Cache.memoize(context, {__MODULE__, :partial, template_name}, fn ->
       file_system
       |> FileSystem.read_template_file(template_name)
       |> Liquex.parse!()
     end)
+  end
+
+  defp merge_drop_cache(%Context{} = parent, %Context{} = sub) do
+    case Map.get(sub.private, :drop_cache) do
+      nil -> parent
+      cache -> %{parent | private: Map.put(parent.private, :drop_cache, cache)}
+    end
   end
 end

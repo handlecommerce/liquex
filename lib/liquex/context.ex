@@ -214,11 +214,20 @@ defmodule Liquex.Context do
   """
   @spec new_isolated_subscope(t(), map) :: t()
   def new_isolated_subscope(%__MODULE__{} = context, environment \\ %{}) do
-    new(environment,
-      static_environment: context.static_environment,
-      filter_module: context.filter_module,
-      file_system: context.file_system,
-      timezone: context.timezone
-    )
+    sub =
+      new(environment,
+        static_environment: context.static_environment,
+        filter_module: context.filter_module,
+        file_system: context.file_system,
+        timezone: context.timezone
+      )
+
+    # Inherit the per-render Drop cache so partials share the parent's
+    # memoized fetches; cache writes inside the partial flow back via
+    # `Liquex.Tag.RenderTag` after rendering completes.
+    case Map.get(context.private, :drop_cache) do
+      nil -> sub
+      cache -> %{sub | private: Map.put(sub.private, :drop_cache, cache)}
+    end
   end
 end

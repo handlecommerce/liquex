@@ -60,10 +60,11 @@ defmodule Liquex.TestHelpers do
   def liquid_render(liquid, json) do
     # Forward our process TZ to the Ruby subprocess so the date filter resolves
     # `Time.now`/`Time.at` in the same zone Liquex sees via `:calendar.local_time/0`.
-    env = case System.get_env("TZ") do
-      nil -> []
-      tz -> [{"TZ", tz}]
-    end
+    env =
+      case System.get_env("TZ") do
+        nil -> []
+        tz -> [{"TZ", tz}]
+      end
 
     System.cmd("ruby", ["test/render.rb", liquid, json], env: env)
   end

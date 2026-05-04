@@ -51,11 +51,8 @@ defmodule Liquex.Tag.EchoTag do
 
   @impl true
   def render([argument, filters: filters], %Context{} = context) do
-    {result, context} =
-      argument
-      |> List.wrap()
-      |> Liquex.Argument.eval(context)
-      |> Render.apply_filters(filters, context)
+    {value, context} = Liquex.Argument.eval(List.wrap(argument), context)
+    {result, context} = Render.apply_filters(value, filters, context)
 
     {Render.to_output_string(result), context}
   end

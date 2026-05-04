@@ -95,7 +95,7 @@ defmodule Liquex.Tag.CycleTag do
     do: do_render(sequence, sequence, context)
 
   def render([group: group_ast, sequence: sequence], %Context{} = context) do
-    group_key = Liquex.Argument.eval(group_ast, context)
+    {group_key, context} = Liquex.Argument.eval(group_ast, context)
     do_render(group_key, sequence, context)
   end
 
@@ -103,11 +103,8 @@ defmodule Liquex.Tag.CycleTag do
     index = Map.get(cycles, group_key, 0)
     next_index = rem(index + 1, length(sequence))
 
-    result =
-      sequence
-      |> Enum.at(index)
-      |> Liquex.Argument.eval(context)
-      |> Liquex.Render.to_output_string()
+    {value, context} = sequence |> Enum.at(index) |> Liquex.Argument.eval(context)
+    result = Liquex.Render.to_output_string(value)
 
     {result, %{context | cycles: Map.put(cycles, group_key, next_index)}}
   end

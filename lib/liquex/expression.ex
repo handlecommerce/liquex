@@ -6,32 +6,39 @@ defmodule Liquex.Expression do
 
   alias Liquex.Collection
 
-  @spec eval(maybe_improper_list | {:field, any} | {:literal, any}, Context.t()) :: any
+  @spec eval(maybe_improper_list | {:field, any} | {:literal, any}, Context.t()) ::
+          {any, Context.t()}
   def eval([left: left, op: op, right: right], %Context{} = context) do
-    do_eval({
-      left |> Argument.eval(context),
-      op,
-      right |> Argument.eval(context)
-    })
+    {l, context} = Argument.eval(left, context)
+    {r, context} = Argument.eval(right, context)
+    {do_eval({l, op, r}), context}
   end
 
-  def eval({type, _} = argument, context) when type in [:field, :literal],
-    do: [argument] |> Argument.eval(context) |> do_eval()
+  def eval({type, _} = argument, context) when type in [:field, :literal] do
+    {value, context} = Argument.eval([argument], context)
+    {do_eval(value), context}
+  end
 
   def eval(expressions, context) when is_list(expressions) do
     expressions
     |> Enum.chunk_every(2)
     |> Enum.reverse()
-    |> Enum.reduce(nil, fn
-      [exp, :and], acc ->
-        eval(exp, context) and acc
+    |> Enum.reduce({nil, context, :init}, fn
+      [exp, :and], {acc, ctx, :ready} ->
+        {v, ctx} = eval(exp, ctx)
+        {v and acc, ctx, :ready}
 
-      [exp, :or], acc ->
-        eval(exp, context) or acc
+      [exp, :or], {acc, ctx, :ready} ->
+        {v, ctx} = eval(exp, ctx)
+        {v or acc, ctx, :ready}
 
-      [exp], nil ->
-        eval(exp, context)
+      [exp], {nil, ctx, :init} ->
+        {v, ctx} = eval(exp, ctx)
+        {v, ctx, :ready}
     end)
+    |> case do
+      {value, ctx, _} -> {value, ctx}
+    end
   end
 
   defp do_eval({left, :<=, nil}) when is_number(left), do: false

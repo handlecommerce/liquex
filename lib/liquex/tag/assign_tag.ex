@@ -96,10 +96,8 @@ defmodule Liquex.Tag.AssignTag do
 
   def render([left: left, right: [right, filters: filters]], %Context{} = context)
       when is_binary(left) do
-    {right, context} =
-      right
-      |> Liquex.Argument.eval(context)
-      |> Render.apply_filters(filters, context)
+    {value, context} = Liquex.Argument.eval(right, context)
+    {right, context} = Render.apply_filters(value, filters, context)
 
     context = Context.assign_global(context, left, right)
 
