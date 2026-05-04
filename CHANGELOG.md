@@ -29,6 +29,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Liquex.Cache` behaviour for custom filter authors who want per-render
   memoization of expensive operations.
 
+### Fixed
+
+- `'2024-01-02 12:00:00' | date: '%z'` previously rendered an empty
+  offset because string parses produced `NaiveDateTime` with no zone
+  attached. Now mirrors Liquid's `Time.parse` behavior: unzoned string
+  inputs are interpreted in the host-local zone (or the `:timezone`
+  context override). Strings with explicit offsets continue to be used
+  as-is. Closes the date-filter parity story.
+- `nil | join`, `nil | sort`, `nil | sort_natural`, `nil | uniq`,
+  `nil | compact`, `nil | map`, `nil | reject`, `nil | where`, and
+  `nil | reverse` now return Liquid's expected empty value (`""` for
+  `join`, `[]` for the rest) instead of raising on the missing
+  Enumerable impl.
+
 ### Changed (breaking)
 
 - **Drops are the only way for user-defined structs to participate in

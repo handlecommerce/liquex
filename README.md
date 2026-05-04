@@ -226,3 +226,17 @@ Instead, we continue to use IO lists to combine the output and don't check for
 blank results to avoid too many conversions to strings.  Since Liquid is mostly
 used for whitespace agnostic documents, this seemed like a decent tradeoff. If
 you need better whitespace control, use `{%-`, `{{-`, `-%}`, and `-}}`.
+
+### Multi-key hash ordering
+
+`{{ h }}` for `%{"b" => 2, "a" => 1}` renders `{"a"=>1, "b"=>2}` in Liquex
+versus `{"b"=>2, "a"=>1}` in Ruby Liquid (which preserves hash insertion
+order natively). This is intentional: matching Ruby would require routing
+every map-using code path through a wrapper struct with O(n) lookups,
+which would slow every `{{ h.key }}` access. Liquex is built to be faster
+than the Ruby Liquid engine, and that takes priority over byte-for-byte
+hash-inspect parity.
+
+If your templates rely on inspecting whole hashes (rather than reading
+specific fields), pre-serialize the hash to a string before passing it
+into the context, or render fields explicitly.

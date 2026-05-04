@@ -281,7 +281,9 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.compact([1, 2, 3], %{})
       [1,2,3]
   """
-  @spec compact([any], map()) :: [any]
+  @spec compact([any] | nil, map()) :: [any]
+  def compact(nil, _), do: []
+
   def compact(value, _) when is_list(value),
     do: Enum.reject(value, &is_nil/1)
 
@@ -293,6 +295,8 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.compact([%{"a" => 1}, %{"a" => nil}, %{"a" => 2}], "a", %{})
       [%{"a" => 1}, %{"a" => 2}]
   """
+  def compact(nil, _, _), do: []
+
   def compact(value, property, _) when is_list(value),
     do: Enum.reject(value, &is_nil(Liquex.Indifferent.get(&1, property)))
 
@@ -345,8 +349,17 @@ defmodule Liquex.Filter do
     # format directives like `%H` work; previously we degraded to a Date and
     # crashed when the format asked for time fields.
     case DateTimeParser.parse_datetime(value, assume_time: true) do
-      {:ok, parsed} -> date(parsed, format, context)
-      _ -> nil
+      {:ok, %NaiveDateTime{} = parsed} ->
+        # Liquid's `Time.parse` assumes the local zone for unzoned strings.
+        # Mirror that: attach the host-local offset (or `:timezone` override)
+        # before strftime so directives like `%z` render the correct value.
+        date(naive_in_zone(parsed, context), format, context)
+
+      {:ok, parsed} ->
+        date(parsed, format, context)
+
+      _ ->
+        nil
     end
   end
 
@@ -384,6 +397,35 @@ defmodule Liquex.Filter do
   end
 
   defp unix_in_zone(value, _), do: unix_in_zone(value, %Liquex.Context{})
+
+  # String-input parses arrive as `NaiveDateTime` (no zone). Treat the
+  # wallclock as local time and attach the appropriate offset, matching
+  # Ruby's `Time.parse` which honors `ENV['TZ']` for unzoned strings.
+  defp naive_in_zone(%NaiveDateTime{} = ndt, %Liquex.Context{timezone: nil}) do
+    local_erl = NaiveDateTime.to_erl(ndt)
+
+    utc_erl =
+      case :calendar.local_time_to_universal_time_dst(local_erl) do
+        # Spring-forward gap (the wallclock doesn't exist locally): treat as
+        # if the input were already UTC. Rare and pragmatic.
+        [] -> local_erl
+        # Normal case → single result. Fall-back ambiguity → pick the first
+        # (the pre-DST instant), matching Erlang's deprecated single-result
+        # variant.
+        [utc | _] -> utc
+      end
+
+    build_local_datetime(local_erl, utc_erl)
+  end
+
+  defp naive_in_zone(%NaiveDateTime{} = ndt, %Liquex.Context{timezone: tz}) do
+    case DateTime.from_naive(ndt, tz) do
+      {:ok, dt} -> dt
+      {:error, reason} -> raise_tz_error(tz, reason)
+    end
+  end
+
+  defp naive_in_zone(ndt, _), do: naive_in_zone(ndt, %Liquex.Context{})
 
   defp raise_tz_error(tz, :utc_only_time_zone_database) do
     raise Liquex.Error,
@@ -625,6 +667,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.join(~w(John Paul George Ringo), " and ", %{})
       "John and Paul and George and Ringo"
   """
+  def join(nil, _, _), do: ""
   def join(values, joiner, _), do: Enum.join(values, joiner)
 
   @doc """
@@ -683,7 +726,8 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.map([%{"a" => 1}, %{"a" => 2, "b" => 1}], "a", %{})
       [1, 2]
   """
-  @spec map([any], term, Context.t()) :: [any]
+  @spec map([any] | nil, term, Context.t()) :: [any]
+  def map(nil, _, _), do: []
   def map(arr, key, _), do: Enum.map(arr, &Liquex.Indifferent.get(&1, key, nil))
 
   @doc """
@@ -781,8 +825,12 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.reject([%{"a" => true}, %{"a" => false}], "a", %{})
       [%{"a" => false}]
   """
+  def reject(nil, _, _), do: []
+
   def reject(list, property, _) when is_list(list),
     do: Enum.reject(list, &property_truthy?(&1, property))
+
+  def reject(nil, _, _, _), do: []
 
   def reject(list, property, target_value, _) when is_list(list),
     do: Enum.reject(list, &property_equals?(&1, property, target_value))
@@ -875,6 +923,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.reverse(~w(apples oranges peaches plums), %{})
       ["plums", "peaches", "oranges", "apples"]
   """
+  def reverse(nil, _), do: []
   def reverse(arr, _) when is_list(arr), do: Enum.reverse(arr)
   def reverse(value, _), do: value
 
@@ -1004,7 +1053,9 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.sort(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
       ["Sally Snake", "giraffe", "octopus", "zebra"]
   """
+  def sort(nil, _), do: []
   def sort(list, _), do: Liquex.Collection.sort(list)
+  def sort(nil, _, _), do: []
   def sort(list, field_name, _), do: Liquex.Collection.sort(list, field_name)
 
   @doc """
@@ -1015,7 +1066,10 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.sort_natural(["zebra", "octopus", "giraffe", "Sally Snake"], %{})
       ["giraffe", "octopus", "Sally Snake", "zebra"]
   """
+  def sort_natural(nil, _), do: []
   def sort_natural(list, _), do: Liquex.Collection.sort_case_insensitive(list)
+
+  def sort_natural(nil, _, _), do: []
 
   def sort_natural(list, field_name, _),
     do: Liquex.Collection.sort_case_insensitive(list, field_name)
@@ -1200,6 +1254,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.uniq(~w(ants bugs bees bugs ants), %{})
       ["ants", "bugs", "bees"]
   """
+  def uniq(nil, _), do: []
   def uniq(list, _), do: Enum.uniq(list)
 
   @doc """
@@ -1210,6 +1265,8 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.uniq([%{"id" => 1}, %{"id" => 2}, %{"id" => 1}], "id", %{})
       [%{"id" => 1}, %{"id" => 2}]
   """
+  def uniq(nil, _, _), do: []
+
   def uniq(list, property, _) when is_list(list),
     do: Enum.uniq_by(list, &Liquex.Indifferent.get(&1, property))
 
@@ -1259,6 +1316,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.where([%{"b" => 2}, %{"b" => 1}], "b", 1, %{})
       [%{"b" => 1}]
   """
+  def where(nil, _, _, _), do: []
   def where(list, key, value, _), do: Liquex.Collection.where(list, key, value)
 
   @doc """
@@ -1269,6 +1327,7 @@ defmodule Liquex.Filter do
       iex> Liquex.Filter.where([%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}, %{"b" => false, "value" => 3}], "b", %{})
       [%{"b" => true, "value" => 1}, %{"b" => 1, "value" => 2}]
   """
+  def where(nil, _, _), do: []
   def where(list, key, _), do: Liquex.Collection.where(list, key)
 
   # Predicates shared by find/find_index/has/reject (Liquid's filter_array helper).

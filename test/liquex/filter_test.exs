@@ -65,6 +65,42 @@ defmodule Liquex.FilterTest do
                format_offset_at_unix(1_700_000_000)
     end
 
+    test "string date input without offset uses host-local zone" do
+      ctx = Liquex.Context.new(%{})
+      # Wallclock interpreted as local; offset is whatever the host says
+      # for that wallclock (DST-aware).
+      assert render!("{{ '2024-06-15 12:00:00' | date: '%z' }}", ctx) ==
+               format_offset_at_local({{2024, 6, 15}, {12, 0, 0}})
+    end
+
+    test "string date input respects named zone override" do
+      ctx = Liquex.Context.new(%{}, timezone: "America/New_York")
+      # 2024-06-15 is in EDT (-04:00) regardless of host TZ.
+      assert render!("{{ '2024-06-15 12:00:00' | date: '%z' }}", ctx) == "-0400"
+
+      # 2024-12-15 is in EST (-05:00).
+      assert render!("{{ '2024-12-15 12:00:00' | date: '%z' }}", ctx) == "-0500"
+    end
+
+    test "string date input with explicit offset is preserved" do
+      ctx = Liquex.Context.new(%{})
+      assert render!("{{ '2024-06-15T12:00:00+09:00' | date: '%z' }}", ctx) == "+0900"
+    end
+
+    defp format_offset_at_local(local_erl) do
+      utc_erl =
+        case :calendar.local_time_to_universal_time_dst(local_erl) do
+          [utc | _] -> utc
+          [] -> local_erl
+        end
+
+      offset =
+        :calendar.datetime_to_gregorian_seconds(local_erl) -
+          :calendar.datetime_to_gregorian_seconds(utc_erl)
+
+      format_offset(offset)
+    end
+
     defp format_offset_at_unix(unix) do
       utc_erl = DateTime.from_unix!(unix) |> DateTime.to_naive() |> NaiveDateTime.to_erl()
       local_erl = :calendar.universal_time_to_local_time(utc_erl)
@@ -73,6 +109,10 @@ defmodule Liquex.FilterTest do
         :calendar.datetime_to_gregorian_seconds(local_erl) -
           :calendar.datetime_to_gregorian_seconds(utc_erl)
 
+      format_offset(offset)
+    end
+
+    defp format_offset(offset) do
       sign = if offset < 0, do: "-", else: "+"
       abs = abs(offset)
       hours = div(abs, 3600) |> Integer.to_string() |> String.pad_leading(2, "0")
@@ -100,6 +140,46 @@ defmodule Liquex.FilterTest do
       assert_raise Liquex.Error, ~r/invalid base64/, fn ->
         Filter.base64_url_safe_decode("not!valid", %{})
       end
+    end
+  end
+
+  describe "nil inputs to list filters" do
+    # Liquid's `InputIterator.new` coerces nil to [] before invoking these
+    # filters, so `{{ nothing | filter }}` renders without crashing. Mirror
+    # that behavior at the filter heads.
+
+    defp nil_render(template) do
+      {:ok, ast} = Liquex.parse(template)
+      {data, _} = Liquex.render!(ast, Liquex.Context.new(%{"nothing" => nil}))
+      to_string(data)
+    end
+
+    test "join returns empty string" do
+      assert nil_render("[{{ nothing | join: ',' }}]") == "[]"
+    end
+
+    test "sort / sort_natural / uniq return empty list" do
+      assert nil_render("[{{ nothing | sort | join: ',' }}]") == "[]"
+      assert nil_render("[{{ nothing | sort_natural | join: ',' }}]") == "[]"
+      assert nil_render("[{{ nothing | uniq | join: ',' }}]") == "[]"
+    end
+
+    test "compact returns empty list" do
+      assert nil_render("[{{ nothing | compact | join: ',' }}]") == "[]"
+    end
+
+    test "map / where / reject return empty list" do
+      assert nil_render("[{{ nothing | map: 'k' | join: ',' }}]") == "[]"
+      assert nil_render("[{{ nothing | where: 'k' | join: ',' }}]") == "[]"
+      assert nil_render("[{{ nothing | reject: 'k' | join: ',' }}]") == "[]"
+    end
+
+    test "reverse returns empty list (renders empty)" do
+      assert nil_render("[{{ nothing | reverse | join: ',' }}]") == "[]"
+    end
+
+    test "size on a piped-through nil is 0 (existing behaviour preserved)" do
+      assert nil_render("{{ nothing | sort | size }}") == "0"
     end
   end
 
