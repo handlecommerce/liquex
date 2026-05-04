@@ -75,9 +75,17 @@ defmodule Liquex.Argument do
     do: {nil, context}
 
   defp do_eval(value, [{:key, key} | tail], context) do
-    {next, context} = Resolver.get(value, key, nil, context)
-    {next, context} = apply_lazy(next, value, context)
-    do_eval(next, tail, context)
+    {result, context} = Resolver.fetch(value, key, context)
+
+    case result do
+      {:ok, next} ->
+        {next, context} = apply_lazy(next, value, context)
+        do_eval(next, tail, context)
+
+      :error ->
+        context = report_undefined(context, key)
+        do_eval(nil, tail, context)
+    end
   end
 
   defp do_eval(value, [{:accessor, accessor} | tail], context) do
@@ -85,6 +93,12 @@ defmodule Liquex.Argument do
     {next, context} = apply_lazy(next, value, context)
     do_eval(next, tail, context)
   end
+
+  defp report_undefined(%Context{strict_variables: true} = context, key) do
+    Context.report_error(context, Liquex.Error.render_error("Undefined variable: #{key}"))
+  end
+
+  defp report_undefined(context, _key), do: context
 
   defp value_at(value, argument, context) when is_tuple(argument) and is_map(value) do
     {key, context} = eval(argument, context)
