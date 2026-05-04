@@ -10,23 +10,28 @@ defmodule Liquex.Argument do
           | {:literal, field_t}
           | {:inclusive_range, [begin: field_t, end: field_t]}
 
-  @spec eval(argument_t | [argument_t], Context.t()) :: field_t
+  @spec eval(argument_t | [argument_t], Context.t()) :: {field_t, Context.t()}
   def eval([argument], context), do: eval(argument, context)
 
   def eval({:field, accesses}, %Context{} = context),
     do: do_eval(context, accesses, context)
 
-  def eval({:literal, literal}, _context), do: literal
+  def eval({:literal, literal}, context), do: {literal, context}
 
   def eval({:inclusive_range, [begin: begin_value, end: end_value]}, context) do
     # Liquid range bounds are coerced via Ruby's `to_i`, and the range only
     # iterates forward -- `(5..1)` yields nothing while still printing "5..1".
     # Use Range.new(.., .., 1) so the struct preserves the original endpoints
     # but `Enum.to_list/1` returns [] when first > last.
-    Range.new(to_int(eval(begin_value, context)), to_int(eval(end_value, context)), 1)
+    {b, context} = eval(begin_value, context)
+    {e, context} = eval(end_value, context)
+    {Range.new(to_int(b), to_int(e), 1), context}
   end
 
-  def eval({:keyword, [key, value]}, context), do: {key, eval(value, context)}
+  def eval({:keyword, [key, value]}, context) do
+    {value, context} = eval(value, context)
+    {{key, value}, context}
+  end
 
   defp to_int(n) when is_integer(n), do: n
   defp to_int(n) when is_float(n), do: trunc(n)
@@ -42,68 +47,60 @@ defmodule Liquex.Argument do
   defp to_int(_), do: 0
 
   defp do_eval(value, [], context), do: apply_lazy(value, nil, context)
-  defp do_eval(nil, _, _context), do: nil
+  defp do_eval(nil, _, context), do: {nil, context}
 
   # Special case ".first"
   defp do_eval(value, [{:key, "first"} | tail], context) when is_list(value) do
-    value
-    |> Enum.at(0)
-    |> apply_lazy(value, context)
-    |> do_eval(tail, context)
+    {next, context} = value |> Enum.at(0) |> apply_lazy(value, context)
+    do_eval(next, tail, context)
   end
 
   # Special case ".last"
   defp do_eval(value, [{:key, "last"} | tail], context) when is_list(value) do
-    value
-    |> List.last()
-    |> apply_lazy(value, context)
-    |> do_eval(tail, context)
+    {next, context} = value |> List.last() |> apply_lazy(value, context)
+    do_eval(next, tail, context)
   end
 
   # Special case ".size"
-  defp do_eval(value, [{:key, "size"} | tail], context) when is_binary(value) do
-    value
-    |> String.length()
-    |> do_eval(tail, context)
-  end
+  defp do_eval(value, [{:key, "size"} | tail], context) when is_binary(value),
+    do: do_eval(String.length(value), tail, context)
 
-  defp do_eval(value, [{:key, "size"} | tail], context) when is_list(value) do
-    value
-    |> length()
-    |> do_eval(tail, context)
-  end
+  defp do_eval(value, [{:key, "size"} | tail], context) when is_list(value),
+    do: do_eval(length(value), tail, context)
 
   # Strings only respond to `size` -- `.first`/`.last`/anything else is nil,
   # matching plain Ruby (where `Access.fetch/2` would raise for binaries).
-  defp do_eval(value, [{:key, _} | _tail], _context) when is_binary(value), do: nil
+  defp do_eval(value, [{:key, _} | _tail], context) when is_binary(value),
+    do: {nil, context}
 
   defp do_eval(value, [{:key, key} | tail], context) do
-    value
-    |> Indifferent.get(key)
-    |> apply_lazy(value, context)
-    |> do_eval(tail, context)
+    {next, context} = Indifferent.get(value, key, nil, context)
+    {next, context} = apply_lazy(next, value, context)
+    do_eval(next, tail, context)
   end
 
   defp do_eval(value, [{:accessor, accessor} | tail], context) do
-    value
-    |> value_at(accessor, context)
-    |> apply_lazy(value, context)
-    |> do_eval(tail, context)
+    {next, context} = value_at(value, accessor, context)
+    {next, context} = apply_lazy(next, value, context)
+    do_eval(next, tail, context)
   end
 
-  defp value_at(value, argument, context) when is_tuple(argument) and is_map(value),
-    do: Indifferent.get(value, eval(argument, context))
+  defp value_at(value, argument, context) when is_tuple(argument) and is_map(value) do
+    {key, context} = eval(argument, context)
+    Indifferent.get(value, key, nil, context)
+  end
 
-  defp value_at(value, argument, context) when is_tuple(argument) and is_list(value),
-    do: Enum.at(value, eval(argument, context))
+  defp value_at(value, argument, context) when is_tuple(argument) and is_list(value) do
+    {idx, context} = eval(argument, context)
+    {Enum.at(value, idx), context}
+  end
 
-  defp value_at(_value, _index, _context), do: []
+  defp value_at(_value, _index, context), do: {[], context}
 
   # Apply a lazy function if needed
-  defp apply_lazy(fun, _parent, _context) when is_function(fun, 0), do: fun.()
-  defp apply_lazy(fun, parent, _context) when is_function(fun, 1), do: fun.(parent)
-
-  defp apply_lazy(value, _, _context), do: value
+  defp apply_lazy(fun, _parent, context) when is_function(fun, 0), do: {fun.(), context}
+  defp apply_lazy(fun, parent, context) when is_function(fun, 1), do: {fun.(parent), context}
+  defp apply_lazy(value, _, context), do: {value, context}
 
   def assign(context, [argument], value), do: assign(context, argument, value)
 

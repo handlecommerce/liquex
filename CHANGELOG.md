@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `Liquex.Drop` behaviour for context-aware indifferent-access "drops".
+  Modules implementing `fetch/3` are dispatched directly from `.` traversal
+  in templates, with results memoized for the duration of a single render.
+  Repeat references to `{{ products.first.category.name }}` within one
+  render only invoke the underlying drop fetches once. Stateful drops can
+  opt out per-module with `def cacheable?(_), do: false`. Existing
+  `@behaviour Access` structs continue to work unchanged on the legacy
+  uncached path.
+- `Liquex.Cache.memoize/3` — ergonomic helper over the existing
+  `Liquex.Cache` behaviour for custom filter authors who want per-render
+  memoization of expensive operations.
+
+### Changed
+
+- `Liquex.Argument.eval/2` and `Liquex.Expression.eval/2` now return
+  `{value, context}` tuples (previously just `value`). All in-tree tag
+  callers updated. Custom tags that call these directly will need to
+  destructure the return value.
+- `Liquex.Filter.apply/4` now returns `{value, context}` so cache writes
+  triggered by filter argument evaluation propagate. Custom filter modules
+  that override `apply/3` to return just a value continue to work — the
+  render pipeline accepts both shapes.
+- `Liquex.Tag.RenderTag` partial-template parse cache now uses
+  `Liquex.Cache.memoize/3` internally. Cache key format changed from a
+  string (`"prefix:Liquex.Tag.RenderTag:partial.NAME"`) to a tuple
+  (`{prefix, {Liquex.Tag.RenderTag, :partial, "NAME"}}`). Only relevant if
+  you have a custom `Liquex.Cache` implementation that introspects keys.
+
 ## [0.14.0] - 2026-05-02
 
 A round of byte-for-byte parity work against the Liquid gem. Most changes are

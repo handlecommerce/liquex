@@ -234,6 +234,8 @@ defmodule Liquex do
   def render!(document, context \\ %{})
 
   def render!(document, %Context{} = context) do
+    context = put_in(context.private[:drop_cache], %{})
+
     case Liquex.Render.render!(document, context) do
       {:break, _, _} -> raise Liquex.Error, "'break' found outside of iteration tag"
       {:continue, _, _} -> raise Liquex.Error, "'continue' found outside of iteration tag"

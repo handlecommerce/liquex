@@ -198,12 +198,12 @@ defmodule Liquex.Tag.TablerowTag do
         ],
         context
       ) do
-    parameters = evaluate_params(parameters, context)
+    {parameters, context} = evaluate_params(parameters, context)
     cols = Keyword.get(parameters, :cols)
 
-    case collection
-         |> Liquex.Argument.eval(context)
-         |> Expression.eval_collection(parameters) do
+    {value, context} = Liquex.Argument.eval(collection, context)
+
+    case Expression.eval_collection(value, parameters) do
       nil ->
         {[], context}
 
@@ -217,8 +217,9 @@ defmodule Liquex.Tag.TablerowTag do
   # Resolves parameter ASTs (which can be literal integers, variables, or
   # strings like "3") into integers, the way Liquid coerces them.
   defp evaluate_params(parameters, context) do
-    Enum.map(parameters, fn {key, ast} ->
-      {key, ast |> Liquex.Argument.eval(context) |> to_integer()}
+    Enum.map_reduce(parameters, context, fn {key, ast}, ctx ->
+      {value, ctx} = Liquex.Argument.eval(ast, ctx)
+      {{key, to_integer(value)}, ctx}
     end)
   end
 

@@ -36,6 +36,52 @@ iex> content |> to_string()
 
 Liquex is byte for byte, 100% compatible with the latest Liquid gem.
 
+## Drops
+
+For values that need to call out to user code on every `.` traversal —
+typically database-backed objects in a Shopify-style template — implement
+`Liquex.Drop` on a struct. Liquex memoizes the results of every Drop
+fetch for the duration of a single render, so
+
+```liquid
+{{ products.first.category.name }}
+... lots of unrelated template ...
+{{ products.first.category.name }}
+```
+
+only runs the underlying database queries once.
+
+```elixir
+defmodule MyApp.ProductsDrop do
+  @behaviour Liquex.Drop
+  defstruct [:scope]
+
+  @impl true
+  def fetch(%__MODULE__{scope: scope}, key, _context) when key in ["first", :first] do
+    {:ok, MyApp.Repo.one(from p in scope, limit: 1)}
+  end
+
+  def fetch(_, _, _), do: :error
+end
+```
+
+The cache lifetime is exactly one `Liquex.render!/2` call: it starts empty,
+populates as Drop traversals happen, and is discarded when the render
+returns. There is no invalidation API and no cross-render leakage — two
+concurrent renders keep separate caches. `{% render %}` partials inherit
+the parent's cache.
+
+Stateful Drops (paginators, generators) opt out of memoization with one
+line:
+
+```elixir
+@impl true
+def cacheable?(_drop), do: false
+```
+
+Existing structs that implement `@behaviour Access` continue to work
+unchanged — they fall through the legacy uncached path.
+
 ## Lazy variables
 
 Liquex allows resolver functions for variables that may require some extra

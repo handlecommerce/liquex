@@ -248,11 +248,10 @@ defmodule Liquex.Tag.ForTag do
       ) do
     {resolved_offset, parameters} = resolve_offset(parameters, collection, context)
 
+    {value, context} = Liquex.Argument.eval(collection, context)
+
     items =
-      collection
-      |> Liquex.Argument.eval(context)
-      |> Expression.eval_collection(parameters)
-      |> case do
+      case Expression.eval_collection(value, parameters) do
         nil -> nil
         c -> Collection.to_enumerable(c) |> Enum.to_list()
       end

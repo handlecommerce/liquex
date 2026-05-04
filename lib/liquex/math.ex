@@ -153,7 +153,6 @@ defmodule Liquex.Math do
             :lt -> :lt
             :gt -> :gt
             :eq -> :eq
-            %Decimal{} -> :nan
           end
         end)
     end

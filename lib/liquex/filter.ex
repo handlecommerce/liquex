@@ -31,12 +31,12 @@ defmodule Liquex.Filter do
       ) do
     func = String.to_existing_atom(function)
 
-    function_args =
-      Enum.map(
-        arguments,
-        &Liquex.Argument.eval(&1, context)
-      )
-      |> merge_keywords()
+    {function_args, context} =
+      Enum.map_reduce(arguments, context, fn arg, ctx ->
+        Liquex.Argument.eval(arg, ctx)
+      end)
+
+    function_args = merge_keywords(function_args)
 
     mod =
       if mod != __MODULE__ and Kernel.function_exported?(mod, func, length(function_args) + 2) do
@@ -46,7 +46,8 @@ defmodule Liquex.Filter do
       end
 
     # Liquid's filters operate on Ruby Arrays; ranges go through `to_a` first.
-    Kernel.apply(mod, func, [normalize(value) | function_args] ++ [context])
+    result = Kernel.apply(mod, func, [normalize(value) | function_args] ++ [context])
+    {result, context}
   rescue
     # credo:disable-for-next-line
     ArgumentError -> raise Liquex.Error, "Invalid filter #{function}"
