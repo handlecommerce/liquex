@@ -12,7 +12,7 @@
 {% if missing == empty %}T{% else %}F{% endif %}
 {% if name == empty %}T{% else %}F{% endif %}
 
-== blank matches nothing in plain Liquid ==
+== blank matches empty, whitespace, nil, false and empty collections ==
 {% if empty_str == blank %}T{% else %}F{% endif %}
 {% if blank_str == blank %}T{% else %}F{% endif %}
 {% if missing == blank %}T{% else %}F{% endif %}

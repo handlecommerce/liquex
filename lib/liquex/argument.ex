@@ -56,9 +56,21 @@ defmodule Liquex.Argument do
     do_eval(next, tail, context)
   end
 
+  defp do_eval(value, [{:key, "first"} | tail], context) when is_binary(value) do
+    char = if value == "", do: "", else: String.first(value)
+    {next, context} = apply_lazy(char, value, context)
+    do_eval(next, tail, context)
+  end
+
   # Special case ".last"
   defp do_eval(value, [{:key, "last"} | tail], context) when is_list(value) do
     {next, context} = value |> List.last() |> apply_lazy(value, context)
+    do_eval(next, tail, context)
+  end
+
+  defp do_eval(value, [{:key, "last"} | tail], context) when is_binary(value) do
+    char = if value == "", do: "", else: String.last(value)
+    {next, context} = apply_lazy(char, value, context)
     do_eval(next, tail, context)
   end
 
@@ -69,7 +81,7 @@ defmodule Liquex.Argument do
   defp do_eval(value, [{:key, "size"} | tail], context) when is_list(value),
     do: do_eval(length(value), tail, context)
 
-  # Strings only respond to `size` -- `.first`/`.last`/anything else is nil,
+  # Strings respond to `size`, `first`, and `last`; everything else is nil,
   # matching plain Ruby (where `Access.fetch/2` would raise for binaries).
   defp do_eval(value, [{:key, _} | _tail], context) when is_binary(value),
     do: {nil, context}

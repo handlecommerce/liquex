@@ -672,7 +672,7 @@ defmodule Liquex.Filter do
     do: Enum.find_index(list, &property_equals?(&1, property, target_value))
 
   @doc """
-  Returns the first item of an array.
+  Returns the first item of an array, or the first character of a string.
 
   ## Examples
 
@@ -681,9 +681,17 @@ defmodule Liquex.Filter do
 
       iex> Liquex.Filter.first([], %{})
       nil
+
+      iex> Liquex.Filter.first("abc", %{})
+      "a"
+
+      iex> Liquex.Filter.first("", %{})
+      ""
   """
   def first([], _), do: nil
   def first([f | _], _), do: f
+  def first("", _), do: ""
+  def first(str, _) when is_binary(str), do: String.first(str)
   def first(_, _), do: nil
 
   @doc """
@@ -745,18 +753,26 @@ defmodule Liquex.Filter do
     do: Enum.any?(list, &property_equals?(&1, property, target_value))
 
   @doc """
-  Returns the last item of `arr`.
+  Returns the last item of an array, or the last character of a string.
 
   ## Examples
 
       iex> Liquex.Filter.last([1, 2, 3], %{})
       3
 
-      iex> Liquex.Filter.first([], %{})
+      iex> Liquex.Filter.last([], %{})
       nil
+
+      iex> Liquex.Filter.last("abc", %{})
+      "c"
+
+      iex> Liquex.Filter.last("", %{})
+      ""
   """
   @spec last(any, Liquex.Context.t()) :: any
   def last(arr, context) when is_list(arr), do: arr |> Enum.reverse() |> first(context)
+  def last("", _), do: ""
+  def last(str, _) when is_binary(str), do: String.last(str)
   def last(_, _), do: nil
 
   @doc """
