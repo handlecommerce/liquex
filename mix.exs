@@ -6,7 +6,7 @@ defmodule Liquex.MixProject do
   def project do
     [
       app: :liquex,
-      version: "0.15.0",
+      version: "0.15.1",
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -37,7 +37,7 @@ defmodule Liquex.MixProject do
     [
       {:nimble_parsec, "~> 1.4"},
       {:date_time_parser, "~> 1.2"},
-      {:decimal, "~> 3.0"},
+      {:decimal, "~> 2.0 or ~> 3.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-06-29
+
+### Changed
+
+- Relaxed the `decimal` dependency to `~> 2.0 or ~> 3.0` so liquex can be used
+  alongside apps on either major version.
+  - Thank you [paridin](https://github.com/paridin)
+
 ## [0.15.0] - 2026-05-04
 
 Two bodies of work land together. The first is the Drops/Lazy/Resolver
@@ -239,8 +247,8 @@ templates that already worked, called out under "Behavior changes" below.
 ## [0.10.1] - 2023-03-10
 
 - Deprecated Liquex.render/2 for Liquex.render!/2
-    Liquex.render/2 will be replaced with a function that returns an error tuple
-    instead of raising an error in 0.11
+  Liquex.render/2 will be replaced with a function that returns an error tuple
+  instead of raising an error in 0.11
 - Add devcontainer
 - Fix regression on round filter with invalid inputs
 
